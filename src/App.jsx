@@ -8,6 +8,7 @@ import ModelInsightsSection from './components/ModelInsightsSection';
 import PipelineFlowchartNav from './components/PipelineFlowchartNav';
 import PipelineFlowFooter from './components/PipelineFlowFooter';
 import CommandPaletteModal from './components/CommandPaletteModal';
+import UnifiedSearchBar from './components/UnifiedSearchBar';
 import { generateLocationTelemetry } from './services/trafficGenerator';
 
 class ErrorBoundary extends Component {
