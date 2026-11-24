@@ -101,7 +101,7 @@ export default function App() {
           {/* DENSE TELEMETRY & OPERATIONS STRIP UNDER MAP */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
             {/* Left 7 Cols: Connected Arterial Corridors */}
-            <div className="lg:col-span-7 bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+            <div className="lg:col-span-7 bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#EADBCE]/50">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138]">
@@ -141,7 +141,7 @@ export default function App() {
             </div>
 
             {/* Right 5 Cols: Live Sector Operations & Incident Alert Feed */}
-            <div className="lg:col-span-5 bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+            <div className="lg:col-span-5 bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#EADBCE]/50">
                   <div className="flex items-center gap-1.5">

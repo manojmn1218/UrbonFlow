@@ -65,7 +65,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
       />
 
       {/* Header */}
-      <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 sm:px-4 sm:py-2.5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-3 sm:px-4 sm:py-2.5 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-xl bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE]">
             <Network className="w-4 h-4" />
@@ -93,7 +93,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
           const Icon = card.icon;
           const TrendIcon = card.trendIcon;
           return (
-            <div key={card.key} className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3.5 rounded-2xl border border-[#EADBCE]/70 shadow-subtle hover:shadow-premium transition-all">
+            <div key={card.key} className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-3.5 rounded-2xl border border-[#EADBCE] shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center justify-between text-xs text-[#7D5138] mb-1.5">
                 <span className="font-semibold uppercase tracking-wider text-[10px]">{card.label}</span>
                 <Icon className={`w-3.5 h-3.5 ${card.iconColor === 'text-blue-600' ? 'text-[#5C331E]' : card.iconColor === 'text-indigo-600' ? 'text-[#7D5138]' : card.iconColor}`} />
@@ -118,7 +118,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
       </div>
 
       {/* Actual vs Predicted Curve */}
-      <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium">
+      <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE] shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div>
             <h3 className="text-sm font-bold text-[#2C1810]">Actual vs Predicted Velocity Trajectory ({shortName})</h3>
@@ -132,10 +132,10 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
 
         <div className="relative w-full h-48 mt-1">
           <svg viewBox="0 0 680 220" className="w-full h-full overflow-visible">
-            <line x1="40" y1="20" x2="650" y2="20" stroke="#F4ECE1" strokeDasharray="3 3" />
-            <line x1="40" y1="75" x2="650" y2="75" stroke="#F4ECE1" strokeDasharray="3 3" />
-            <line x1="40" y1="130" x2="650" y2="130" stroke="#F4ECE1" strokeDasharray="3 3" />
-            <line x1="40" y1="190" x2="650" y2="190" stroke="#EADBCE" />
+            <line x1="40" y1="20" x2="650" y2="20" stroke="#EADBCE" strokeDasharray="3 3" />
+            <line x1="40" y1="75" x2="650" y2="75" stroke="#EADBCE" strokeDasharray="3 3" />
+            <line x1="40" y1="130" x2="650" y2="130" stroke="#EADBCE" strokeDasharray="3 3" />
+            <line x1="40" y1="190" x2="650" y2="190" stroke="#C49A80" />
 
             <text x="32" y="24" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">80</text>
             <text x="32" y="79" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">50</text>
@@ -199,7 +199,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
       {/* DENSE LOWER VIEWPORT SECTION: GRAPH TOPOLOGY & HARDWARE BENCHMARKS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
         {/* Card 1: Spatial-Temporal Graph Topology & Sparsity */}
-        <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+        <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#EADBCE]/50">
               <div className="flex items-center gap-2">
@@ -275,7 +275,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
         </div>
 
         {/* Card 2: Edge Hardware Quantization & Runtime Inference */}
-        <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+        <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#EADBCE]/50">
               <div className="flex items-center gap-2">

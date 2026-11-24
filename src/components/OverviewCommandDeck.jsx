@@ -194,178 +194,192 @@ export default function OverviewCommandDeck({
         </div>
       </div>
 
-      {/* 3. MIDDLE DUAL STAGE */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch">
-        <div className="lg:col-span-7 bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
-          <div>
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[#EADBCE]/50">
-              <div>
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-[#5C331E]" />
-                  <h3 className="text-base font-bold text-[#2C1810]">
-                    {shortName} — Traffic Velocity & Delay Dynamics
-                  </h3>
-                </div>
-                <p className="text-xs text-[#7D5138] mt-0.5">
-                  Continuous 24-hour speed (km/h) vs congestion delay (%) across connected arteries
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 bg-[#F5EFEB] border border-[#EADBCE]/60 p-1 rounded-xl text-xs">
-                {['both', 'speed', 'congestion'].map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setActiveCurveFilter(f)}
-                    className={`px-2.5 py-1 rounded-lg font-semibold capitalize transition-all ${
-                      activeCurveFilter === f 
-                        ? f === 'congestion' ? 'bg-[#9E2A2B] text-white shadow-sm' : 'bg-[#5C331E] text-white shadow-sm' 
-                        : 'text-[#7D5138] hover:text-[#2C1810]'
-                    }`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-xs text-[#7D5138] mt-3 mb-1">
-              <div className="flex items-center gap-4">
-                {(activeCurveFilter === 'both' || activeCurveFilter === 'speed') && (
-                  <span className="flex items-center gap-1.5 text-[#2C1810] font-medium">
-                    <span className="w-3 h-1 bg-[#5C331E] rounded"></span> Flow Speed (km/h)
-                  </span>
-                )}
-                {(activeCurveFilter === 'both' || activeCurveFilter === 'congestion') && (
-                  <span className="flex items-center gap-1.5 text-[#2C1810] font-medium">
-                    <span className="w-3 h-1 bg-[#9E2A2B] rounded border-dashed border-b"></span> Congestion Index (%)
-                  </span>
-                )}
-              </div>
-              <span className="font-mono text-[11px] text-[#9C6D52]">
-                {currentLocation?.dataSource || "Real-Time Telemetry"}
-              </span>
-            </div>
-
-            {/* Velocity Curve SVG */}
-            <div className="relative w-full h-44 mt-1">
-              <svg viewBox="0 0 600 200" className="w-full h-full overflow-visible">
-                <defs>
-                  <linearGradient id="speedAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#5C331E" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#5C331E" stopOpacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="congAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#9E2A2B" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#9E2A2B" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-
-                <line x1="45" y1="20" x2="585" y2="20" stroke="#F4ECE1" strokeDasharray="3 3" />
-                <line x1="45" y1="73" x2="585" y2="73" stroke="#F4ECE1" strokeDasharray="3 3" />
-                <line x1="45" y1="126" x2="585" y2="126" stroke="#F4ECE1" strokeDasharray="3 3" />
-                <line x1="45" y1="180" x2="585" y2="180" stroke="#EADBCE" />
-
-                <text x="35" y="24" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">80</text>
-                <text x="35" y="77" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">50</text>
-                <text x="35" y="130" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">25</text>
-                <text x="35" y="183" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">0</text>
-
-                {(activeCurveFilter === 'both' || activeCurveFilter === 'speed') && (
-                  <g>
-                    <path d={speedArea} fill="url(#speedAreaGrad)" />
-                    <path d={speedLine} fill="none" stroke="#5C331E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                    {speedCoords.map((p, i) => (
-                      <circle
-                        key={i}
-                        cx={p.x}
-                        cy={p.y}
-                        r={hoveredTrendHour === i ? "5.5" : "3.5"}
-                        fill="#FFFDF9"
-                        stroke="#5C331E"
-                        strokeWidth="2.5"
-                        onMouseEnter={() => setHoveredTrendHour(i)}
-                        onMouseLeave={() => setHoveredTrendHour(null)}
-                        className="cursor-pointer transition-all"
-                      />
-                    ))}
-                  </g>
-                )}
-
-                {(activeCurveFilter === 'both' || activeCurveFilter === 'congestion') && (
-                  <g>
-                    <path d={congArea} fill="url(#congAreaGrad)" />
-                    <path d={congLine} fill="none" stroke="#9E2A2B" strokeWidth="2" strokeDasharray="4 4" strokeLinecap="round" strokeLinejoin="round" />
-                    {congCoords.map((p, i) => (
-                      <circle
-                        key={i}
-                        cx={p.x}
-                        cy={p.y}
-                        r={hoveredTrendHour === i ? "5" : "3"}
-                        fill="#FFFDF9"
-                        stroke="#9E2A2B"
-                        strokeWidth="2"
-                        className="cursor-pointer"
-                      />
-                    ))}
-                  </g>
-                )}
-
-                {hourlyTrend.map((p, i) => {
-                  const x = 55 + i * stepX;
-                  return (
-                    <text key={i} x={x} y="196" fill="#9C6D52" fontSize="10" textAnchor="middle" fontFamily="monospace">
-                      {p.hour}
-                    </text>
-                  );
-                })}
-              </svg>
-            </div>
-
-            {/* Daytime Peak Hour Load Distribution */}
-            <div className="mt-3.5 pt-3 border-t border-[#EADBCE]/50">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138] flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-[#C47D3B]" />
-                  {shortName} Daytime Hourly Load (06:00 – 20:00)
-                </span>
-                <span className="text-[10px] font-mono text-[#9C6D52]">Congestion Severity</span>
-              </div>
-              <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5">
-                {peakHours.slice(0, 10).map((hour, idx) => (
-                  <div key={idx} className="bg-[#F5EFEB]/50 backdrop-blur-sm p-2 rounded-xl border border-[#EADBCE]/60 text-center">
-                    <span className="text-[10px] font-mono text-[#7D5138] block truncate">{hour.hour}</span>
-                    <span className={`text-xs font-mono font-bold block mt-0.5 ${
-                      hour.level === 'critical' ? 'text-[#9E2A2B]' : hour.level === 'high' ? 'text-[#C47D3B]' : 'text-[#2C1810]'
-                    }`}>
-                      {hour.count}%
-                    </span>
-                    <div className="w-full bg-[#EADBCE] rounded-full h-1 mt-1 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${
-                          hour.level === 'critical' ? 'bg-[#9E2A2B]' : hour.level === 'high' ? 'bg-[#C47D3B]' : 'bg-[#5C331E]'
-                        }`}
-                        style={{ width: `${Math.min(100, hour.count)}%` }}
-                      />
-                    </div>
+      {/* 3. MIDDLE DUAL STAGE: PERFECTLY BALANCED COLUMNS */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+        {/* LEFT COLUMN (7 COLS): 24-HOUR DYNAMICS + CONNECTED CORRIDORS */}
+        <div className="lg:col-span-7 flex flex-col gap-3.5">
+          {/* Card 1: 24-Hour Velocity & Delay Dynamics */}
+          <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[#EADBCE]/60">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-[#5C331E]" />
+                    <h3 className="text-base font-bold text-[#2C1810]">
+                      {shortName} — Traffic Velocity & Delay Dynamics
+                    </h3>
                   </div>
-                ))}
+                  <p className="text-xs text-[#7D5138] mt-0.5">
+                    Continuous 24-hour speed (km/h) vs congestion delay (%) across monitored arteries
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 bg-[#F5EFEB] border border-[#EADBCE]/70 p-1 rounded-xl text-xs">
+                  {['both', 'speed', 'congestion'].map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setActiveCurveFilter(f)}
+                      className={`px-2.5 py-1 rounded-lg font-semibold capitalize transition-all ${
+                        activeCurveFilter === f 
+                          ? f === 'congestion' ? 'bg-[#9E2A2B] text-white shadow-xs' : 'bg-[#5C331E] text-white shadow-xs' 
+                          : 'text-[#7D5138] hover:text-[#2C1810]'
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              <div className="flex items-center justify-between text-xs text-[#7D5138] mt-3 mb-1.5">
+                <div className="flex items-center gap-4">
+                  {(activeCurveFilter === 'both' || activeCurveFilter === 'speed') && (
+                    <span className="flex items-center gap-1.5 text-[#2C1810] font-semibold">
+                      <span className="w-3.5 h-1 bg-[#5C331E] rounded-full"></span> Flow Speed (km/h)
+                    </span>
+                  )}
+                  {(activeCurveFilter === 'both' || activeCurveFilter === 'congestion') && (
+                    <span className="flex items-center gap-1.5 text-[#2C1810] font-semibold">
+                      <span className="w-3.5 h-1 bg-[#9E2A2B] rounded-full border-dashed border-b"></span> Congestion Index (%)
+                    </span>
+                  )}
+                </div>
+                <span className="font-mono text-[11px] text-[#9C6D52] font-medium">
+                  {currentLocation?.dataSource || "Real-Time Telemetry"}
+                </span>
+              </div>
+
+              {/* High-Contrast Velocity Curve SVG */}
+              <div className="relative w-full h-48 mt-1">
+                <svg viewBox="0 0 600 200" className="w-full h-full overflow-visible">
+                  <defs>
+                    <linearGradient id="speedAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#5C331E" stopOpacity="0.30" />
+                      <stop offset="100%" stopColor="#5C331E" stopOpacity="0.02" />
+                    </linearGradient>
+                    <linearGradient id="congAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#9E2A2B" stopOpacity="0.30" />
+                      <stop offset="100%" stopColor="#9E2A2B" stopOpacity="0.02" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Clean, visible gridlines */}
+                  <line x1="45" y1="20" x2="585" y2="20" stroke="#EADBCE" strokeDasharray="3 3" />
+                  <line x1="45" y1="73" x2="585" y2="73" stroke="#EADBCE" strokeDasharray="3 3" />
+                  <line x1="45" y1="126" x2="585" y2="126" stroke="#EADBCE" strokeDasharray="3 3" />
+                  <line x1="45" y1="180" x2="585" y2="180" stroke="#C49A80" />
+
+                  <text x="35" y="24" fill="#7D5138" fontSize="10" fontWeight="600" textAnchor="end" fontFamily="monospace">80</text>
+                  <text x="35" y="77" fill="#7D5138" fontSize="10" fontWeight="600" textAnchor="end" fontFamily="monospace">50</text>
+                  <text x="35" y="130" fill="#7D5138" fontSize="10" fontWeight="600" textAnchor="end" fontFamily="monospace">25</text>
+                  <text x="35" y="183" fill="#7D5138" fontSize="10" fontWeight="600" textAnchor="end" fontFamily="monospace">0</text>
+
+                  {(activeCurveFilter === 'both' || activeCurveFilter === 'speed') && (
+                    <g>
+                      <path d={speedArea} fill="url(#speedAreaGrad)" />
+                      <path d={speedLine} fill="none" stroke="#5C331E" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+                      {speedCoords.map((p, i) => (
+                        <circle
+                          key={i}
+                          cx={p.x}
+                          cy={p.y}
+                          r={hoveredTrendHour === i ? "6" : "3.5"}
+                          fill="#FFFDF9"
+                          stroke="#5C331E"
+                          strokeWidth="2.5"
+                          onMouseEnter={() => setHoveredTrendHour(i)}
+                          onMouseLeave={() => setHoveredTrendHour(null)}
+                          className="cursor-pointer transition-all"
+                        />
+                      ))}
+                    </g>
+                  )}
+
+                  {(activeCurveFilter === 'both' || activeCurveFilter === 'congestion') && (
+                    <g>
+                      <path d={congArea} fill="url(#congAreaGrad)" />
+                      <path d={congLine} fill="none" stroke="#9E2A2B" strokeWidth="2.2" strokeDasharray="4 4" strokeLinecap="round" strokeLinejoin="round" />
+                      {congCoords.map((p, i) => (
+                        <circle
+                          key={i}
+                          cx={p.x}
+                          cy={p.y}
+                          r={hoveredTrendHour === i ? "5.5" : "3"}
+                          fill="#FFFDF9"
+                          stroke="#9E2A2B"
+                          strokeWidth="2"
+                          className="cursor-pointer"
+                        />
+                      ))}
+                    </g>
+                  )}
+
+                  {hourlyTrend.map((p, i) => {
+                    const x = 55 + i * stepX;
+                    return (
+                      <text key={i} x={x} y="196" fill="#7D5138" fontSize="10" fontWeight="600" textAnchor="middle" fontFamily="monospace">
+                        {p.hour}
+                      </text>
+                    );
+                  })}
+                </svg>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-2.5 border-t border-[#EADBCE]/60 flex items-center justify-between text-xs text-[#7D5138]">
+              {hoveredTrendHour !== null && hourlyTrend[hoveredTrendHour] ? (
+                <span className="font-semibold text-[#2C1810]">
+                  At {hourlyTrend[hoveredTrendHour].hour} — Speed: <strong className="text-[#5C331E]">{hourlyTrend[hoveredTrendHour].speed} km/h</strong> | Congestion: <strong className="text-[#9E2A2B]">{hourlyTrend[hoveredTrendHour].congestion}%</strong>
+                </span>
+              ) : (
+                <span>Hover over points to inspect specific velocity & congestion levels</span>
+              )}
+              <button
+                onClick={() => onSwitchView('analytics')}
+                className="text-xs font-bold text-[#5C331E] hover:text-[#3D2317] flex items-center gap-1"
+              >
+                <span>Analytics</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
 
-          <div className="mt-3.5 pt-2.5 border-t border-[#EADBCE]/50 flex items-center justify-between text-xs">
-            <span className="text-[#9C6D52]">Continuous telemetry feed across {shortName}</span>
-            <button
-              onClick={() => onSwitchView('analytics')}
-              className="text-xs font-bold text-[#5C331E] hover:text-[#3D2317] flex items-center gap-1"
-            >
-              <span>Explore Advanced Analytics</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+          {/* Card 2: Connected Arterial Corridors */}
+          <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 rounded-2xl border border-[#EADBCE] shadow-sm">
+            <div className="flex items-center justify-between mb-2.5 px-0.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138]">
+                Connected Arterial Corridors ({shortName})
+              </span>
+              <span className="text-[10px] font-mono text-[#9C6D52]">Real-Time Speed & Delays</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {(corridors.length > 0 ? corridors : [
+                { id: "CR-01", name: 'Main Expressway Spine', speed: 48, length: '6.4 km', delay: '+2m', colorClass: 'bg-emerald-500' },
+                { id: "CR-02", name: 'Central Transit Boulevard', speed: 32, length: '4.8 km', delay: '+6m', colorClass: 'bg-amber-500' },
+                { id: "CR-03", name: 'North Ring Road Bypass', speed: 54, length: '9.2 km', delay: 'Normal', colorClass: 'bg-emerald-500' },
+                { id: "CR-04", name: 'Financial Commercial Avenue', speed: 22, length: '3.1 km', delay: '+11m', colorClass: 'bg-red-500' },
+              ]).map((route) => (
+                <div key={route.id} className="p-2.5 rounded-xl bg-[#F5EFEB]/60 border border-[#EADBCE]/70 flex items-center justify-between gap-2 shadow-2xs hover:bg-[#FFFDF9] transition-all">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${route.colorClass || 'bg-[#5C331E]'}`}></span>
+                    <div className="min-w-0">
+                      <h5 className="font-bold text-[#2C1810] text-xs truncate">{route.name}</h5>
+                      <span className="text-[10px] text-[#7D5138]">{route.length}</span>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <span className="font-mono font-bold text-[#3D2317] text-xs block">{route.speed} km/h</span>
+                    <span className={`text-[10px] font-bold ${route.status === 'Severe' ? 'text-[#9E2A2B]' : route.status === 'Heavy' ? 'text-[#C47D3B]' : 'text-[#2D6A4F]'}`}>
+                      {route.delay}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* RIGHT 5 COLUMNS */}
-        <div className="lg:col-span-5 flex flex-col gap-3">
+        {/* RIGHT COLUMN (5 COLS): AI PREDICTION WORKBENCH + CONGESTION HOTSPOTS */}
+        <div className="lg:col-span-5 flex flex-col gap-3.5">
           <CompactAiWorkbench 
             activeHorizon={activeHorizon}
             setActiveHorizon={setActiveHorizon}
@@ -374,11 +388,11 @@ export default function OverviewCommandDeck({
             onLocationChange={onLocationChange}
           />
 
-          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3.5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+          <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#EADBCE]/50">
+              <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-[#EADBCE]/60">
                 <div className="flex items-center gap-1.5">
-                  <Flame className="w-3.5 h-3.5 text-[#9E2A2B]" />
+                  <Flame className="w-4 h-4 text-[#9E2A2B]" />
                   <h4 className="text-xs font-bold text-[#2C1810]">Critical Congestion Hotspots ({shortName})</h4>
                 </div>
                 <button
@@ -389,9 +403,9 @@ export default function OverviewCommandDeck({
                   <ChevronRight className="w-3 h-3" />
                 </button>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {hotspots.slice(0, 4).map((hotspot, idx) => (
-                  <div key={idx} className="p-2 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60 flex items-center justify-between text-xs">
+                  <div key={idx} className="p-2.5 rounded-xl bg-[#F5EFEB]/60 border border-[#EADBCE]/70 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className={`w-5 h-5 rounded-md font-mono font-bold flex items-center justify-center text-[10px] flex-shrink-0 ${
                         idx === 0 ? 'bg-[#FBEAEA] text-[#9E2A2B]' : 'bg-[#FDF2E9] text-[#C47D3B]'
@@ -412,100 +426,100 @@ export default function OverviewCommandDeck({
             </div>
 
             {/* Ingestion & Telemetry Health Strip */}
-            <div className="mt-2.5 pt-2 border-t border-[#EADBCE]/50 flex items-center justify-between text-[11px] text-[#7D5138]">
-              <span className="flex items-center gap-1 text-[#2D6A4F] font-semibold">
+            <div className="mt-3 pt-2 border-t border-[#EADBCE]/60 flex items-center justify-between text-[11px] text-[#7D5138]">
+              <span className="flex items-center gap-1.5 text-[#2D6A4F] font-semibold">
                 <span className="w-2 h-2 rounded-full bg-[#2D6A4F] animate-pulse"></span>
-                Feed: 1,420 pkts/s
+                Sensor Stream: 1,420 pkts/s
               </span>
-              <span className="font-mono text-[#9C6D52]">Drift Loss: 0.012</span>
+              <span className="font-mono text-[#9C6D52]">Drift: 0.012 PSI</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4. BOTTOM CORRIDOR TELEMETRY & NETWORK PACING DECK */}
-      <div className="space-y-3">
-        <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3.5 rounded-2xl border border-[#EADBCE]/70 shadow-premium">
-          <div className="flex items-center justify-between mb-2.5 px-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138]">
-              Connected Arterial Corridors ({shortName})
-            </span>
-            <span className="text-[10px] font-mono text-[#9C6D52]">Live Velocity & Delay</span>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-            {corridors.map((route) => (
-              <div key={route.id} className="p-2.5 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60 flex items-center justify-between gap-2 shadow-2xs hover:bg-[#FFFDF9]/80 transition-all">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${route.colorClass}`}></span>
-                  <div className="min-w-0">
-                    <h5 className="font-bold text-[#2C1810] text-xs truncate">{route.name}</h5>
-                    <span className="text-[10px] text-[#7D5138]">{route.length}</span>
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <span className="font-mono font-bold text-[#3D2317] text-xs block">{route.speed} km/h</span>
-                  <span className={`text-[10px] font-bold ${route.status === 'Severe' ? 'text-[#9E2A2B]' : route.status === 'Heavy' ? 'text-[#C47D3B]' : 'text-[#2D6A4F]'}`}>
-                    {route.delay}
-                  </span>
-                </div>
+      {/* 4. FULL-WIDTH DAYTIME HOURLY LOAD DISTRIBUTION */}
+      <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 rounded-2xl border border-[#EADBCE] shadow-sm">
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138] flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-[#C47D3B]" />
+            {shortName} Daytime Hourly Load (06:00 – 20:00)
+          </span>
+          <span className="text-[10px] font-mono text-[#9C6D52]">Congestion Relative Index</span>
+        </div>
+        <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+          {peakHours.slice(0, 10).map((hour, idx) => (
+            <div key={idx} className="bg-[#F5EFEB]/60 p-2 rounded-xl border border-[#EADBCE]/70 text-center">
+              <span className="text-[10px] font-mono text-[#7D5138] block truncate">{hour.hour}</span>
+              <span className={`text-xs font-mono font-bold block mt-0.5 ${
+                hour.level === 'critical' ? 'text-[#9E2A2B]' : hour.level === 'high' ? 'text-[#C47D3B]' : 'text-[#2C1810]'
+              }`}>
+                {hour.count}%
+              </span>
+              <div className="w-full bg-[#EADBCE] rounded-full h-1 mt-1 overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${
+                    hour.level === 'critical' ? 'bg-[#9E2A2B]' : hour.level === 'high' ? 'bg-[#C47D3B]' : 'bg-[#5C331E]'
+                  }`}
+                  style={{ width: `${Math.min(100, hour.count)}%` }}
+                />
               </div>
-            ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 5. METROPOLITAN NETWORK PACING & INFRASTRUCTURE TELEMETRY STRIP */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-3 rounded-2xl border border-[#EADBCE] shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
+              <Radio className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Signal Headway</span>
+              <span className="text-sm font-mono font-extrabold text-[#2C1810] block">+14s Green Wave</span>
+            </div>
           </div>
+          <span className="text-[10px] font-bold text-[#2D6A4F] bg-[#EAF2EC] px-1.5 py-0.5 rounded">Synced</span>
         </div>
 
-        {/* 5. METROPOLITAN NETWORK PACING & INFRASTRUCTURE TELEMETRY STRIP */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 rounded-2xl border border-[#EADBCE]/70 shadow-subtle flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
-                <Radio className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Signal Headway</span>
-                <span className="text-sm font-mono font-extrabold text-[#2C1810] block">+14s Green Wave</span>
-              </div>
+        <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-3 rounded-2xl border border-[#EADBCE] shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE]">
+              <Activity className="w-3.5 h-3.5" />
             </div>
-            <span className="text-[10px] font-bold text-[#2D6A4F] bg-[#EAF2EC] px-1.5 py-0.5 rounded">Synced</span>
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Dynamic VSL</span>
+              <span className="text-sm font-mono font-extrabold text-[#2C1810] block">45 km/h Pacing</span>
+            </div>
           </div>
+          <span className="text-[10px] font-bold text-[#5C331E] bg-[#F5EFEB] px-1.5 py-0.5 rounded">Active</span>
+        </div>
 
-          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 rounded-2xl border border-[#EADBCE]/70 shadow-subtle flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE]">
-                <Activity className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Dynamic VSL</span>
-                <span className="text-sm font-mono font-extrabold text-[#2C1810] block">45 km/h Pacing</span>
-              </div>
+        <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-3 rounded-2xl border border-[#EADBCE] shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-[#FDF2E9] text-[#C47D3B] border border-[#EADBCE]">
+              <Zap className="w-3.5 h-3.5" />
             </div>
-            <span className="text-[10px] font-bold text-[#5C331E] bg-[#F5EFEB] px-1.5 py-0.5 rounded">Active</span>
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Ramp Ingress</span>
+              <span className="text-sm font-mono font-extrabold text-[#2C1810] block">18 veh / min</span>
+            </div>
           </div>
+          <span className="text-[10px] font-bold text-[#C47D3B] bg-[#FDF2E9] px-1.5 py-0.5 rounded">Metered</span>
+        </div>
 
-          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 rounded-2xl border border-[#EADBCE]/70 shadow-subtle flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-[#FDF2E9] text-[#C47D3B] border border-[#EADBCE]">
-                <Zap className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Ramp Ingress</span>
-                <span className="text-sm font-mono font-extrabold text-[#2C1810] block">18 veh / min</span>
-              </div>
+        <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-3 rounded-2xl border border-[#EADBCE] shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
+              <CheckCircle2 className="w-3.5 h-3.5" />
             </div>
-            <span className="text-[10px] font-bold text-[#C47D3B] bg-[#FDF2E9] px-1.5 py-0.5 rounded">Metered</span>
-          </div>
-
-          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 rounded-2xl border border-[#EADBCE]/70 shadow-subtle flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Idle Conserved</span>
-                <span className="text-sm font-mono font-extrabold text-[#2C1810] block">-15.4% Emissions</span>
-              </div>
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Idle Conserved</span>
+              <span className="text-sm font-mono font-extrabold text-[#2C1810] block">-15.4% Emissions</span>
             </div>
-            <span className="text-[10px] font-bold text-[#2D6A4F] bg-[#EAF2EC] px-1.5 py-0.5 rounded">Eco-Wave</span>
           </div>
+          <span className="text-[10px] font-bold text-[#2D6A4F] bg-[#EAF2EC] px-1.5 py-0.5 rounded">Eco-Wave</span>
         </div>
       </div>
     </div>

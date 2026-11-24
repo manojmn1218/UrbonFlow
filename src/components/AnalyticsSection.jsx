@@ -53,7 +53,7 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
         onLocationChange={onLocationChange} 
       />
 
-      <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 sm:px-4 sm:py-2.5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-3.5 sm:px-4 sm:py-3 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-[#2C1810] tracking-tight flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-[#5C331E]" />
@@ -63,7 +63,7 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
             Real-time traffic curves, diurnal commuter surges, and spatial bottleneck rankings for {currentLocation?.name}
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-[#F5EFEB] border border-[#EADBCE]/60 p-1 rounded-xl">
+        <div className="flex items-center gap-2 bg-[#F5EFEB] border border-[#EADBCE]/70 p-1 rounded-xl">
           {['24h', '7d', 'weekend'].map((range) => (
             <button
               key={range}
@@ -79,7 +79,7 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
-        <div className="lg:col-span-2 bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col justify-between">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <div>
               <div className="flex items-center gap-2">
@@ -100,24 +100,24 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
             <svg viewBox="0 0 700 240" className="w-full h-full overflow-visible">
               <defs>
                 <linearGradient id="speedAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#5C331E" stopOpacity="0.22" />
+                  <stop offset="0%" stopColor="#5C331E" stopOpacity="0.25" />
                   <stop offset="100%" stopColor="#5C331E" stopOpacity="0.0" />
                 </linearGradient>
                 <linearGradient id="congestionAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#9E2A2B" stopOpacity="0.25" />
+                  <stop offset="0%" stopColor="#9E2A2B" stopOpacity="0.28" />
                   <stop offset="100%" stopColor="#9E2A2B" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
-              <line x1="50" y1="20" x2="680" y2="20" stroke="#F4ECE1" strokeDasharray="3 3" />
-              <line x1="50" y1="80" x2="680" y2="80" stroke="#F4ECE1" strokeDasharray="3 3" />
-              <line x1="50" y1="140" x2="680" y2="140" stroke="#F4ECE1" strokeDasharray="3 3" />
-              <line x1="50" y1="200" x2="680" y2="200" stroke="#EADBCE" />
+              <line x1="50" y1="20" x2="680" y2="20" stroke="#EADBCE" strokeDasharray="3 3" />
+              <line x1="50" y1="80" x2="680" y2="80" stroke="#EADBCE" strokeDasharray="3 3" />
+              <line x1="50" y1="140" x2="680" y2="140" stroke="#EADBCE" strokeDasharray="3 3" />
+              <line x1="50" y1="200" x2="680" y2="200" stroke="#C49A80" />
 
-              <text x="40" y="24" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">80</text>
-              <text x="40" y="84" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">50</text>
-              <text x="40" y="144" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">25</text>
-              <text x="40" y="204" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">0</text>
+              <text x="40" y="24" fill="#7D5138" fontSize="10" fontWeight="600" textAnchor="end" fontFamily="monospace">80</text>
+              <text x="40" y="84" fill="#7D5138" fontSize="10" fontWeight="600" textAnchor="end" fontFamily="monospace">50</text>
+              <text x="40" y="144" fill="#7D5138" fontSize="10" fontWeight="600" textAnchor="end" fontFamily="monospace">25</text>
+              <text x="40" y="204" fill="#7D5138" fontSize="10" fontWeight="600" textAnchor="end" fontFamily="monospace">0</text>
 
               <g>
                 <path d={speedArea} fill="url(#speedAreaGradient)" />
@@ -179,7 +179,7 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
         </div>
 
         {/* Bottleneck Hotspots */}
-        <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+        <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#EADBCE]/50">
               <div className="flex items-center gap-2">
@@ -191,7 +191,7 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
 
             <div className="space-y-2">
               {hotspots.map((h, i) => (
-                <div key={i} className="p-2.5 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60 hover:border-[#5C331E] transition-all">
+                <div key={i} className="p-2.5 rounded-xl bg-[#F5EFEB]/60 border border-[#EADBCE]/70 hover:border-[#5C331E] transition-all">
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="font-bold text-[#2C1810] truncate">{h.name}</span>
                     <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${h.color === '#EF4444' ? 'bg-[#FBEAEA] text-[#9E2A2B]' : 'bg-[#FDF2E9] text-[#C47D3B]'}`}>
@@ -216,7 +216,7 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
       </div>
 
       {/* Daytime Peak Hour Distribution */}
-      <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-4 rounded-2xl border border-[#EADBCE]/70 shadow-premium">
+      <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 rounded-2xl border border-[#EADBCE] shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-[#C47D3B]" />
@@ -226,7 +226,7 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
         </div>
         <div className="grid grid-cols-5 sm:grid-cols-10 lg:grid-cols-15 gap-2">
           {peakHours.map((hour, idx) => (
-            <div key={idx} className="bg-[#F5EFEB]/50 backdrop-blur-sm p-2.5 rounded-xl border border-[#EADBCE]/60 text-center">
+            <div key={idx} className="bg-[#F5EFEB]/60 p-2.5 rounded-xl border border-[#EADBCE]/70 text-center">
               <span className="text-[10px] font-mono text-[#7D5138] block truncate">{hour.hour}</span>
               <span className={`text-xs font-mono font-bold block mt-0.5 ${
                 hour.level === 'critical' ? 'text-[#9E2A2B]' : hour.level === 'high' ? 'text-[#C47D3B]' : 'text-[#2C1810]'
@@ -249,7 +249,7 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
       {/* DENSE LOWER VIEWPORT SECTION: ARTERIAL CONGESTION HEATMAP & FLEET FLOW */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
         {/* Left: Arterial Heatmap Matrix across Diurnal Windows (7 Cols) */}
-        <div className="lg:col-span-7 bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#EADBCE]/50">
               <div className="flex items-center gap-2">
@@ -344,7 +344,7 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
         </div>
 
         {/* Right: Multimodal Fleet Distribution & Carbon Efficiency (5 Cols) */}
-        <div className="lg:col-span-5 bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-[#FFFDF9]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#EADBCE]/50">
               <div className="flex items-center gap-2">

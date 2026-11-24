@@ -110,7 +110,7 @@ export default function AiPredictionsSection({
         onLocationChange={onLocationChange} 
       />
 
-      <div className="bg-[#FFFDF9]/70 backdrop-blur-xl rounded-2xl border border-[#EADBCE]/70 shadow-premium p-4 sm:p-5">
+      <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl rounded-2xl border border-[#EADBCE] shadow-sm p-4 sm:p-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3.5 border-b border-[#EADBCE]/50">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-xl bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE]">
