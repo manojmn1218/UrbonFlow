@@ -1,0 +1,1260 @@
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { 
+  Navigation, 
+  Search, 
+  MapPin, 
+  ZoomIn, 
+  ZoomOut, 
+  Crosshair, 
+  Loader2, 
+  Layers, 
+  X,
+  ArrowRight,
+  ArrowUpDown,
+  Route,
+  Clock,
+  Car,
+  Compass,
+  CheckCircle2,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Milestone
+} from 'lucide-react';
+import { searchLocations, getLocationTraffic, calculateRoutes } from '../services/api';
+import { generateLocationTelemetry } from '../services/trafficGenerator';
+
+export default function TrafficMap2D({ 
+  currentLocation, 
+  onLocationChange,
+  isVisible = true
+}) {
+  const mapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const targetMarkerRef = useRef(null);
+  const routePolylinesRef = useRef([]);
+  const routeMarkersRef = useRef([]);
+
+  // Map Modes & High-Clarity Visual Styles
+  const [mapMode, setMapMode] = useState('planner'); // 'planner' | 'telemetry'
+  const [tileMode, setTileMode] = useState('osm'); // 'osm' | 'satellite' | 'esri_streets' | 'esri_canvas' | 'tomtom'
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+
+  // Single location search (for Telemetry mode)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Origin & Destination state - starts clean without hardcoded preset bias
+  const [origin, setOrigin] = useState(() => {
+    if (currentLocation?.name && currentLocation?.lat && currentLocation?.lon) {
+      return {
+        name: currentLocation.name,
+        lat: currentLocation.lat,
+        lon: currentLocation.lon
+      };
+    }
+    return null;
+  });
+
+  const [destination, setDestination] = useState(null);
+
+  // Independent text inputs for typing & clearing
+  const [originInput, setOriginInput] = useState(() => currentLocation?.name || '');
+  const [destInput, setDestInput] = useState('');
+
+  // Autocomplete suggestion lists
+  const [originSuggestions, setOriginSuggestions] = useState([]);
+  const [destSuggestions, setDestSuggestions] = useState([]);
+  const [isSearchingOrigin, setIsSearchingOrigin] = useState(false);
+  const [isSearchingDest, setIsSearchingDest] = useState(false);
+  const [activeSearchField, setActiveSearchField] = useState(null); // 'origin' | 'dest' | null
+
+  // Route calculation results
+  const [routesData, setRoutesData] = useState(null);
+  const [selectedRouteId, setSelectedRouteId] = useState(null);
+  const [isCalculatingRoutes, setIsCalculatingRoutes] = useState(false);
+
+  // Active location telemetry stats
+  const lat = currentLocation?.lat || 40.7580;
+  const lon = currentLocation?.lon || -73.9855;
+  const name = currentLocation?.name || "Selected Location";
+  const currentSpeed = currentLocation?.currentSpeed || 42.0;
+  const congestion = currentLocation?.congestionPct || 35;
+
+  // Clear existing polylines and marker pins
+  const clearRouteLayers = () => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    routePolylinesRef.current.forEach((layer) => {
+      try {
+        if (map.hasLayer(layer)) map.removeLayer(layer);
+      } catch (e) {}
+    });
+    routePolylinesRef.current = [];
+
+    routeMarkersRef.current.forEach((marker) => {
+      try {
+        if (map.hasLayer(marker)) map.removeLayer(marker);
+      } catch (e) {}
+    });
+    routeMarkersRef.current = [];
+  };
+
+  // Render Target Marker for single telemetry mode
+  const renderTargetMarker = (map, targetLat, targetLon, targetName, speed, cong) => {
+    if (!map) return;
+    if (targetMarkerRef.current) {
+      try {
+        if (map.hasLayer(targetMarkerRef.current)) map.removeLayer(targetMarkerRef.current);
+      } catch (e) {}
+      targetMarkerRef.current = null;
+    }
+
+    const targetHtml = `
+      <div class="relative flex items-center justify-center">
+        <span class="absolute w-12 h-12 rounded-full bg-blue-500 opacity-30 animate-ping"></span>
+        <span class="absolute w-8 h-8 rounded-full bg-blue-600 opacity-50 animate-pulse"></span>
+        <div class="relative w-9 h-9 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-white shadow-xl shadow-blue-500/50 font-mono text-[10px] font-bold">
+          ${speed}
+        </div>
+      </div>
+    `;
+
+    const targetIcon = L.divIcon({
+      className: 'custom-target-div',
+      html: targetHtml,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+    });
+
+    const marker = L.marker([targetLat, targetLon], { icon: targetIcon })
+      .addTo(map)
+      .bindPopup(`
+        <div style="min-width: 200px; font-family: sans-serif; padding: 4px;">
+          <span style="font-size: 10px; font-weight: 700; color: #2563eb; text-transform: uppercase;">Real-Time Monitored Area</span>
+          <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin: 2px 0 6px 0;">${targetName}</div>
+          <div style="font-size: 11px; color: #64748b; margin-bottom: 6px;">${targetLat.toFixed(4)}, ${targetLon.toFixed(4)}</div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: #334155; border-top: 1px solid #e2e8f0; padding-top: 6px;">
+            <span>Speed: <strong>${speed} km/h</strong></span>
+            <span>Congestion: <strong>${cong}%</strong></span>
+          </div>
+        </div>
+      `);
+
+    targetMarkerRef.current = marker;
+  };
+
+  // Draw routes with casing and anti-aliased polylines
+  const drawRoutesOnMap = (data, activeId = null) => {
+    const map = mapInstanceRef.current;
+    if (!map || !data || !data.routes || data.routes.length === 0) return;
+
+    clearRouteLayers();
+
+    const activeRoute = data.routes.find((r) => r.id === (activeId || selectedRouteId)) || data.routes[0];
+    const newLayers = [];
+
+    // Draw alternative routes first (muted, secondary styling)
+    data.routes.forEach((route) => {
+      if (route.id === activeRoute.id) return;
+      const validCoords = (route.coordinates || []).filter(
+        (pt) => Array.isArray(pt) && pt.length === 2 && !isNaN(pt[0]) && !isNaN(pt[1])
+      );
+      if (validCoords.length < 2) return;
+
+      // Subtle underlay for clean contrast
+      const halo = L.polyline(validCoords, {
+        color: '#ffffff',
+        weight: 6,
+        opacity: 0.6,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(map);
+      newLayers.push(halo);
+
+      const altPolyline = L.polyline(validCoords, {
+        color: '#64748b',
+        weight: 4,
+        opacity: 0.8,
+        dashArray: '6, 8',
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(map);
+
+      altPolyline.bindTooltip(`
+        <div style="font-family: sans-serif; font-size: 11px;">
+          <strong>${route.name}</strong><br/>
+          ${route.duration_min} min • ${route.distance_km} km
+        </div>
+      `, { sticky: true });
+
+      altPolyline.on('click', () => {
+        setSelectedRouteId(route.id);
+        drawRoutesOnMap(data, route.id);
+      });
+
+      newLayers.push(altPolyline);
+    });
+
+    // Draw active selected route with crisp white casing
+    const activeValidCoords = (activeRoute.coordinates || []).filter(
+      (pt) => Array.isArray(pt) && pt.length === 2 && !isNaN(pt[0]) && !isNaN(pt[1])
+    );
+
+    if (activeValidCoords.length >= 2) {
+      // 1. Crisp white underlay casing (halo)
+      const casing = L.polyline(activeValidCoords, {
+        color: '#ffffff',
+        weight: 9,
+        opacity: 0.95,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(map);
+      newLayers.push(casing);
+
+      // 2. High-vibrancy core route polyline
+      const activePolyline = L.polyline(activeValidCoords, {
+        color: activeRoute.color || '#2563eb',
+        weight: 5.5,
+        opacity: 1,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(map);
+
+      activePolyline.bindTooltip(`
+        <div style="font-family: sans-serif; font-size: 12px; font-weight: bold; color: #0f172a;">
+          ${activeRoute.name} (${activeRoute.badge})<br/>
+          <span style="color: #2563eb;">${activeRoute.duration_min} min</span> • ${activeRoute.distance_km} km
+        </div>
+      `, { sticky: true });
+
+      newLayers.push(activePolyline);
+
+      // Smoothly zoom and frame the route
+      try {
+        const bounds = activePolyline.getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            padding: [60, 60],
+            maxZoom: 15,
+            animate: true,
+            duration: 0.8
+          });
+        }
+      } catch (err) {}
+    }
+
+    routePolylinesRef.current = newLayers;
+
+    // Origin Marker (Pin A - Crisp Emerald Beacon)
+    if (data.origin && !isNaN(data.origin.lat) && !isNaN(data.origin.lon)) {
+      const originIcon = L.divIcon({
+        className: 'route-origin-marker',
+        html: `
+          <div class="relative flex items-center justify-center">
+            <span class="absolute w-8 h-8 rounded-full bg-emerald-500 opacity-40 animate-ping"></span>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 border-2 border-white flex items-center justify-center text-white shadow-xl shadow-emerald-700/50 font-black text-xs">
+              A
+            </div>
+          </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+
+      const originMarker = L.marker([data.origin.lat, data.origin.lon], { icon: originIcon })
+        .addTo(map)
+        .bindPopup(`
+          <div style="font-family: sans-serif; padding: 4px;">
+            <span style="font-size: 10px; font-weight: 700; color: #059669; text-transform: uppercase;">Origin (Point A)</span>
+            <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin-top: 2px;">${data.origin.name}</div>
+          </div>
+        `);
+      routeMarkersRef.current.push(originMarker);
+    }
+
+    // Destination Marker (Pin B - Crisp Rose/Red Beacon)
+    if (data.destination && !isNaN(data.destination.lat) && !isNaN(data.destination.lon)) {
+      const destIcon = L.divIcon({
+        className: 'route-dest-marker',
+        html: `
+          <div class="relative flex items-center justify-center">
+            <span class="absolute w-8 h-8 rounded-full bg-rose-500 opacity-40 animate-ping"></span>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-red-600 border-2 border-white flex items-center justify-center text-white shadow-xl shadow-rose-600/50 font-black text-xs">
+              B
+            </div>
+          </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+
+      const destMarker = L.marker([data.destination.lat, data.destination.lon], { icon: destIcon })
+        .addTo(map)
+        .bindPopup(`
+          <div style="font-family: sans-serif; padding: 4px;">
+            <span style="font-size: 10px; font-weight: 700; color: #e11d48; text-transform: uppercase;">Destination (Point B)</span>
+            <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin-top: 2px;">${data.destination.name}</div>
+          </div>
+        `);
+      routeMarkersRef.current.push(destMarker);
+    }
+  };
+
+  // Fetch routes from backend
+  const fetchAndDrawRoutes = async (orig = origin, dest = destination) => {
+    if (!orig?.lat || !orig?.lon || !dest?.lat || !dest?.lon) {
+      clearRouteLayers();
+      setRoutesData(null);
+      return;
+    }
+    setIsCalculatingRoutes(true);
+    try {
+      const data = await calculateRoutes(
+        orig.lat,
+        orig.lon,
+        dest.lat,
+        dest.lon,
+        orig.name,
+        dest.name
+      );
+
+      if (data && data.routes && data.routes.length > 0) {
+        setRoutesData(data);
+        const defaultRoute = data.routes[0];
+        setSelectedRouteId(defaultRoute.id);
+        drawRoutesOnMap(data, defaultRoute.id);
+      }
+    } catch (err) {
+      console.warn('Error calculating routes:', err);
+    } finally {
+      setIsCalculatingRoutes(false);
+    }
+  };
+
+  // 100% Free, High-Definition, Watermark-Free Basemap Tile Configurations
+  // Configured with maxNativeZoom so zooming into deep street levels (zoom 18-22)
+  // NEVER disappears, times out, or turns blank.
+  const getTileConfig = (mode) => {
+    switch (mode) {
+      case 'satellite':
+        return {
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          options: {
+            maxZoom: 22,
+            maxNativeZoom: 18,
+            keepBuffer: 8,
+            attribution: 'Tiles &copy; Esri &mdash; World Imagery',
+          }
+        };
+      case 'tomtom':
+        return {
+          url: 'http://localhost:8000/api/map/tile/{z}/{x}/{y}.png',
+          options: {
+            maxZoom: 22,
+            maxNativeZoom: 18,
+            keepBuffer: 8,
+            attribution: '&copy; TomTom &copy; UrbanFlow AI',
+          }
+        };
+      case 'esri_streets':
+        return {
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+          options: {
+            maxZoom: 22,
+            maxNativeZoom: 17, // Native tiles stop at 17 outside US; upscales smoothly for 18-22
+            keepBuffer: 8,
+            attribution: 'Tiles &copy; Esri &mdash; World Street Map',
+          }
+        };
+      case 'esri_canvas':
+        return {
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+          options: {
+            maxZoom: 22,
+            maxNativeZoom: 16, // Canvas only has native tiles up to 16; upscales smoothly for 17-22
+            keepBuffer: 8,
+            attribution: 'Tiles &copy; Esri &mdash; Light Gray Canvas',
+          }
+        };
+      case 'osm':
+      default:
+        return {
+          url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          options: {
+            maxZoom: 22,
+            maxNativeZoom: 19, // Deep street/lane/house detail up to 19, upscales smoothly for 20-22
+            keepBuffer: 8,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          }
+        };
+    }
+  };
+
+  // Initialize Leaflet Map with Canvas acceleration & smooth animation
+  useEffect(() => {
+    const container = mapContainerRef.current;
+    if (!container) return;
+
+    if (mapInstanceRef.current) {
+      try {
+        mapInstanceRef.current.remove();
+      } catch (e) {}
+      mapInstanceRef.current = null;
+    }
+
+    if (container._leaflet_id) {
+      delete container._leaflet_id;
+    }
+
+    try {
+      const initialCenter = [origin?.lat || lat, origin?.lon || lon];
+      const map = L.map(container, {
+        center: initialCenter,
+        zoom: 13,
+        minZoom: 2,
+        maxZoom: 22,
+        zoomControl: false,
+        attributionControl: false,
+        preferCanvas: true, // Hardware-accelerated canvas vector rendering
+        zoomAnimation: true,
+        fadeAnimation: true,
+        markerZoomAnimation: true,
+        wheelDebounceTime: 35,
+        wheelPxPerZoomLevel: 80,
+        zoomSnap: 0.5,
+        zoomDelta: 0.5,
+      });
+
+      const initialCfg = getTileConfig(tileMode);
+      L.tileLayer(initialCfg.url, initialCfg.options).addTo(map);
+
+      mapInstanceRef.current = map;
+
+      // Invalidate map size after DOM layout stabilizes
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 150);
+
+      // Render initial mode layers
+      if (mapMode === 'planner') {
+        if (origin?.lat && destination?.lat) {
+          fetchAndDrawRoutes(origin, destination);
+        }
+      } else {
+        renderTargetMarker(map, lat, lon, name, currentSpeed, congestion);
+      }
+    } catch (err) {
+      console.warn('Leaflet initialization caught:', err);
+    }
+
+    return () => {
+      try {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+        }
+        if (container && container._leaflet_id) {
+          delete container._leaflet_id;
+        }
+      } catch (e) {}
+    };
+  }, []);
+
+  // Invalidate map size when tab becomes visible or window resizes
+  useEffect(() => {
+    if (isVisible && mapInstanceRef.current) {
+      const t1 = setTimeout(() => {
+        if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      }, 200);
+      const t2 = setTimeout(() => {
+        if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      }, 750);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [isVisible]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('focus', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('focus', handleResize);
+    };
+  }, []);
+
+  // Update base tiles smoothly
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    map.eachLayer((layer) => {
+      if (layer instanceof L.TileLayer) {
+        map.removeLayer(layer);
+      }
+    });
+
+    const cfg = getTileConfig(tileMode);
+    L.tileLayer(cfg.url, cfg.options).addTo(map);
+
+    setTimeout(() => map.invalidateSize(), 100);
+  }, [tileMode]);
+
+  // Sync with global currentLocation updates
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !currentLocation?.lat || !currentLocation?.lon) return;
+
+    const newCenter = {
+      name: currentLocation.name || "Selected Location",
+      lat: currentLocation.lat,
+      lon: currentLocation.lon
+    };
+
+    if (mapMode === 'telemetry') {
+      map.flyTo([currentLocation.lat, currentLocation.lon], 14, {
+        animate: true,
+        duration: 1.0,
+      });
+      renderTargetMarker(map, currentLocation.lat, currentLocation.lon, currentLocation.name, currentLocation.currentSpeed || 42, currentLocation.congestionPct || 35);
+    } else {
+      setOrigin(newCenter);
+      setOriginInput(newCenter.name);
+      if (destination?.lat) {
+        fetchAndDrawRoutes(newCenter, destination);
+      } else {
+        clearRouteLayers();
+        setRoutesData(null);
+        map.flyTo([newCenter.lat, newCenter.lon], 13, { animate: true, duration: 0.8 });
+      }
+    }
+  }, [currentLocation?.lat, currentLocation?.lon, currentLocation?.name]);
+
+  // Mode change handler
+  const handleModeChange = (newMode) => {
+    setMapMode(newMode);
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    setTimeout(() => map.invalidateSize(), 100);
+
+    if (newMode === 'telemetry') {
+      clearRouteLayers();
+      renderTargetMarker(map, lat, lon, name, currentSpeed, congestion);
+      map.flyTo([lat, lon], 14, { animate: true, duration: 0.8 });
+    } else {
+      if (targetMarkerRef.current) {
+        try {
+          if (map.hasLayer(targetMarkerRef.current)) map.removeLayer(targetMarkerRef.current);
+        } catch (e) {}
+        targetMarkerRef.current = null;
+      }
+      if (routesData) {
+        drawRoutesOnMap(routesData, selectedRouteId);
+      } else if (origin?.lat && destination?.lat) {
+        fetchAndDrawRoutes(origin, destination);
+      }
+    }
+  };
+
+  // Swap Origin and Destination
+  const handleSwapLocations = () => {
+    if (!origin && !destination) return;
+    const nextOrigin = destination ? { ...destination } : null;
+    const nextDest = origin ? { ...origin } : null;
+    setOrigin(nextOrigin);
+    setDestination(nextDest);
+    setOriginInput(nextOrigin?.name || '');
+    setDestInput(nextDest?.name || '');
+    setOriginSuggestions([]);
+    setDestSuggestions([]);
+    if (nextOrigin?.lat && nextDest?.lat) {
+      fetchAndDrawRoutes(nextOrigin, nextDest);
+    } else {
+      clearRouteLayers();
+      setRoutesData(null);
+    }
+  };
+
+  // Debounced search for Origin input
+  const originTimerRef = useRef(null);
+  const handleOriginInputChange = (val) => {
+    setOriginInput(val);
+    setActiveSearchField('origin');
+    if (originTimerRef.current) clearTimeout(originTimerRef.current);
+
+    if (!val.trim()) {
+      setOriginSuggestions([]);
+      return;
+    }
+
+    originTimerRef.current = setTimeout(async () => {
+      setIsSearchingOrigin(true);
+      const results = await searchLocations(val);
+      setOriginSuggestions(results || []);
+      setIsSearchingOrigin(false);
+    }, 250);
+  };
+
+  // Debounced search for Destination input
+  const destTimerRef = useRef(null);
+  const handleDestInputChange = (val) => {
+    setDestInput(val);
+    setActiveSearchField('dest');
+    if (destTimerRef.current) clearTimeout(destTimerRef.current);
+
+    if (!val.trim()) {
+      setDestSuggestions([]);
+      return;
+    }
+
+    destTimerRef.current = setTimeout(async () => {
+      setIsSearchingDest(true);
+      const results = await searchLocations(val);
+      setDestSuggestions(results || []);
+      setIsSearchingDest(false);
+    }, 250);
+  };
+
+  // Select Origin
+  const handleSelectOrigin = (place) => {
+    const newOrigin = { name: place.name, lat: place.lat, lon: place.lon };
+    setOrigin(newOrigin);
+    setOriginInput(place.name);
+    setOriginSuggestions([]);
+    setActiveSearchField(null);
+    if (destination?.lat && destination?.lon) {
+      fetchAndDrawRoutes(newOrigin, destination);
+    } else {
+      clearRouteLayers();
+      setRoutesData(null);
+      mapInstanceRef.current?.flyTo([newOrigin.lat, newOrigin.lon], 13);
+    }
+  };
+
+  // Select Destination
+  const handleSelectDest = (place) => {
+    const newDest = { name: place.name, lat: place.lat, lon: place.lon };
+    setDestination(newDest);
+    setDestInput(place.name);
+    setDestSuggestions([]);
+    setActiveSearchField(null);
+    if (origin?.lat && origin?.lon) {
+      fetchAndDrawRoutes(origin, newDest);
+    } else {
+      clearRouteLayers();
+      setRoutesData(null);
+      mapInstanceRef.current?.flyTo([newDest.lat, newDest.lon], 13);
+    }
+  };
+
+  // Keydown Enter handler for Origin
+  const handleOriginKeyDown = async (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (originSuggestions.length > 0) {
+        handleSelectOrigin(originSuggestions[0]);
+      } else if (originInput.trim()) {
+        setIsSearchingOrigin(true);
+        const results = await searchLocations(originInput);
+        setIsSearchingOrigin(false);
+        if (results && results.length > 0) {
+          handleSelectOrigin(results[0]);
+        }
+      }
+    }
+  };
+
+  // Keydown Enter handler for Destination
+  const handleDestKeyDown = async (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (destSuggestions.length > 0) {
+        handleSelectDest(destSuggestions[0]);
+      } else if (destInput.trim()) {
+        setIsSearchingDest(true);
+        const results = await searchLocations(destInput);
+        setIsSearchingDest(false);
+        if (results && results.length > 0) {
+          handleSelectDest(results[0]);
+        }
+      }
+    }
+  };
+
+  // Single location search (for Telemetry mode)
+  const handleSingleSearchSubmit = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    const results = await searchLocations(searchQuery);
+    setSearchResults(results || []);
+    setIsSearching(false);
+  };
+
+  const handleSelectSearchedResult = async (res) => {
+    setSearchResults([]);
+    setSearchQuery('');
+    setIsSearching(true);
+    const raw = await getLocationTraffic(res.lat, res.lon, res.name, '15m');
+    const fullTelemetry = generateLocationTelemetry(res, raw);
+    setIsSearching(false);
+
+    if (onLocationChange) onLocationChange(fullTelemetry);
+    if (mapMode === 'planner') {
+      handleSelectDest(res);
+    }
+  };
+
+  const handleRecenter = () => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    if (mapMode === 'telemetry') {
+      map.flyTo([lat, lon], 14, { animate: true, duration: 0.8 });
+    } else if (routesData && routePolylinesRef.current.length > 0) {
+      try {
+        const activePoly = routePolylinesRef.current[routePolylinesRef.current.length - 1];
+        if (activePoly && activePoly.getBounds().isValid()) {
+          map.fitBounds(activePoly.getBounds(), { padding: [50, 50], animate: true, duration: 0.8 });
+        }
+      } catch (e) {}
+    }
+  };
+
+  return (
+    <div className="relative w-full h-[600px] sm:h-[660px] lg:h-[700px] rounded-3xl overflow-hidden bg-slate-900 border border-slate-200/90 shadow-premium flex flex-col">
+      {/* Top Header Controls Bar */}
+      <div className="p-3 sm:p-4 bg-[#FFFDF9]/75 backdrop-blur-xl border-b border-[#EADBCE]/70 flex flex-wrap items-center justify-between gap-3 z-20">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE] shadow-sm">
+            <Route className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-extrabold text-[#2C1810] tracking-tight">
+                {mapMode === 'planner' ? 'Point-to-Point Trip & Route Navigation' : 'Live GIS Traffic Grid'}
+              </h3>
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#EAF2EC] text-[#2D6A4F] flex items-center gap-1 border border-[#C4DFC8]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F] animate-pulse"></span>
+                {routesData?.data_source ? routesData.data_source : 'TomTom Real-Time Vector Engine'}
+              </span>
+            </div>
+            <p className="text-xs text-[#7D5138] truncate max-w-[280px] sm:max-w-md">
+              {mapMode === 'planner' 
+                ? (origin?.name && destination?.name 
+                    ? `${origin.name.split(',')[0]} ➔ ${destination.name.split(',')[0]}`
+                    : 'Search starting point and destination to map routes')
+                : `Tracking: ${name}`}
+            </p>
+          </div>
+        </div>
+
+        {/* Global Single Search (Available in Telemetry Mode) */}
+        {mapMode === 'telemetry' && (
+          <div className="relative min-w-[240px] sm:min-w-[280px]">
+            <form onSubmit={handleSingleSearchSubmit} className="flex gap-1.5">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Search any city or address..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#F5EFEB]/90 hover:bg-[#FFFDF9] border border-[#EADBCE] text-[#2C1810] text-xs font-medium rounded-xl pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#5C331E]/20 focus:bg-[#FFFDF9] transition-all placeholder:text-[#9C6D52]/60"
+                />
+                <Search className="w-3.5 h-3.5 text-[#9C6D52] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+              <button
+                type="submit"
+                disabled={isSearching || !searchQuery.trim()}
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#5C331E] to-[#422213] hover:from-[#4A2818] hover:to-[#361A0E] text-[#FFFDF9] text-xs font-semibold disabled:opacity-50 transition-colors"
+              >
+                {isSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Find'}
+              </button>
+            </form>
+
+            {/* Autocomplete Dropdown */}
+            {searchResults.length > 0 && (
+              <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFDF9]/95 backdrop-blur-2xl border border-[#EADBCE] rounded-2xl shadow-float z-50 max-h-56 overflow-y-auto divide-y divide-[#EADBCE]/50">
+                <div className="p-2 bg-[#F5EFEB] text-[10px] font-bold uppercase tracking-wider text-[#7D5138] flex justify-between items-center">
+                  <span>Select Target Coordinates</span>
+                  <button onClick={() => setSearchResults([])}><X className="w-3 h-3 text-[#7D5138]" /></button>
+                </div>
+                {searchResults.map((res, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleSelectSearchedResult(res)}
+                    className="w-full p-2.5 text-left hover:bg-[#F5EFEB] transition-colors flex flex-col"
+                  >
+                    <span className="text-xs font-semibold text-[#2C1810] truncate">{res.name}</span>
+                    <span className="text-[10px] text-[#7D5138] truncate">{res.address}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mode Switcher & HD Retina Tile Selectors */}
+        <div className="flex items-center gap-2">
+          {/* Planner vs Telemetry toggle */}
+          <div className="flex items-center bg-[#F5EFEB] p-1 rounded-2xl border border-[#EADBCE]/70">
+            <button
+              onClick={() => handleModeChange('planner')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
+                mapMode === 'planner'
+                  ? 'bg-[#5C331E] text-[#FFFDF9] shadow-sm shadow-[#3D2317]/25'
+                  : 'text-[#7D5138] hover:text-[#2C1810]'
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5" />
+              Route Planner
+            </button>
+            <button
+              onClick={() => handleModeChange('telemetry')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
+                mapMode === 'telemetry'
+                  ? 'bg-[#5C331E] text-[#FFFDF9] shadow-sm shadow-[#3D2317]/25'
+                  : 'text-[#7D5138] hover:text-[#2C1810]'
+              }`}
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              Area Telemetry
+            </button>
+          </div>
+
+          {/* 100% Watermark-Free HD GIS Basemaps */}
+          <div className="flex items-center bg-[#F5EFEB] p-1 rounded-xl border border-[#EADBCE]/70">
+            <button
+              onClick={() => setTileMode('osm')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                tileMode === 'osm' ? 'bg-[#FFFDF9] text-[#5C331E] font-bold shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+              }`}
+              title="Ultra-detailed OpenStreetMap with street & building details (zoom up to 22)"
+            >
+              OSM Streets
+            </button>
+            <button
+              onClick={() => setTileMode('satellite')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                tileMode === 'satellite' ? 'bg-[#FFFDF9] text-[#5C331E] font-bold shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+              }`}
+              title="Photorealistic Satellite Imagery (zoom up to 22)"
+            >
+              Satellite HD
+            </button>
+            <button
+              onClick={() => setTileMode('esri_streets')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                tileMode === 'esri_streets' ? 'bg-[#FFFDF9] text-[#5C331E] font-bold shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+              }`}
+              title="Esri World Street Map (zoom up to 22)"
+            >
+              Esri Streets
+            </button>
+            <button
+              onClick={() => setTileMode('esri_canvas')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                tileMode === 'esri_canvas' ? 'bg-[#FFFDF9] text-[#5C331E] font-bold shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+              }`}
+              title="Minimalist light canvas (zoom up to 22)"
+            >
+              Clean Canvas
+            </button>
+            <button
+              onClick={() => setTileMode('tomtom')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                tileMode === 'tomtom' ? 'bg-[#FFFDF9] text-[#5C331E] font-bold shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+              }`}
+              title="TomTom Live Vector Tiles"
+            >
+              TomTom Live
+            </button>
+          </div>
+
+          {/* Zoom and Recenter Controls */}
+          <div className="flex items-center gap-1 bg-[#F5EFEB] p-1 rounded-xl border border-[#EADBCE]/70">
+            <button 
+              onClick={() => mapInstanceRef.current?.zoomIn(1)} 
+              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              title="Zoom In (up to level 22)"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => mapInstanceRef.current?.zoomOut(1)} 
+              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              title="Zoom Out"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={handleRecenter} 
+              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#5C331E] transition-all active:scale-95" 
+              title="Recenter Map"
+            >
+              <Crosshair className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Map Body Canvas with Floating Panels */}
+      <div className="relative flex-1 w-full h-full min-h-[480px]">
+        {/* Leaflet Canvas Container */}
+        <div 
+          ref={mapContainerRef} 
+          className="absolute inset-0 w-full h-full" 
+          style={{ minHeight: '480px' }} 
+        />
+
+        {/* ======================================================== */}
+        {/* REDESIGNED 2-LOCATION TRIP & ROUTE PLANNER DOCK PANEL    */}
+        {/* ======================================================== */}
+        {mapMode === 'planner' && (
+          <div className="absolute top-4 left-4 z-[400] w-84 sm:w-96 max-h-[calc(100%-32px)] overflow-y-auto bg-[#FFFDF9]/85 backdrop-blur-2xl rounded-3xl border border-[#EADBCE]/80 shadow-2xl p-4 flex flex-col gap-3 animate-in fade-in slide-in-from-left-4 no-scrollbar">
+            {/* Header toggle for minimizing panel */}
+            <div className="flex items-center justify-between pb-2 border-b border-[#EADBCE]/50">
+              <div className="flex items-center gap-2">
+                <span className="p-1 rounded-lg bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE]">
+                  <Compass className="w-4 h-4" />
+                </span>
+                <span className="text-xs font-extrabold text-[#2C1810] tracking-tight">
+                  Trip Route Planner
+                </span>
+              </div>
+              <button
+                onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
+                className="text-[#7D5138] hover:text-[#2C1810] p-1 rounded-lg hover:bg-[#F5EFEB] transition-colors"
+                title={isPanelCollapsed ? "Expand Panel" : "Collapse Panel"}
+              >
+                {isPanelCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </button>
+            </div>
+
+            {!isPanelCollapsed && (
+              <>
+                {/* 2-Location Inputs Stack with Connector Line & Swap */}
+                <div className="relative space-y-2 p-2.5 rounded-2xl bg-[#F5EFEB]/50 backdrop-blur-md border border-[#EADBCE]/60">
+                  {/* Vertical Route Dotted Connecting Line */}
+                  <div className="absolute left-[26px] top-[26px] bottom-[26px] w-0.5 border-l-2 border-dashed border-[#DFC4B3] pointer-events-none" />
+
+                  {/* Origin (A) Field */}
+                  <div className="relative z-20">
+                    <div className="flex items-center gap-2.5 px-3 py-2 bg-[#FFFDF9]/70 backdrop-blur-sm border border-[#EADBCE] rounded-xl focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 focus-within:border-[#2D6A4F] shadow-sm transition-all">
+                      <div className="w-6 h-6 rounded-full bg-[#2D6A4F] text-[#FFFDF9] text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm shadow-[#2D6A4F]/30">
+                        A
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search starting location..."
+                        value={originInput}
+                        onFocus={() => setActiveSearchField('origin')}
+                        onChange={(e) => handleOriginInputChange(e.target.value)}
+                        onKeyDown={handleOriginKeyDown}
+                        className="w-full bg-transparent text-xs font-semibold text-[#2C1810] placeholder-[#9C6D52]/60 focus:outline-none truncate"
+                      />
+                      {isSearchingOrigin && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7D5138] shrink-0" />}
+                      {originInput && !isSearchingOrigin && (
+                        <button
+                          type="button"
+                          onClick={() => { setOriginInput(''); setOriginSuggestions([]); }}
+                          className="text-[#9C6D52] hover:text-[#2C1810] shrink-0"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Origin Suggestions Dropdown */}
+                    {originSuggestions.length > 0 && activeSearchField === 'origin' && (
+                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFDF9]/95 backdrop-blur-2xl border border-[#EADBCE] rounded-2xl shadow-float z-50 max-h-48 overflow-y-auto divide-y divide-[#EADBCE]/50">
+                        <div className="p-2 bg-[#F5EFEB] text-[10px] font-bold text-[#7D5138] uppercase tracking-wider flex justify-between items-center">
+                          <span>Select Origin</span>
+                          <button onClick={() => setOriginSuggestions([])}><X className="w-3 h-3 text-[#7D5138]" /></button>
+                        </div>
+                        {originSuggestions.map((place, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => handleSelectOrigin(place)}
+                            className="w-full p-2.5 text-left hover:bg-[#EAF2EC] transition-colors flex flex-col"
+                          >
+                            <span className="text-xs font-bold text-[#2C1810] truncate">{place.name}</span>
+                            <span className="text-[10px] text-[#7D5138] truncate">{place.address}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Swap Button Divider */}
+                  <div className="relative flex items-center justify-end pr-3 py-0.5 z-10">
+                    <button
+                      type="button"
+                      onClick={handleSwapLocations}
+                      className="p-1.5 rounded-full bg-[#FFFDF9] border border-[#EADBCE] text-[#5C331E] hover:text-[#2C1810] hover:border-[#5C331E] shadow-sm transition-all hover:scale-105 active:scale-95"
+                      title="Swap Origin and Destination"
+                    >
+                      <ArrowUpDown className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Destination (B) Field */}
+                  <div className="relative z-20">
+                    <div className="flex items-center gap-2.5 px-3 py-2 bg-[#FFFDF9]/70 backdrop-blur-sm border border-[#EADBCE] rounded-xl focus-within:ring-2 focus-within:ring-[#9E2A2B]/20 focus-within:border-[#9E2A2B] shadow-sm transition-all">
+                      <div className="w-6 h-6 rounded-full bg-[#9E2A2B] text-[#FFFDF9] text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm shadow-[#9E2A2B]/30">
+                        B
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search destination location..."
+                        value={destInput}
+                        onFocus={() => setActiveSearchField('dest')}
+                        onChange={(e) => handleDestInputChange(e.target.value)}
+                        onKeyDown={handleDestKeyDown}
+                        className="w-full bg-transparent text-xs font-semibold text-[#2C1810] placeholder-[#9C6D52]/60 focus:outline-none truncate"
+                      />
+                      {isSearchingDest && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7D5138] shrink-0" />}
+                      {destInput && !isSearchingDest && (
+                        <button
+                          type="button"
+                          onClick={() => { setDestInput(''); setDestSuggestions([]); }}
+                          className="text-[#9C6D52] hover:text-[#2C1810] shrink-0"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Destination Suggestions Dropdown */}
+                    {destSuggestions.length > 0 && activeSearchField === 'dest' && (
+                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFDF9]/95 backdrop-blur-2xl border border-[#EADBCE] rounded-2xl shadow-float z-50 max-h-48 overflow-y-auto divide-y divide-[#EADBCE]/50">
+                        <div className="p-2 bg-[#F5EFEB] text-[10px] font-bold text-[#7D5138] uppercase tracking-wider flex justify-between items-center">
+                          <span>Select Destination</span>
+                          <button onClick={() => setDestSuggestions([])}><X className="w-3 h-3 text-[#7D5138]" /></button>
+                        </div>
+                        {destSuggestions.map((place, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => handleSelectDest(place)}
+                            className="w-full p-2.5 text-left hover:bg-[#FBEAEA] transition-colors flex flex-col"
+                          >
+                            <span className="text-xs font-bold text-[#2C1810] truncate">{place.name}</span>
+                            <span className="text-[10px] text-[#7D5138] truncate">{place.address}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Calculate Route Action Button in Chocolate Gradient */}
+                <button
+                  onClick={() => fetchAndDrawRoutes(origin, destination)}
+                  disabled={isCalculatingRoutes || !origin?.lat || !destination?.lat}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#5C331E] via-[#4A2818] to-[#3B1F13] hover:from-[#4A2818] hover:to-[#2C1810] text-[#FFFDF9] text-xs font-bold shadow-md shadow-[#4A2818]/25 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isCalculatingRoutes ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Calculating Multi-Route Options...
+                    </>
+                  ) : (
+                    <>
+                      <Car className="w-4 h-4" />
+                      Calculate Route & Travel Times
+                    </>
+                  )}
+                </button>
+
+                {/* Empty State / Prompt if no routes yet */}
+                {!routesData && (
+                  <div className="p-4 rounded-2xl bg-[#F5EFEB]/50 backdrop-blur-md border border-dashed border-[#EADBCE] text-center space-y-1">
+                    <Route className="w-5 h-5 text-[#9C6D52] mx-auto" />
+                    <p className="text-xs font-bold text-[#2C1810]">No Routes Calculated Yet</p>
+                    <p className="text-[11px] text-[#7D5138] leading-relaxed">
+                      Enter any starting location and destination above, then calculate routes to see real-time flow and alternatives.
+                    </p>
+                  </div>
+                )}
+
+                {/* Route Options Comparison List */}
+                {routesData && routesData.routes && routesData.routes.length > 0 && (
+                  <div className="space-y-2 mt-1">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-[#7D5138] uppercase tracking-wider">
+                      <span>Available Routes ({routesData.routes.length})</span>
+                      <span className="text-[#9C6D52] lowercase font-normal font-mono">
+                        direct {routesData.direct_distance_km} km
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                      {routesData.routes.map((route) => {
+                        const isSelected = route.id === (selectedRouteId || routesData.routes[0].id);
+                        return (
+                          <div
+                            key={route.id}
+                            onClick={() => {
+                              setSelectedRouteId(route.id);
+                              drawRoutesOnMap(routesData, route.id);
+                            }}
+                            className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+                              isSelected
+                                ? 'bg-[#F5EFEB]/90 border-[#5C331E] shadow-sm ring-2 ring-[#5C331E]/20 backdrop-blur-md'
+                                : 'bg-[#FFFDF9]/50 border-[#EADBCE]/60 hover:bg-[#FFFDF9]/80 backdrop-blur-md'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-bold text-[#2C1810] truncate">
+                                {route.name}
+                              </span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                                isSelected 
+                                  ? 'bg-[#5C331E] text-[#FFFDF9]' 
+                                  : 'bg-[#EADBCE] text-[#4E2E1E]'
+                              }`}>
+                                {route.badge}
+                              </span>
+                            </div>
+
+                            {/* Route Metrics: Duration & Distance */}
+                            <div className="mt-2 flex items-baseline justify-between">
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="text-xl font-mono font-black text-[#2C1810]">
+                                  {route.duration_min}
+                                </span>
+                                <span className="text-xs font-bold text-[#7D5138]">min</span>
+                                {route.delay_min > 0 && (
+                                  <span className="text-[10px] font-semibold text-[#C47D3B] ml-1">
+                                    (+{route.delay_min}m delay)
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="text-right">
+                                <span className="text-sm font-mono font-bold text-[#3D2317]">
+                                  {route.distance_km}
+                                </span>
+                                <span className="text-[10px] text-[#7D5138] ml-0.5">km</span>
+                              </div>
+                            </div>
+
+                            {/* Traffic Status Indicator */}
+                            <div className="mt-1.5 flex items-center justify-between text-[10px] pt-1.5 border-t border-[#EADBCE]/60 text-[#7D5138]">
+                              <span className="flex items-center gap-1 font-medium">
+                                <span className={`w-2 h-2 rounded-full ${
+                                  route.traffic_status === 'Optimal Flow' 
+                                    ? 'bg-[#2D6A4F]' 
+                                    : (route.traffic_status === 'Steady Flow' ? 'bg-[#5C331E]' : 'bg-[#C47D3B]')
+                                }`}></span>
+                                {route.traffic_status}
+                              </span>
+                              <span className={`font-semibold ${isSelected ? 'text-[#5C331E]' : 'text-[#9C6D52]'}`}>
+                                {isSelected ? 'Active Route' : 'Click to select'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* SINGLE AREA TELEMETRY HUD (When in 'telemetry' mode)     */}
+        {/* ======================================================== */}
+        {mapMode === 'telemetry' && (
+          <div className="absolute bottom-4 left-4 z-[400] max-w-xs sm:max-w-sm bg-[#FFFDF9]/80 backdrop-blur-2xl rounded-2xl border border-[#EADBCE]/70 shadow-2xl p-3.5 animate-in fade-in slide-in-from-bottom-2">
+            <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-[#EADBCE]/50">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#5C331E] animate-ping"></span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138]">
+                  Target Area Telemetry
+                </span>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-[#5C331E] bg-[#F5EFEB] border border-[#EADBCE] px-1.5 py-0.2 rounded">
+                {lat.toFixed(3)}, {lon.toFixed(3)}
+              </span>
+            </div>
+
+            <h4 className="text-xs font-extrabold text-[#2C1810] truncate mb-2">
+              {name}
+            </h4>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60">
+                <span className="text-[10px] text-[#7D5138] font-medium block">Current Speed</span>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-lg font-mono font-extrabold text-[#2C1810]">
+                    {currentSpeed}
+                  </span>
+                  <span className="text-[10px] font-semibold text-[#7D5138]">km/h</span>
+                </div>
+              </div>
+
+              <div className="p-2 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60">
+                <span className="text-[10px] text-[#7D5138] font-medium block">Congestion Index</span>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-lg font-mono font-extrabold text-[#2C1810]">
+                    {congestion}%
+                  </span>
+                  <span className={`text-[9px] px-1 py-0.2 rounded font-bold ${
+                    congestion > 70 
+                      ? 'bg-[#FBEAEA] text-[#9E2A2B]' 
+                      : 'bg-[#EAF2EC] text-[#2D6A4F]'
+                  }`}>
+                    {congestion > 70 ? 'High' : 'Optimal'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-2 text-[10px] text-[#9C6D52] font-medium flex items-center justify-between">
+              <span className="truncate max-w-[200px]">Source: {currentLocation?.dataSource || 'TomTom GIS Engine'}</span>
+              <span className="text-[#5C331E] font-bold">Live Flow Sync</span>
+            </div>
+          </div>
+        )}
+
+        {/* Floating Route Legend on Bottom Right */}
+        <div className="hidden sm:flex absolute bottom-4 right-4 z-[400] bg-[#FFFDF9]/80 backdrop-blur-md rounded-2xl border border-[#EADBCE]/70 shadow-lg px-3 py-2 items-center gap-3 text-xs font-semibold">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3.5 h-2 rounded-full bg-[#5C331E] shadow-sm shadow-[#5C331E]/40"></span>
+            <span className="text-[#2C1810] text-[11px] font-bold">Selected Route</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3.5 h-1.5 rounded-full bg-[#C49A80]"></span>
+            <span className="text-[#7D5138] text-[11px]">Alternative Path</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#2D6A4F]"></span>
+            <span className="text-[#7D5138] text-[11px]">Origin A</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#9E2A2B]"></span>
+            <span className="text-[#7D5138] text-[11px]">Dest B</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
