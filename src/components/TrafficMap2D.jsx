@@ -735,7 +735,7 @@ export default function TrafficMap2D({
   };
 
   return (
-    <div className="relative w-full h-[600px] sm:h-[660px] lg:h-[700px] rounded-3xl overflow-hidden bg-slate-900 border border-slate-200/90 shadow-premium flex flex-col">
+    <div className="relative w-full h-[620px] sm:h-[680px] lg:h-[720px] rounded-3xl overflow-hidden bg-[#2C1810] border border-[#EADBCE]/70 shadow-premium flex flex-col">
       {/* Top Header Controls Bar */}
       <div className="p-3 sm:p-4 bg-[#FFFDF9]/75 backdrop-blur-xl border-b border-[#EADBCE]/70 flex flex-wrap items-center justify-between gap-3 z-20">
         <div className="flex items-center gap-3">

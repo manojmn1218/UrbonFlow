@@ -1,5 +1,22 @@
 import React, { useState } from 'react';
-import { BarChart3, Clock, Flame, ArrowUpRight, ArrowDownRight, Layers, Activity } from 'lucide-react';
+import { 
+  BarChart3, 
+  Clock, 
+  Flame, 
+  ArrowUpRight, 
+  ArrowDownRight, 
+  Layers, 
+  Activity,
+  Grid,
+  Truck,
+  Bus,
+  Car,
+  Fuel,
+  TrendingDown,
+  CheckCircle2,
+  ShieldAlert,
+  Zap
+} from 'lucide-react';
 import UnifiedSearchBar from './UnifiedSearchBar';
 
 export default function AnalyticsSection({ currentLocation, onLocationChange }) {
@@ -226,6 +243,198 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* DENSE LOWER VIEWPORT SECTION: ARTERIAL CONGESTION HEATMAP & FLEET FLOW */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+        {/* Left: Arterial Heatmap Matrix across Diurnal Windows (7 Cols) */}
+        <div className="lg:col-span-7 bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#EADBCE]/50">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-[#5C331E] text-[#FFFDF9]">
+                  <Grid className="w-4 h-4 text-[#DFC4B3]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#2C1810]">Diurnal Arterial Bottleneck Heatmap</h3>
+                  <p className="text-[11px] text-[#7D5138]">Congestion pressure across diurnal time blocks in {shortName}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-[#7D5138]">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-[#EAF2EC] border border-[#C4DFC8]"></span>&lt;30%</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-[#FDF2E9] border border-[#EADBCE]"></span>30-60%</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-[#FBEAEA] border border-[#F4C7C7]"></span>&gt;60%</span>
+              </div>
+            </div>
+
+            {/* Heatmap Grid */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead>
+                  <tr className="border-b border-[#EADBCE]/60 text-[10px] font-semibold uppercase text-[#7D5138]">
+                    <th className="pb-2 font-bold min-w-[140px]">Corridor</th>
+                    <th className="pb-2 font-bold text-center">Morning Peak<br/><span className="text-[9px] font-normal font-mono lowercase">07:00-10:00</span></th>
+                    <th className="pb-2 font-bold text-center">Midday Steady<br/><span className="text-[9px] font-normal font-mono lowercase">11:00-15:00</span></th>
+                    <th className="pb-2 font-bold text-center">Evening Rush<br/><span className="text-[9px] font-normal font-mono lowercase">16:00-20:00</span></th>
+                    <th className="pb-2 font-bold text-center">Night Flow<br/><span className="text-[9px] font-normal font-mono lowercase">21:00-06:00</span></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#EADBCE]/40">
+                  {((currentLocation?.corridors && currentLocation.corridors.length > 0) 
+                    ? currentLocation.corridors 
+                    : [
+                        { id: 1, name: 'North Arterial Boulevard', speed: 38, delay: '+4m' },
+                        { id: 2, name: 'Central Transit Ring Road', speed: 29, delay: '+9m' },
+                        { id: 3, name: 'Westside Expressway Bypass', speed: 52, delay: '+1m' },
+                        { id: 4, name: 'East Financial Corridor', speed: 24, delay: '+12m' },
+                      ]
+                  ).map((route, rIdx) => {
+                    // Diurnal variation model based on corridor speed
+                    const baseCong = Math.min(85, Math.max(15, Math.round((70 - (route.speed || 40)) * 1.5)));
+                    const morningCong = Math.min(95, Math.round(baseCong * 1.25));
+                    const middayCong = Math.max(15, Math.round(baseCong * 0.75));
+                    const eveningCong = Math.min(98, Math.round(baseCong * 1.4));
+                    const nightCong = Math.max(10, Math.round(baseCong * 0.35));
+
+                    const getCellBadge = (cong) => {
+                      if (cong > 65) return 'bg-[#FBEAEA] text-[#9E2A2B] border-[#F4C7C7]';
+                      if (cong > 35) return 'bg-[#FDF2E9] text-[#C47D3B] border-[#EADBCE]';
+                      return 'bg-[#EAF2EC] text-[#2D6A4F] border-[#C4DFC8]';
+                    };
+
+                    return (
+                      <tr key={route.id || rIdx} className="hover:bg-[#F5EFEB]/40 transition-colors">
+                        <td className="py-2.5 pr-2">
+                          <span className="font-bold text-[#2C1810] block text-xs truncate max-w-[170px]">{route.name}</span>
+                          <span className="text-[10px] text-[#7D5138]">{route.speed} km/h • {route.delay || 'Normal'}</span>
+                        </td>
+                        <td className="py-2.5 px-2 text-center">
+                          <span className={`inline-block px-2 py-1 rounded-lg font-mono font-bold text-xs border ${getCellBadge(morningCong)}`}>
+                            {morningCong}%
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-2 text-center">
+                          <span className={`inline-block px-2 py-1 rounded-lg font-mono font-bold text-xs border ${getCellBadge(middayCong)}`}>
+                            {middayCong}%
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-2 text-center">
+                          <span className={`inline-block px-2 py-1 rounded-lg font-mono font-bold text-xs border ${getCellBadge(eveningCong)}`}>
+                            {eveningCong}%
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-2 text-center">
+                          <span className={`inline-block px-2 py-1 rounded-lg font-mono font-bold text-xs border ${getCellBadge(nightCong)}`}>
+                            {nightCong}%
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="mt-3 pt-2.5 border-t border-[#EADBCE]/50 flex items-center justify-between text-xs text-[#7D5138]">
+            <span>Automated signal pacing balances peak load across adjacent routes</span>
+            <span className="font-mono text-[11px] text-[#5C331E] font-bold">ST-GNN Sensor Grid</span>
+          </div>
+        </div>
+
+        {/* Right: Multimodal Fleet Distribution & Carbon Efficiency (5 Cols) */}
+        <div className="lg:col-span-5 bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#EADBCE]/50">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-[#5C331E] text-[#FFFDF9]">
+                  <Activity className="w-4 h-4 text-[#DFC4B3]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#2C1810]">Multimodal Fleet & Eco Index</h3>
+                  <p className="text-[11px] text-[#7D5138]">Vehicle mix and fuel optimization metrics</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
+                -15.4% Idle
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
+              <div className="p-2.5 rounded-xl bg-[#F5EFEB]/50 border border-[#EADBCE]/60 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-[#FFFDF9] text-[#5C331E] border border-[#EADBCE]">
+                    <Car className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-[#2C1810] block">Private Passenger Vehicles</span>
+                    <span className="text-[10px] text-[#7D5138]">Avg 42.4 km/h • 1,420 veh/hr peak</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="font-mono font-extrabold text-[#2C1810] text-sm">64%</span>
+                  <span className="text-[10px] text-[#7D5138] block">Volume</span>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-[#F5EFEB]/50 border border-[#EADBCE]/60 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-[#FFFDF9] text-[#C47D3B] border border-[#EADBCE]">
+                    <Truck className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-[#2C1810] block">Commercial Logistics Freight</span>
+                    <span className="text-[10px] text-[#7D5138]">Avg 34.8 km/h • Off-peak windowed</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="font-mono font-extrabold text-[#C47D3B] text-sm">22%</span>
+                  <span className="text-[10px] text-[#7D5138] block">Volume</span>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-[#F5EFEB]/50 border border-[#EADBCE]/60 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-[#FFFDF9] text-[#2D6A4F] border border-[#EADBCE]">
+                    <Bus className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-[#2C1810] block">Public Transit & Micro-Mobility</span>
+                    <span className="text-[10px] text-[#7D5138]">TSP signal priority headway +18%</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="font-mono font-extrabold text-[#2D6A4F] text-sm">14%</span>
+                  <span className="text-[10px] text-[#7D5138] block">Volume</span>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-[#EAF2EC]/60 border border-[#C4DFC8] flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-[#FFFDF9] text-[#2D6A4F] border border-[#C4DFC8]">
+                    <Fuel className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-[#2D6A4F] block">Stop-and-Go Idle Emissions</span>
+                    <span className="text-[10px] text-[#2D6A4F]/80">Pacing saves ~310 kg CO₂ / day</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="font-mono font-extrabold text-[#2D6A4F] text-sm">-15.4%</span>
+                  <span className="text-[10px] text-[#2D6A4F] block">Conserved</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 pt-2.5 border-t border-[#EADBCE]/50 flex items-center justify-between text-xs text-[#7D5138]">
+            <span className="flex items-center gap-1 text-[#2C1810]">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#2D6A4F]" />
+              Eco-Wave Transit Priority Active
+            </span>
+            <span className="font-mono text-[11px] text-[#9C6D52]">EPA Modeled</span>
+          </div>
         </div>
       </div>
     </div>

@@ -1,5 +1,25 @@
 import React, { useState } from 'react';
-import { Cpu, Clock, ChevronDown, TrendingUp, TrendingDown, ShieldCheck, AlertOctagon, Sparkles, RotateCw, Sliders, CheckCircle2, Globe, MapPin } from 'lucide-react';
+import { 
+  Cpu, 
+  Clock, 
+  ChevronDown, 
+  TrendingUp, 
+  TrendingDown, 
+  ShieldCheck, 
+  AlertOctagon, 
+  Sparkles, 
+  RotateCw, 
+  Sliders, 
+  CheckCircle2, 
+  Globe, 
+  MapPin,
+  Play,
+  Zap,
+  ArrowRight,
+  Shield,
+  Layers,
+  ArrowUpRight
+} from 'lucide-react';
 import UnifiedSearchBar from './UnifiedSearchBar';
 import { getLocationTraffic } from '../services/api';
 import { generateLocationTelemetry } from '../services/trafficGenerator';
@@ -13,6 +33,16 @@ export default function AiPredictionsSection({
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationSuccess, setSimulationSuccess] = useState(false);
   const [latencyMs, setLatencyMs] = useState('16.4ms');
+  const [activePolicies, setActivePolicies] = useState({
+    greenWave: true,
+    vsl: true,
+    rampMetering: false,
+    corridorDiversion: true,
+  });
+
+  const togglePolicy = (policyKey) => {
+    setActivePolicies(prev => ({ ...prev, [policyKey]: !prev[policyKey] }));
+  };
 
   const shortName = currentLocation?.shortName || "Selected Area";
   const currentSpeed = currentLocation?.currentSpeed || 42.0;
@@ -303,6 +333,129 @@ export default function AiPredictionsSection({
             <div className="mt-3 flex items-center justify-between text-xs text-[#7D5138]">
               <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#5C331E]"></span>Predicted velocity trajectory</span>
               <span className="font-mono text-[11px] text-[#9C6D52]">Telemetry: {currentLocation?.dataSource || "Live"}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* DENSE LOWER VIEWPORT SECTION: AUTONOMOUS MITIGATION POLICY SIMULATION DECK */}
+        <div className="mt-3.5 pt-3.5 border-t border-[#EADBCE]/50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-[#5C331E] text-[#FFFDF9]">
+                <Layers className="w-4 h-4 text-[#DFC4B3]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#2C1810]">Autonomous Mitigation Policy Simulation Deck</h3>
+                <p className="text-[11px] text-[#7D5138]">Real-time scenario testing for automated signal and flow intervention</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-[#7D5138] font-medium">Active Interventions:</span>
+              <span className="font-mono font-bold text-[#2D6A4F] bg-[#EAF2EC] px-2 py-0.5 rounded-md border border-[#C4DFC8]">
+                {Object.values(activePolicies).filter(Boolean).length} / 4 Engaged
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Policy 1: Green Wave */}
+            <div 
+              onClick={() => togglePolicy('greenWave')}
+              className={`p-3 rounded-2xl border transition-all cursor-pointer backdrop-blur-md ${
+                activePolicies.greenWave 
+                  ? 'bg-[#EAF2EC]/70 border-[#2D6A4F]/40 shadow-sm' 
+                  : 'bg-[#F5EFEB]/40 border-[#EADBCE]/60 opacity-70'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138]">Strategy #1</span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                  activePolicies.greenWave ? 'bg-[#2D6A4F] text-[#FFFDF9]' : 'bg-[#EADBCE] text-[#7D5138]'
+                }`}>
+                  {activePolicies.greenWave ? 'Engaged' : 'Standby'}
+                </span>
+              </div>
+              <h4 className="text-xs font-bold text-[#2C1810]">Coordinated Green Wave</h4>
+              <p className="text-[10px] text-[#7D5138] mt-1">Extends phase timing by +14s along primary arterial to dissipate platoons.</p>
+              <div className="mt-2 pt-2 border-t border-[#EADBCE]/60 flex items-center justify-between text-[11px]">
+                <span className="text-[#7D5138]">Queue Delay</span>
+                <span className="font-mono font-bold text-[#2D6A4F]">-24% Drop</span>
+              </div>
+            </div>
+
+            {/* Policy 2: VSL Dynamic Speed */}
+            <div 
+              onClick={() => togglePolicy('vsl')}
+              className={`p-3 rounded-2xl border transition-all cursor-pointer backdrop-blur-md ${
+                activePolicies.vsl 
+                  ? 'bg-[#EAF2EC]/70 border-[#2D6A4F]/40 shadow-sm' 
+                  : 'bg-[#F5EFEB]/40 border-[#EADBCE]/60 opacity-70'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138]">Strategy #2</span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                  activePolicies.vsl ? 'bg-[#2D6A4F] text-[#FFFDF9]' : 'bg-[#EADBCE] text-[#7D5138]'
+                }`}>
+                  {activePolicies.vsl ? 'Engaged' : 'Standby'}
+                </span>
+              </div>
+              <h4 className="text-xs font-bold text-[#2C1810]">Dynamic Speed Harmonization</h4>
+              <p className="text-[10px] text-[#7D5138] mt-1">Harmonizes inbound speed to 45 km/h to prevent shockwave propagation.</p>
+              <div className="mt-2 pt-2 border-t border-[#EADBCE]/60 flex items-center justify-between text-[11px]">
+                <span className="text-[#7D5138]">Shockwave Risk</span>
+                <span className="font-mono font-bold text-[#2D6A4F]">-88% Mitigated</span>
+              </div>
+            </div>
+
+            {/* Policy 3: Ramp Metering */}
+            <div 
+              onClick={() => togglePolicy('rampMetering')}
+              className={`p-3 rounded-2xl border transition-all cursor-pointer backdrop-blur-md ${
+                activePolicies.rampMetering 
+                  ? 'bg-[#EAF2EC]/70 border-[#2D6A4F]/40 shadow-sm' 
+                  : 'bg-[#F5EFEB]/40 border-[#EADBCE]/60 opacity-70'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138]">Strategy #3</span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                  activePolicies.rampMetering ? 'bg-[#2D6A4F] text-[#FFFDF9]' : 'bg-[#EADBCE] text-[#7D5138]'
+                }`}>
+                  {activePolicies.rampMetering ? 'Engaged' : 'Standby'}
+                </span>
+              </div>
+              <h4 className="text-xs font-bold text-[#2C1810]">Adaptive Ramp Metering</h4>
+              <p className="text-[10px] text-[#7D5138] mt-1">Regulates merge ingress to 16 veh/min to preserve expressway capacity.</p>
+              <div className="mt-2 pt-2 border-t border-[#EADBCE]/60 flex items-center justify-between text-[11px]">
+                <span className="text-[#7D5138]">Mainline Speed</span>
+                <span className="font-mono font-bold text-[#2D6A4F]">+8.2 km/h</span>
+              </div>
+            </div>
+
+            {/* Policy 4: Corridor Diversion */}
+            <div 
+              onClick={() => togglePolicy('corridorDiversion')}
+              className={`p-3 rounded-2xl border transition-all cursor-pointer backdrop-blur-md ${
+                activePolicies.corridorDiversion 
+                  ? 'bg-[#EAF2EC]/70 border-[#2D6A4F]/40 shadow-sm' 
+                  : 'bg-[#F5EFEB]/40 border-[#EADBCE]/60 opacity-70'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138]">Strategy #4</span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                  activePolicies.corridorDiversion ? 'bg-[#2D6A4F] text-[#FFFDF9]' : 'bg-[#EADBCE] text-[#7D5138]'
+                }`}>
+                  {activePolicies.corridorDiversion ? 'Engaged' : 'Standby'}
+                </span>
+              </div>
+              <h4 className="text-xs font-bold text-[#2C1810]">VMS Corridor Diversion</h4>
+              <p className="text-[10px] text-[#7D5138] mt-1">Re-routes 14% of non-local through traffic via dynamic digital signs.</p>
+              <div className="mt-2 pt-2 border-t border-[#EADBCE]/60 flex items-center justify-between text-[11px]">
+                <span className="text-[#7D5138]">Corridor Load</span>
+                <span className="font-mono font-bold text-[#2D6A4F]">-18% Volume</span>
+              </div>
             </div>
           </div>
         </div>

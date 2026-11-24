@@ -85,38 +85,104 @@ export default function App() {
       label: 'Live GIS Map',
       icon: Map,
       component: (
-        <div className="space-y-3">
+        <div className="space-y-3.5">
+          <UnifiedSearchBar 
+            currentLocation={activeLocation} 
+            onLocationChange={setActiveLocation} 
+          />
+
           <TrafficMap2D 
             currentLocation={activeLocation}
             onLocationChange={setActiveLocation}
             isVisible={currentWindowIndex === 1}
           />
 
-          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 rounded-2xl border border-[#EADBCE]/70 shadow-premium">
-            <div className="flex items-center justify-between mb-2 px-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138]">
-                Connected Arterial Corridors ({activeLocation?.shortName || "Active Area"})
-              </span>
-              <span className="text-[10px] font-mono text-[#9C6D52]">Real-Time Speed & Delays</span>
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-              {(activeLocation?.corridors || []).map((route) => (
-                <div key={route.id} className="p-2.5 rounded-xl border border-[#EADBCE]/60 bg-[#F5EFEB]/50 backdrop-blur-md flex items-center justify-between gap-2 shadow-2xs hover:bg-[#FFFDF9]/80 transition-all">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${route.colorClass}`}></span>
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-[#2C1810] truncate">{route.name}</h4>
-                      <span className="text-[10px] text-[#7D5138]">{route.length}</span>
+          {/* DENSE TELEMETRY & OPERATIONS STRIP UNDER MAP */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+            {/* Left 7 Cols: Connected Arterial Corridors */}
+            <div className="lg:col-span-7 bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#EADBCE]/50">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138]">
+                    Connected Arterial Corridors ({activeLocation?.shortName || "Active Area"})
+                  </span>
+                  <span className="text-[10px] font-mono text-[#9C6D52]">Real-Time Velocity & Delays</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {(activeLocation?.corridors || [
+                    { id: 1, name: 'Main Expressway', speed: 48, length: '6.4 km', delay: '+2m', colorClass: 'bg-emerald-500' },
+                    { id: 2, name: 'Central Boulevard', speed: 32, length: '4.8 km', delay: '+6m', colorClass: 'bg-amber-500' },
+                    { id: 3, name: 'North Ring Road', speed: 54, length: '9.2 km', delay: 'Normal', colorClass: 'bg-emerald-500' },
+                    { id: 4, name: 'Financial Dist Ave', speed: 22, length: '3.1 km', delay: '+11m', colorClass: 'bg-red-500' },
+                  ]).map((route) => (
+                    <div key={route.id} className="p-3 rounded-xl border border-[#EADBCE]/60 bg-[#F5EFEB]/50 backdrop-blur-md flex items-center justify-between gap-2 shadow-2xs hover:bg-[#FFFDF9]/80 transition-all">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className={`w-3 h-3 rounded-full flex-shrink-0 ${route.colorClass || 'bg-[#5C331E]'}`}></span>
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-bold text-[#2C1810] truncate">{route.name}</h4>
+                          <span className="text-[10px] text-[#7D5138]">{route.length}</span>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-xs font-mono font-bold text-[#3D2317] block">{route.speed} km/h</span>
+                        <span className={`text-[10px] font-bold ${route.status === 'Severe' ? 'text-[#9E2A2B]' : route.status === 'Heavy' ? 'text-[#C47D3B]' : 'text-[#2D6A4F]'}`}>
+                          {route.delay}
+                        </span>
+                      </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-[#EADBCE]/50 flex items-center justify-between text-xs text-[#7D5138]">
+                <span>Corridor speed profiles updated every 15s</span>
+                <span className="font-mono text-[11px] text-[#5C331E] font-bold">TomTom Telemetry</span>
+              </div>
+            </div>
+
+            {/* Right 5 Cols: Live Sector Operations & Incident Alert Feed */}
+            <div className="lg:col-span-5 bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#EADBCE]/50">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#2D6A4F] animate-pulse"></span>
+                    <h4 className="text-xs font-bold text-[#2C1810]">Metropolitan Operations HUD</h4>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <span className="text-xs font-mono font-bold text-[#3D2317] block">{route.speed} km/h</span>
-                    <span className={`text-[10px] font-bold ${route.status === 'Severe' ? 'text-[#9E2A2B]' : route.status === 'Heavy' ? 'text-[#C47D3B]' : 'text-[#2D6A4F]'}`}>
-                      {route.delay}
-                    </span>
+                  <span className="text-[10px] font-mono text-[#2D6A4F] font-bold bg-[#EAF2EC] px-1.5 py-0.2 rounded border border-[#C4DFC8]">
+                    100% Online
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="p-2.5 rounded-xl bg-[#F5EFEB]/50 border border-[#EADBCE]/60 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-[#2C1810] block">Signal Controllers Sync</span>
+                      <span className="text-[10px] text-[#7D5138]">12 Adaptive SCATS Nodes • 90s Cycle</span>
+                    </div>
+                    <span className="font-mono font-bold text-[#2D6A4F] text-xs">Synched</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-[#F5EFEB]/50 border border-[#EADBCE]/60 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-[#2C1810] block">Dynamic VMS Pacing Advisory</span>
+                      <span className="text-[10px] text-[#7D5138]">Broadcast: Maintain 45 km/h green wave</span>
+                    </div>
+                    <span className="font-mono font-bold text-[#5C331E] text-xs">Broadcasting</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-[#FDF2E9]/60 border border-[#EADBCE] flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-[#C47D3B] block">Sector Roadway Incidents</span>
+                      <span className="text-[10px] text-[#7D5138]">0 Critical Blocks • Normal Flow Pacing</span>
+                    </div>
+                    <span className="font-mono font-bold text-[#C47D3B] text-xs">Optimal</span>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              <div className="mt-3 pt-2.5 border-t border-[#EADBCE]/50 flex items-center justify-between text-xs text-[#7D5138]">
+                <span>Probe Pings: 1,420 pkts/s</span>
+                <span className="font-mono text-[11px] text-[#9C6D52]">Latency: 14ms</span>
+              </div>
             </div>
           </div>
         </div>

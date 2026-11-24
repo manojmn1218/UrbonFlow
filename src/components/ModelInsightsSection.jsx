@@ -7,7 +7,17 @@ import {
   CheckCircle2, 
   Layers, 
   ArrowUpRight,
-  TrendingDown
+  TrendingDown,
+  Cpu,
+  Server,
+  Gauge,
+  RefreshCw,
+  BarChart2,
+  ShieldCheck,
+  GitFork,
+  Radio,
+  Sliders,
+  Sparkles
 } from 'lucide-react';
 import UnifiedSearchBar from './UnifiedSearchBar';
 
@@ -183,6 +193,166 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
             <span>Hover over nodes to inspect prediction delta & variance</span>
           )}
           <span className="font-mono text-[11px] text-[#9C6D52]">R² = {modelMetrics.r2Score?.value || "0.968"}</span>
+        </div>
+      </div>
+
+      {/* DENSE LOWER VIEWPORT SECTION: GRAPH TOPOLOGY & HARDWARE BENCHMARKS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+        {/* Card 1: Spatial-Temporal Graph Topology & Sparsity */}
+        <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#EADBCE]/50">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-[#5C331E] text-[#FFFDF9]">
+                  <GitFork className="w-4 h-4 text-[#DFC4B3]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#2C1810]">ST-GNN Graph Topology & Sparsity</h3>
+                  <p className="text-[11px] text-[#7D5138]">Spatial node adjacency and diffusion receptive field</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
+                Normalized
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+              <div className="p-2.5 rounded-xl bg-[#F5EFEB]/60 border border-[#EADBCE]/60">
+                <span className="text-[10px] uppercase font-semibold text-[#7D5138] block">Graph Vertices</span>
+                <span className="text-lg font-mono font-extrabold text-[#2C1810] block mt-0.5">1,024</span>
+                <span className="text-[10px] text-[#2D6A4F] font-medium">Intersections</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#F5EFEB]/60 border border-[#EADBCE]/60">
+                <span className="text-[10px] uppercase font-semibold text-[#7D5138] block">Edge Sparsity</span>
+                <span className="text-lg font-mono font-extrabold text-[#2C1810] block mt-0.5">4.82%</span>
+                <span className="text-[10px] text-[#5C331E] font-medium">Adjacency</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#F5EFEB]/60 border border-[#EADBCE]/60">
+                <span className="text-[10px] uppercase font-semibold text-[#7D5138] block">Chebyshev (K)</span>
+                <span className="text-lg font-mono font-extrabold text-[#2C1810] block mt-0.5">K = 3</span>
+                <span className="text-[10px] text-[#7D5138] font-medium">Diffusion Hops</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#F5EFEB]/60 border border-[#EADBCE]/60">
+                <span className="text-[10px] uppercase font-semibold text-[#7D5138] block">Attention Heads</span>
+                <span className="text-lg font-mono font-extrabold text-[#2C1810] block mt-0.5">8 Heads</span>
+                <span className="text-[10px] text-[#2D6A4F] font-medium">Self-Attention</span>
+              </div>
+            </div>
+
+            {/* Topology Layer Architecture Flow */}
+            <div className="space-y-2">
+              <div className="p-2.5 rounded-xl bg-[#F5EFEB]/40 border border-[#EADBCE]/50 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#5C331E]"></span>
+                  <span className="font-semibold text-[#2C1810]">Spatial Diffusion Convolution (ChebNet)</span>
+                </div>
+                <span className="font-mono text-[11px] text-[#7D5138]">64 Channels • Receptive 3-hop</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#F5EFEB]/40 border border-[#EADBCE]/50 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#C47D3B]"></span>
+                  <span className="font-semibold text-[#2C1810]">Gated Recurrent Temporal Convolution (Gated TCN)</span>
+                </div>
+                <span className="font-mono text-[11px] text-[#7D5138]">12 Timesteps (60 min historical)</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#F5EFEB]/40 border border-[#EADBCE]/50 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#2D6A4F]"></span>
+                  <span className="font-semibold text-[#2C1810]">Multi-Head Spatial-Temporal Self-Attention</span>
+                </div>
+                <span className="font-mono text-[11px] text-[#7D5138]">8 Heads • Dynamic Node Pacing</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3.5 pt-2.5 border-t border-[#EADBCE]/50 flex items-center justify-between text-xs text-[#7D5138]">
+            <span className="flex items-center gap-1.5 text-[#2C1810]">
+              <Radio className="w-3.5 h-3.5 text-[#2D6A4F] animate-pulse" />
+              Continuous Graph Laplacian Updates: Active
+            </span>
+            <span className="font-mono text-[11px] text-[#9C6D52]">Lambda max: 2.000</span>
+          </div>
+        </div>
+
+        {/* Card 2: Edge Hardware Quantization & Runtime Inference */}
+        <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#EADBCE]/50">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-[#5C331E] text-[#FFFDF9]">
+                  <Gauge className="w-4 h-4 text-[#DFC4B3]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#2C1810]">Edge Inference & Quantization Benchmarks</h3>
+                  <p className="text-[11px] text-[#7D5138]">TensorRT runtime performance & precision profiles</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold bg-[#EADBCE] text-[#4E2E1E]">
+                INT8 Calibrated
+              </span>
+            </div>
+
+            {/* Benchmark Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-[#EADBCE]/60 text-[10px] font-semibold uppercase text-[#7D5138]">
+                    <th className="pb-1.5 font-bold">Precision</th>
+                    <th className="pb-1.5 font-bold">Latency</th>
+                    <th className="pb-1.5 font-bold">VRAM</th>
+                    <th className="pb-1.5 font-bold">Throughput</th>
+                    <th className="pb-1.5 font-bold text-right">Fidelity</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#EADBCE]/40 font-mono text-[11px]">
+                  <tr className="text-[#7D5138]">
+                    <td className="py-2 font-sans font-medium text-[#2C1810]">FP32 Baseline</td>
+                    <td className="py-2">78.5 ms</td>
+                    <td className="py-2">184 MB</td>
+                    <td className="py-2">128 QPS</td>
+                    <td className="py-2 text-right font-bold text-[#2C1810]">100%</td>
+                  </tr>
+                  <tr className="text-[#7D5138]">
+                    <td className="py-2 font-sans font-medium text-[#2C1810]">FP16 Half-Precision</td>
+                    <td className="py-2">34.2 ms</td>
+                    <td className="py-2">92 MB</td>
+                    <td className="py-2">292 QPS</td>
+                    <td className="py-2 text-right font-bold text-[#2D6A4F]">99.9%</td>
+                  </tr>
+                  <tr className="bg-[#EAF2EC]/60 text-[#2D6A4F] font-bold rounded-lg">
+                    <td className="py-2 px-1 font-sans font-bold text-[#2C1810] flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-[#2D6A4F]" />
+                      INT8 TensorRT (Active)
+                    </td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">16.8 ms</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">48.2 MB</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">595 QPS</td>
+                    <td className="py-2 px-1 text-right font-bold text-[#2D6A4F]">99.8%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Model Drift & PSI Strip */}
+            <div className="mt-3 p-2.5 rounded-xl bg-[#F5EFEB]/50 border border-[#EADBCE]/60 flex items-center justify-between text-xs">
+              <div>
+                <span className="font-semibold text-[#2C1810] block">Population Stability Index (PSI)</span>
+                <span className="text-[10px] text-[#7D5138]">Telemetry distribution drift vs 30-day baseline</span>
+              </div>
+              <div className="text-right">
+                <span className="font-mono font-bold text-[#2D6A4F] text-xs">0.018 (Stable)</span>
+                <span className="text-[10px] text-[#9C6D52] block">&lt; 0.10 threshold</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3.5 pt-2.5 border-t border-[#EADBCE]/50 flex items-center justify-between text-xs text-[#7D5138]">
+            <span className="flex items-center gap-1 text-[#2C1810]">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#2D6A4F]" />
+              Zero Divergence Calibration Verified
+            </span>
+            <span className="font-mono text-[11px] text-[#9C6D52]">GPU: RTX / Tensor Core</span>
+          </div>
         </div>
       </div>
     </div>

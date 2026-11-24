@@ -1,5 +1,22 @@
 import React, { useState } from 'react';
-import { Map, BarChart3, Sparkles, Car, Flame, ArrowRight, ChevronRight, Clock, Maximize2 } from 'lucide-react';
+import { 
+  Map, 
+  BarChart3, 
+  Sparkles, 
+  Car, 
+  Flame, 
+  ArrowRight, 
+  ChevronRight, 
+  Clock, 
+  Maximize2,
+  Radio,
+  CheckCircle2,
+  ShieldCheck,
+  Activity,
+  Zap,
+  TrendingDown,
+  Layers
+} from 'lucide-react';
 import CompactAiWorkbench from './CompactAiWorkbench';
 import UnifiedSearchBar from './UnifiedSearchBar';
 
@@ -357,70 +374,138 @@ export default function OverviewCommandDeck({
             onLocationChange={onLocationChange}
           />
 
-          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3.5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex-1 flex flex-col justify-between">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#EADBCE]/50">
-              <div className="flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5 text-[#9E2A2B]" />
-                <h4 className="text-xs font-bold text-[#2C1810]">Critical Congestion Hotspots ({shortName})</h4>
+          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3.5 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#EADBCE]/50">
+                <div className="flex items-center gap-1.5">
+                  <Flame className="w-3.5 h-3.5 text-[#9E2A2B]" />
+                  <h4 className="text-xs font-bold text-[#2C1810]">Critical Congestion Hotspots ({shortName})</h4>
+                </div>
+                <button
+                  onClick={() => onSwitchView('analytics')}
+                  className="text-[11px] font-bold text-[#5C331E] hover:text-[#3D2317] flex items-center gap-0.5"
+                >
+                  <span>All Hotspots</span>
+                  <ChevronRight className="w-3 h-3" />
+                </button>
               </div>
-              <button
-                onClick={() => onSwitchView('analytics')}
-                className="text-[11px] font-bold text-[#5C331E] hover:text-[#3D2317] flex items-center gap-0.5"
-              >
-                <span>All Hotspots</span>
-                <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
-            <div className="space-y-1.5">
-              {hotspots.slice(0, 3).map((hotspot, idx) => (
-                <div key={idx} className="p-2 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className={`w-5 h-5 rounded-md font-mono font-bold flex items-center justify-center text-[10px] flex-shrink-0 ${
-                      idx === 0 ? 'bg-[#FBEAEA] text-[#9E2A2B]' : 'bg-[#FDF2E9] text-[#C47D3B]'
-                    }`}>
-                      #{idx + 1}
-                    </span>
-                    <div className="min-w-0">
-                      <span className="font-bold text-[#2C1810] block text-xs truncate">{hotspot.name}</span>
-                      <span className="text-[10px] text-[#7D5138]">{hotspot.speed} km/h • {hotspot.action}</span>
+              <div className="space-y-1.5">
+                {hotspots.slice(0, 4).map((hotspot, idx) => (
+                  <div key={idx} className="p-2 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={`w-5 h-5 rounded-md font-mono font-bold flex items-center justify-center text-[10px] flex-shrink-0 ${
+                        idx === 0 ? 'bg-[#FBEAEA] text-[#9E2A2B]' : 'bg-[#FDF2E9] text-[#C47D3B]'
+                      }`}>
+                        #{idx + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <span className="font-bold text-[#2C1810] block text-xs truncate">{hotspot.name}</span>
+                        <span className="text-[10px] text-[#7D5138]">{hotspot.speed} km/h • {hotspot.action}</span>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="font-mono font-bold text-[#9E2A2B] text-xs block">{hotspot.trend}</span>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <span className="font-mono font-bold text-[#9E2A2B] text-xs block">{hotspot.trend}</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            {/* Ingestion & Telemetry Health Strip */}
+            <div className="mt-2.5 pt-2 border-t border-[#EADBCE]/50 flex items-center justify-between text-[11px] text-[#7D5138]">
+              <span className="flex items-center gap-1 text-[#2D6A4F] font-semibold">
+                <span className="w-2 h-2 rounded-full bg-[#2D6A4F] animate-pulse"></span>
+                Feed: 1,420 pkts/s
+              </span>
+              <span className="font-mono text-[#9C6D52]">Drift Loss: 0.012</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4. BOTTOM CORRIDOR TELEMETRY ROW */}
-      <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 rounded-2xl border border-[#EADBCE]/70 shadow-premium">
-        <div className="flex items-center justify-between mb-2 px-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138]">
-            Connected Arterial Corridors ({shortName})
-          </span>
-          <span className="text-[10px] font-mono text-[#9C6D52]">Live Velocity & Delay</span>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-          {corridors.map((route) => (
-            <div key={route.id} className="p-2.5 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60 flex items-center justify-between gap-2 shadow-2xs hover:bg-[#FFFDF9]/80 transition-all">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${route.colorClass}`}></span>
-                <div className="min-w-0">
-                  <h5 className="font-bold text-[#2C1810] text-xs truncate">{route.name}</h5>
-                  <span className="text-[10px] text-[#7D5138]">{route.length}</span>
+      {/* 4. BOTTOM CORRIDOR TELEMETRY & NETWORK PACING DECK */}
+      <div className="space-y-3">
+        <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3.5 rounded-2xl border border-[#EADBCE]/70 shadow-premium">
+          <div className="flex items-center justify-between mb-2.5 px-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138]">
+              Connected Arterial Corridors ({shortName})
+            </span>
+            <span className="text-[10px] font-mono text-[#9C6D52]">Live Velocity & Delay</span>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+            {corridors.map((route) => (
+              <div key={route.id} className="p-2.5 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60 flex items-center justify-between gap-2 shadow-2xs hover:bg-[#FFFDF9]/80 transition-all">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${route.colorClass}`}></span>
+                  <div className="min-w-0">
+                    <h5 className="font-bold text-[#2C1810] text-xs truncate">{route.name}</h5>
+                    <span className="text-[10px] text-[#7D5138]">{route.length}</span>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <span className="font-mono font-bold text-[#3D2317] text-xs block">{route.speed} km/h</span>
+                  <span className={`text-[10px] font-bold ${route.status === 'Severe' ? 'text-[#9E2A2B]' : route.status === 'Heavy' ? 'text-[#C47D3B]' : 'text-[#2D6A4F]'}`}>
+                    {route.delay}
+                  </span>
                 </div>
               </div>
-              <div className="text-right flex-shrink-0">
-                <span className="font-mono font-bold text-[#3D2317] text-xs block">{route.speed} km/h</span>
-                <span className={`text-[10px] font-bold ${route.status === 'Severe' ? 'text-[#9E2A2B]' : route.status === 'Heavy' ? 'text-[#C47D3B]' : 'text-[#2D6A4F]'}`}>
-                  {route.delay}
-                </span>
+            ))}
+          </div>
+        </div>
+
+        {/* 5. METROPOLITAN NETWORK PACING & INFRASTRUCTURE TELEMETRY STRIP */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 rounded-2xl border border-[#EADBCE]/70 shadow-subtle flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
+                <Radio className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Signal Headway</span>
+                <span className="text-sm font-mono font-extrabold text-[#2C1810] block">+14s Green Wave</span>
               </div>
             </div>
-          ))}
+            <span className="text-[10px] font-bold text-[#2D6A4F] bg-[#EAF2EC] px-1.5 py-0.5 rounded">Synced</span>
+          </div>
+
+          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 rounded-2xl border border-[#EADBCE]/70 shadow-subtle flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE]">
+                <Activity className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Dynamic VSL</span>
+                <span className="text-sm font-mono font-extrabold text-[#2C1810] block">45 km/h Pacing</span>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold text-[#5C331E] bg-[#F5EFEB] px-1.5 py-0.5 rounded">Active</span>
+          </div>
+
+          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 rounded-2xl border border-[#EADBCE]/70 shadow-subtle flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-[#FDF2E9] text-[#C47D3B] border border-[#EADBCE]">
+                <Zap className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Ramp Ingress</span>
+                <span className="text-sm font-mono font-extrabold text-[#2C1810] block">18 veh / min</span>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold text-[#C47D3B] bg-[#FDF2E9] px-1.5 py-0.5 rounded">Metered</span>
+          </div>
+
+          <div className="bg-[#FFFDF9]/70 backdrop-blur-xl p-3 rounded-2xl border border-[#EADBCE]/70 shadow-subtle flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7D5138] block">Idle Conserved</span>
+                <span className="text-sm font-mono font-extrabold text-[#2C1810] block">-15.4% Emissions</span>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold text-[#2D6A4F] bg-[#EAF2EC] px-1.5 py-0.5 rounded">Eco-Wave</span>
+          </div>
         </div>
       </div>
     </div>
