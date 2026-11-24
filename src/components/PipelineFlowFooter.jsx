@@ -61,7 +61,7 @@ export default function PipelineFlowFooter({
           })}
         </div>
         <span className="text-[10px] font-mono text-[#9C6D52] hidden sm:block">
-          Pipeline Flow: Step {currentIndex + 1} of 5 • Press ← / → or 1-5
+          Pipeline Flow: Step {currentIndex + 1} of 3 • Press ← / → or 1-3
         </span>
       </div>
 

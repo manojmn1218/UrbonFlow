@@ -130,11 +130,11 @@ export default function CommandPaletteModal({
             </span>
             <div className="grid grid-cols-2 gap-1.5 mt-1">
               {[
-                { name: 'Overview Command Cockpit', tab: 'overview', icon: LayoutDashboard },
-                { name: 'Live GIS Traffic Map', tab: 'traffic_map', icon: Map },
-                { name: 'AI Predictive Forecasting', tab: 'predictions', icon: Cpu },
-                { name: 'Traffic Analytics & Heatmap', tab: 'analytics', icon: BarChart3 },
-                { name: 'Model Evaluation & MAE', tab: 'insights', icon: Network },
+                { name: 'Overview Command Deck', tab: 'overview', icon: LayoutDashboard },
+                { name: 'Live GIS Traffic Map & Routing', tab: 'traffic_map', icon: Map },
+                { name: 'AI Studio: Deep Forecasting', tab: 'predictions', icon: Cpu },
+                { name: 'AI Studio: Traffic Analytics & Heatmap', tab: 'analytics', icon: BarChart3 },
+                { name: 'AI Studio: ST-GNN Model Verification', tab: 'insights', icon: Network },
               ].map((item, idx) => {
                 const Icon = item.icon;
                 return (

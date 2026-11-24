@@ -20,11 +20,11 @@ export const PIPELINE_STEPS = [
     index: 0,
     id: 'overview',
     number: '01',
-    phase: 'DATA INGEST',
+    phase: 'DATA INGESTION',
     title: 'Overview Deck',
-    subtitle: 'City Sensor Feeds',
+    subtitle: 'City Sensor Feeds & KPIs',
     icon: LayoutDashboard,
-    badge: 'Live Feeds'
+    badge: 'Live Operations'
   },
   {
     index: 1,
@@ -32,39 +32,19 @@ export const PIPELINE_STEPS = [
     number: '02',
     phase: 'SPATIAL GIS',
     title: 'Live GIS Map',
-    subtitle: 'Point A ➔ B Routing',
+    subtitle: 'Point A ➔ B Routing & Flow',
     icon: Map,
     badge: 'Real-Time Vector'
   },
   {
     index: 2,
-    id: 'predictions',
+    id: 'ai_studio',
     number: '03',
-    phase: 'DEEP LEARNING',
-    title: 'AI Forecasting',
-    subtitle: 'ST-GNN Inference',
+    phase: 'DEEP INTELLIGENCE',
+    title: 'AI Studio & Analytics',
+    subtitle: 'Forecasting, Heatmaps & Validation',
     icon: Cpu,
-    badge: '15m / 30m / 60m'
-  },
-  {
-    index: 3,
-    id: 'analytics',
-    number: '04',
-    phase: 'METRIC ENGINE',
-    title: 'Traffic Analytics',
-    subtitle: 'Peak Trends & Hotspots',
-    icon: BarChart3,
-    badge: '24h Density'
-  },
-  {
-    index: 4,
-    id: 'insights',
-    number: '05',
-    phase: 'VALIDATION',
-    title: 'Model Evaluation',
-    subtitle: 'Graph Topology & Loss',
-    icon: Network,
-    badge: '94.2% Acc'
+    badge: 'Neural Engine'
   }
 ];
 
@@ -87,7 +67,7 @@ export default function PipelineFlowchartNav({
             AI Traffic Engineering Pipeline
           </span>
           <span className="text-[10px] text-[#7D5138] font-mono hidden md:inline">
-            • Flowchart Workflow: Ingestion ➔ GIS Routing ➔ Neural Inference ➔ Analytics ➔ Validation
+            • 3-Stage Workflow: City Ingestion ➔ Spatial GIS Routing ➔ AI Intelligence & Analytics
           </span>
         </div>
 
@@ -104,7 +84,7 @@ export default function PipelineFlowchartNav({
               <ChevronLeft className="w-4 h-4" />
             </button>
             <span className="text-[10px] font-mono font-bold text-[#4E2E1E] bg-[#F5EFEB] border border-[#EADBCE] px-2.5 py-0.5 rounded-full">
-              Stage {currentIndex + 1} of 5: {PIPELINE_STEPS[currentIndex]?.title}
+              Stage {currentIndex + 1} of 3: {PIPELINE_STEPS[currentIndex]?.title}
             </span>
             <button
               type="button"

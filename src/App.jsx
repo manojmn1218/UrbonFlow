@@ -2,9 +2,7 @@ import React, { useState, Component, useRef, useEffect } from 'react';
 import { LayoutDashboard, Map, Cpu, BarChart3, Network, AlertCircle, Layers } from 'lucide-react';
 import OverviewCommandDeck from './components/OverviewCommandDeck';
 import TrafficMap2D from './components/TrafficMap2D';
-import AiPredictionsSection from './components/AiPredictionsSection';
-import AnalyticsSection from './components/AnalyticsSection';
-import ModelInsightsSection from './components/ModelInsightsSection';
+import AiStudioSection from './components/AiStudioSection';
 import PipelineFlowchartNav from './components/PipelineFlowchartNav';
 import PipelineFlowFooter from './components/PipelineFlowFooter';
 import CommandPaletteModal from './components/CommandPaletteModal';
@@ -48,6 +46,7 @@ export default function App() {
   const [currentWindowIndex, setCurrentWindowIndex] = useState(0);
   const [slideDirection, setSlideDirection] = useState('forward'); // 'forward' | 'backward'
   const [activeHorizon, setActiveHorizon] = useState('15m');
+  const [aiStudioSubTab, setAiStudioSubTab] = useState('predictions'); // 'predictions' | 'analytics' | 'insights'
   const [isLiveStream, setIsLiveStream] = useState(true);
   const [activeLocation, setActiveLocation] = useState(() => generateLocationTelemetry({ name: "Metropolitan Transit Grid", lat: 40.7128, lon: -74.0060, zone: "Urban Grid" }));
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -75,8 +74,14 @@ export default function App() {
           currentLocation={activeLocation}
           onLocationChange={setActiveLocation}
           onSwitchView={(mode) => {
-            const map = { traffic_map: 1, '3d_studio': 1, '3d_twin': 1, predictions: 2, analytics: 3, insights: 4 };
-            if (map[mode] !== undefined) handleSelectTab(map[mode]);
+            if (mode === 'traffic_map' || mode === '3d_studio' || mode === '3d_twin') {
+              handleSelectTab(1);
+            } else if (['predictions', 'analytics', 'insights'].includes(mode)) {
+              setAiStudioSubTab(mode);
+              handleSelectTab(2);
+            } else {
+              handleSelectTab(0);
+            }
           }}
         />
       ),
@@ -190,37 +195,17 @@ export default function App() {
       ),
     },
     {
-      id: 'predictions',
-      label: 'AI Forecasting',
+      id: 'ai_studio',
+      label: 'AI Studio & Analytics',
       icon: Cpu,
       component: (
-        <AiPredictionsSection 
+        <AiStudioSection 
           activeHorizon={activeHorizon}
           setActiveHorizon={setActiveHorizon}
           currentLocation={activeLocation}
           onLocationChange={setActiveLocation}
-        />
-      ),
-    },
-    {
-      id: 'analytics',
-      label: 'Traffic Analytics',
-      icon: BarChart3,
-      component: (
-        <AnalyticsSection 
-          currentLocation={activeLocation}
-          onLocationChange={setActiveLocation}
-        />
-      ),
-    },
-    {
-      id: 'insights',
-      label: 'Model Evaluation',
-      icon: Network,
-      component: (
-        <ModelInsightsSection 
-          currentLocation={activeLocation}
-          onLocationChange={setActiveLocation}
+          activeSubTab={aiStudioSubTab}
+          setActiveSubTab={setAiStudioSubTab}
         />
       ),
     },
@@ -232,7 +217,7 @@ export default function App() {
       if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
       if (e.key === 'ArrowLeft') handleSelectTab(Math.max(0, currentWindowIndex - 1));
       if (e.key === 'ArrowRight') handleSelectTab(Math.min(windows.length - 1, currentWindowIndex + 1));
-      if (e.key >= '1' && e.key <= '5') {
+      if (e.key >= '1' && e.key <= '3') {
         const idx = parseInt(e.key, 10) - 1;
         if (idx >= 0 && idx < windows.length) handleSelectTab(idx);
       }
@@ -387,8 +372,12 @@ export default function App() {
           isOpen={isCommandPaletteOpen}
           onClose={() => setIsCommandPaletteOpen(false)}
           onSelectTab={(tabId) => {
-            const map = { overview: 0, traffic_map: 1, '3d_studio': 1, predictions: 2, analytics: 3, insights: 4 };
-            if (map[tabId] !== undefined) handleSelectTab(map[tabId]);
+            if (tabId === 'overview') handleSelectTab(0);
+            else if (tabId === 'traffic_map' || tabId === '3d_studio') handleSelectTab(1);
+            else if (['predictions', 'analytics', 'insights', 'ai_studio'].includes(tabId)) {
+              if (['predictions', 'analytics', 'insights'].includes(tabId)) setAiStudioSubTab(tabId);
+              handleSelectTab(2);
+            }
           }}
           currentLocation={activeLocation}
           onLocationChange={setActiveLocation}
