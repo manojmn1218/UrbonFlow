@@ -104,6 +104,34 @@ export async function getTomTomSettings() {
 }
 
 /**
+ * Get Google Location / Maps API configuration status
+ */
+export async function getGoogleSettings() {
+  return await fetchApi('/settings/google', { configured: false, masked_key: '' });
+}
+
+/**
+ * Save / Update Google Maps & Location API Key
+ */
+export async function saveGoogleKey(apiKey) {
+  try {
+    const res = await fetch(`${API_BASE}/settings/google`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ api_key: apiKey }),
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('Failed to save Google API key:', err);
+    return { status: 'error', error: err.message };
+  }
+}
+
+/**
  * Save / Update TomTom API Key
  */
 export async function saveTomTomKey(apiKey) {

@@ -5,6 +5,10 @@ from typing import Optional, List
 import requests
 import traffic_data
 import tomtom_service
+try:
+    import google_service
+except ImportError:
+    from backend import google_service
 
 app = FastAPI(
     title="UrbanFlow AI - Smart City Traffic Prediction Engine",
@@ -26,6 +30,9 @@ class PredictionRequest(BaseModel):
     horizon: str = "15m"  # 15m, 30m, 60m
 
 class TomTomKeyRequest(BaseModel):
+    api_key: str
+
+class GoogleKeyRequest(BaseModel):
     api_key: str
 
 
@@ -217,6 +224,27 @@ def save_tomtom_key(req: TomTomKeyRequest):
     Save or update TomTom API Key dynamically in backend environment.
     """
     return tomtom_service.set_api_key(req.api_key)
+
+
+@app.get("/api/settings/google")
+def get_google_settings():
+    """
+    Check if a Google Location / Maps API key is configured.
+    """
+    key = google_service.get_google_api_key()
+    masked = f"{key[:4]}...{key[-4:]}" if len(key) > 8 else ("Configured" if key else "")
+    return {
+        "configured": bool(key),
+        "masked_key": masked
+    }
+
+
+@app.post("/api/settings/google")
+def save_google_key(req: GoogleKeyRequest):
+    """
+    Save or update Google Maps & Location API Key dynamically in backend environment.
+    """
+    return google_service.set_google_api_key(req.api_key)
 
 
 @app.get("/api/map/tile/{z}/{x}/{y}.png")

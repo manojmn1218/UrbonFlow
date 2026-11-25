@@ -2,6 +2,10 @@ import os
 import math
 import requests
 from dotenv import load_dotenv, set_key
+try:
+    import google_service
+except ImportError:
+    from backend import google_service
 
 # Load environment variables from backend/.env
 ENV_PATH = os.path.join(os.path.dirname(__file__), ".env")
@@ -50,16 +54,23 @@ def generate_curved_waypoints(lat1: float, lon1: float, lat2: float, lon2: float
 
 def search_locations(query: str):
     """
-    Search real-world locations by text query using TomTom Search API.
-    Falls back to OpenStreetMap Nominatim if no TomTom key is set yet.
+    Search real-world locations by text query.
+    1. Primary: Google Location & Places API (if configured in .env).
+    2. Secondary: TomTom Places Search API.
+    3. Fallback: OpenStreetMap Nominatim.
     """
     query = query.strip()
     if not query:
         return []
 
+    # 1. Primary Priority: Google Location API (Places Text Search & Geocoding)
+    google_results = google_service.search_locations_google(query)
+    if google_results:
+        return google_results
+
     api_key = get_api_key()
     
-    # 1. Primary: TomTom Search API
+    # 2. Secondary: TomTom Search API
     if api_key:
         try:
             url = f"https://api.tomtom.com/search/2/search/{requests.utils.quote(query)}.json"
@@ -217,11 +228,24 @@ def calculate_routes(
     varying distances, estimated travel times, traffic delays, and coordinate polylines.
     """
     dist_direct = haversine_km(origin_lat, origin_lon, dest_lat, dest_lon)
+
+    # 1. Primary: Google Directions API with live traffic pacing (if configured in .env)
+    google_routes_res = google_service.calculate_routes_google(
+        origin_lat=origin_lat,
+        origin_lon=origin_lon,
+        dest_lat=dest_lat,
+        dest_lon=dest_lon,
+        origin_name=origin_name,
+        dest_name=dest_name
+    )
+    if google_routes_res:
+        return google_routes_res
+
     api_key = get_api_key()
     routes = []
     source = "UrbanFlow ST-GNN Route Synthesizer"
 
-    # 1. Try TomTom Routing API if API key configured
+    # 2. Secondary: TomTom Routing API if API key configured
     if api_key:
         try:
             url = f"https://api.tomtom.com/routing/1/calculateRoute/{origin_lat},{origin_lon}:{dest_lat},{dest_lon}/json"
