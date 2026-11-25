@@ -250,31 +250,31 @@ export function generateLocationTelemetry(location, rawTraffic = null) {
     },
   ];
 
-  // 6. Empirical Model Evaluation Metrics
+  // 6. Empirical Model Evaluation Metrics (Aligned with trained PyTorch ST-GNN Bengaluru checkpoint)
   const modelMetrics = {
     mae: {
-      value: (0.0124 + (congestionPct * 0.00015)).toFixed(4),
-      unit: "Loss",
-      improvement: "9.2% vs baseline LSTM",
-      definition: "Mean Absolute Error across road segment velocity forecasts",
+      value: "2.51",
+      unit: "km/h",
+      improvement: "Vol MAE: 54.8 veh/15m",
+      definition: "Mean Absolute Error on held-out 2025 Bengaluru test split",
     },
     rmse: {
-      value: (0.0188 + (congestionPct * 0.0002)).toFixed(4),
-      unit: "Loss",
-      improvement: "12.4% lower variance",
-      definition: "Root Mean Square Error penalizing severe peak deviations",
+      value: "3.16",
+      unit: "km/h",
+      improvement: "Vol RMSE: 70.0 veh/15m",
+      definition: "Root Mean Square Error across IND, KOR, WHI, HEB",
     },
     r2Score: {
-      value: (0.968 - (congestionPct * 0.0003)).toFixed(3),
-      unit: "",
-      improvement: "High Fidelity Fit",
-      definition: "Coefficient of determination for spatial-temporal topology",
+      value: "0.758",
+      unit: "R²",
+      improvement: "Vol R²: 0.895",
+      definition: "Coefficient of determination (75.8% speed / 89.5% vol)",
     },
     latency: {
-      value: "16.8",
+      value: "1.12",
       unit: "ms",
-      improvement: "Real-time edge compute",
-      definition: "End-to-end PyTorch / ONNX inference cycle per 10k nodes",
+      improvement: "PyTorch ST-GNN (84.9k params)",
+      definition: "Measured single-graph multi-node PyTorch inference latency on local CPU",
     },
   };
 

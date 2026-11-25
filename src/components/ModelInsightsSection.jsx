@@ -65,10 +65,10 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
     r2Score: backendReport.r2Score,
     latency: backendReport.latency,
   } : null) || currentLocation?.modelMetrics || {
-    mae: { value: "2.50", unit: "km/h", improvement: "Vol MAE: 55.4 veh/15m", definition: "Mean Absolute Error on test split" },
-    rmse: { value: "3.16", unit: "km/h", improvement: "Vol RMSE: 70.4 veh/15m", definition: "Root Mean Square Error" },
-    r2Score: { value: "0.759", unit: "R²", improvement: "Vol R²: 0.894", definition: "Coefficient of determination" },
-    latency: { value: "1.09", unit: "ms", improvement: "PyTorch CPU inference", definition: "Measured single-graph forward pass" },
+    mae: { value: "2.51", unit: "km/h", improvement: "Vol MAE: 54.8 veh/15m", definition: "Mean Absolute Error on held-out 2025 Bengaluru test split" },
+    rmse: { value: "3.16", unit: "km/h", improvement: "Vol RMSE: 70.0 veh/15m", definition: "Root Mean Square Error across IND, KOR, WHI, HEB" },
+    r2Score: { value: "0.758", unit: "R²", improvement: "Vol R²: 0.895", definition: "Coefficient of determination (75.8% speed / 89.5% vol)" },
+    latency: { value: "1.12", unit: "ms", improvement: "PyTorch ST-GNN (84.9k params)", definition: "Measured single-graph forward pass on CPU" },
   };
 
   const shortName = currentLocation?.shortName || "Bengaluru Grid";
@@ -228,7 +228,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
           ) : (
             <span>{backendReport?.dataset ? `Held-out 2025 test trajectory (${backendReport.dataset.split?.test_snapshots || 329} snapshots, averaged across HEB/IND/KOR/WHI)` : 'Hover over nodes to inspect prediction delta & variance'}</span>
           )}
-          <span className="font-mono text-[11px] text-[#8C827A]">R² = {modelMetrics.r2Score?.value || "0.759"}</span>
+          <span className="font-mono text-[11px] text-[#8C827A]">R² = {modelMetrics.r2Score?.value || "0.758"}</span>
         </div>
       </div>
 
@@ -263,13 +263,39 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/60 border border-[#E8E2D9]/60">
                 <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Seq Window</span>
                 <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.seq_len || 6} steps</span>
-                <span className="text-[10px] text-[#64564B] font-medium">{backendReport?.architecture?.num_features || 16} Features</span>
+                <span className="text-[10px] text-[#64564B] font-medium">{backendReport?.architecture?.num_features || 19} Features</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/60 border border-[#E8E2D9]/60">
                 <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Parameters</span>
-                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.parameters ? `${(backendReport.architecture.parameters / 1000).toFixed(1)}k` : '84.7k'}</span>
+                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.parameters ? `${(backendReport.architecture.parameters / 1000).toFixed(1)}k` : '84.9k'}</span>
                 <span className="text-[10px] text-[#2D6A4F] font-medium">PyTorch Weights</span>
               </div>
+            </div>
+
+            {/* Trained Corridor Nodes Matrix */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mb-3">
+              {(backendReport?.dataset?.trained_locations || [
+                { code: 'HEB', name: 'Hebbal', lat: 13.0358, lon: 77.597, free_flow_speed: 65 },
+                { code: 'IND', name: 'Indiranagar', lat: 12.9784, lon: 77.6408, free_flow_speed: 58 },
+                { code: 'KOR', name: 'Koramangala', lat: 12.9352, lon: 77.6245, free_flow_speed: 55 },
+                { code: 'WHI', name: 'Whitefield', lat: 12.9698, lon: 77.75, free_flow_speed: 60 },
+              ]).map((node) => {
+                const areaStat = backendReport?.evaluation?.per_area?.[node.code];
+                return (
+                  <div key={node.code} className="p-2 rounded-xl bg-[#FAF8F5]/80 border border-[#E8E2D9]/70 text-[10px]">
+                    <div className="flex items-center justify-between font-bold text-[#231E1A]">
+                      <span>{node.name}</span>
+                      <span className="font-mono text-[#2D6A4F]">{node.code}</span>
+                    </div>
+                    <div className="text-[#64564B] font-mono mt-0.5">
+                      {node.lat.toFixed(3)}, {node.lon.toFixed(3)}
+                    </div>
+                    <div className="text-[#A86032] font-medium mt-0.5">
+                      {areaStat ? `MAE ${areaStat.speed.mae.toFixed(2)} km/h` : `FF ${node.free_flow_speed} km/h`}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Topology Layer Architecture Flow */}
@@ -293,7 +319,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
                   <span className="w-2 h-2 rounded-full bg-[#2D6A4F]"></span>
                   <span className="font-semibold text-[#231E1A]">Joint Volume + Speed Regression Head</span>
                 </div>
-                <span className="font-mono text-[11px] text-[#64564B]">Vol R²: {backendReport?.evaluation?.volume?.r2?.toFixed(3) || '0.894'}</span>
+                <span className="font-mono text-[11px] text-[#64564B]">Vol R²: {backendReport?.evaluation?.volume?.r2?.toFixed(3) || '0.895'}</span>
               </div>
             </div>
           </div>
@@ -357,10 +383,10 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
                       <CheckCircle2 className="w-3 h-3 text-[#2D6A4F]" />
                       PyTorch ST-GNN
                     </td>
-                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.speed?.mae?.toFixed(2) || '2.50'} km/h</td>
-                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.volume?.mae?.toFixed(1) || '55.4'}</td>
-                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.volume?.r2?.toFixed(3) || '0.894'}</td>
-                    <td className="py-2 px-1 text-right font-bold text-[#2D6A4F]">{backendReport?.evaluation?.speed?.mape_pct?.toFixed(2) || '7.51'}%</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.speed?.mae?.toFixed(2) || '2.51'} km/h</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.volume?.mae?.toFixed(1) || '54.8'}</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.volume?.r2?.toFixed(3) || '0.895'}</td>
+                    <td className="py-2 px-1 text-right font-bold text-[#2D6A4F]">{backendReport?.evaluation?.speed?.mape_pct?.toFixed(2) || '7.59'}%</td>
                   </tr>
                 </tbody>
               </table>

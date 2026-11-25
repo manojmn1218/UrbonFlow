@@ -438,39 +438,39 @@ export const CONGESTION_HOTSPOTS = [
   },
 ];
 
-// Model Insights & Performance Metrics
+// Model Insights & Performance Metrics (Aligned with trained PyTorch ST-GNN Bengaluru checkpoint)
 export const MODEL_METRICS = {
   mae: {
-    value: "1.84",
+    value: "2.51",
     unit: "km/h",
-    baseline: "4.12 km/h",
-    improvement: "55.3% vs ARIMA baseline",
-    status: "Exceptional",
-    definition: "Mean Absolute Error: Average magnitude of speed prediction errors",
+    baseline: "2.50 km/h",
+    improvement: "Vol MAE: 54.8 veh/15m",
+    status: "Verified Test Split",
+    definition: "Mean Absolute Error on held-out 2025 Bengaluru test samples",
   },
   rmse: {
-    value: "2.61",
+    value: "3.16",
     unit: "km/h",
-    baseline: "5.88 km/h",
-    improvement: "55.6% vs Standard LSTM",
-    status: "Exceptional",
-    definition: "Root Mean Squared Error: Penalizes outlier deviations strictly",
+    baseline: "3.13 km/h",
+    improvement: "Vol RMSE: 70.0 veh/15m",
+    status: "Verified Test Split",
+    definition: "Root Mean Squared Error across IND, KOR, WHI, HEB",
   },
   r2Score: {
-    value: "0.942",
+    value: "0.758",
     unit: "R²",
-    baseline: "0.814",
-    improvement: "+0.128 variance fit",
-    status: "Optimal",
-    definition: "Coefficient of Determination: 94.2% of variance captured",
+    baseline: "0.762",
+    improvement: "Vol R²: 0.895 | MAPE: 7.59%",
+    status: "Verified Fit",
+    definition: "Explains 75.8% speed variance & 89.5% volume variance",
   },
   latency: {
-    value: "18.4",
+    value: "1.12",
     unit: "ms",
-    baseline: "120 ms",
-    improvement: "6.5x faster inference",
+    baseline: "CPU Forward",
+    improvement: "PyTorch ST-GNN (84,932 params)",
     status: "Edge Ready",
-    definition: "Sub-20ms inference enables live smart signal adjustments",
+    definition: "Measured single-graph multi-node PyTorch inference latency on local CPU",
   },
 };
 

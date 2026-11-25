@@ -6,6 +6,7 @@ import AiStudioSection from './components/AiStudioSection';
 import PipelineFlowchartNav from './components/PipelineFlowchartNav';
 import CommandPaletteModal from './components/CommandPaletteModal';
 import UnifiedSearchBar from './components/UnifiedSearchBar';
+import { getLocationTraffic } from './services/api';
 import { generateLocationTelemetry } from './services/trafficGenerator';
 
 class ErrorBoundary extends Component {
@@ -51,6 +52,18 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [bgIntensity, setBgIntensity] = useState('standard'); // 'subtle' | 'standard' | 'vivid'
   const contentContainerRef = useRef(null);
+
+  // Hydrate initial Bengaluru Indiranagar corridor with live backend ST-GNN telemetry on mount
+  useEffect(() => {
+    let mounted = true;
+    const defaultLoc = { name: "Indiranagar, Bengaluru", lat: 12.9784, lon: 77.6408, zone: "IND Corridor" };
+    getLocationTraffic(defaultLoc.lat, defaultLoc.lon, defaultLoc.name, '15m').then((raw) => {
+      if (mounted && raw && raw.current_speed !== undefined) {
+        setActiveLocation(generateLocationTelemetry(defaultLoc, raw));
+      }
+    });
+    return () => { mounted = false; };
+  }, []);
 
   const handleSelectTab = (newIndex) => {
     if (newIndex === currentWindowIndex) return;
