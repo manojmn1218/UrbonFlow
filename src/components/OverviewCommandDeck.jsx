@@ -72,9 +72,6 @@ export default function OverviewCommandDeck({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#A86032]">AI Traffic Telemetry Alert</span>
-              <span className="text-[10px] bg-[#FAF8F5] text-[#362E28] border border-[#E8E2D9] px-2 py-0.2 rounded-full font-bold">
-                {currentLocation?.status || "Live Monitoring"}
-              </span>
             </div>
             <p className="text-xs font-medium text-[#4C4138]">
               {shortName}: {corridors[0]?.name || "Main Corridor"} throughput at <strong className="text-[#231E1A]">{currentLocation?.currentSpeed || 42} km/h</strong>. {currentLocation?.predictions?.[activeHorizon]?.action || "Dynamic traffic pacing active."}
@@ -107,7 +104,7 @@ export default function OverviewCommandDeck({
         >
           <div className="flex items-center justify-between text-[11px] text-[#64564B] font-semibold uppercase tracking-wider mb-1">
             <span>Average Speed</span>
-            <span className={`px-1.5 py-0.5 rounded font-mono font-bold text-[10px] ${kpis.avgSpeed?.trend === 'down' ? 'text-[#B91C1C] bg-[#FDF0F0]' : 'text-[#2D6A4F] bg-[#EAF2EC]'}`}>
+            <span className={`font-mono font-bold text-xs ${kpis.avgSpeed?.trend === 'down' ? 'text-[#B91C1C]' : 'text-[#2D6A4F]'}`}>
               {kpis.avgSpeed?.change || "+2.5%"}
             </span>
           </div>
@@ -126,8 +123,8 @@ export default function OverviewCommandDeck({
         >
           <div className="flex items-center justify-between text-[11px] text-[#64564B] font-semibold uppercase tracking-wider mb-1">
             <span>Congestion Level</span>
-            <span className={`px-1.5 py-0.5 rounded font-bold text-[10px] ${
-              (kpis.congestionLevel?.value || 30) > 70 ? 'text-[#B91C1C] bg-[#FDF0F0]' : (kpis.congestionLevel?.value || 30) > 40 ? 'text-[#A86032] bg-[#FEF6F0]' : 'text-[#2D6A4F] bg-[#EAF2EC]'
+            <span className={`font-bold text-xs ${
+              (kpis.congestionLevel?.value || 30) > 70 ? 'text-[#B91C1C]' : (kpis.congestionLevel?.value || 30) > 40 ? 'text-[#A86032]' : 'text-[#2D6A4F]'
             }`}>
               {kpis.congestionLevel?.status || "Moderate"}
             </span>
@@ -155,7 +152,7 @@ export default function OverviewCommandDeck({
         >
           <div className="flex items-center justify-between text-[11px] text-[#64564B] font-semibold uppercase tracking-wider mb-1">
             <span>Active Sector Probes</span>
-            <span className="text-[#362E28] bg-[#FAF8F5] border border-[#E8E2D9] px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">
+            <span className="text-[#362E28] font-mono font-bold text-xs">
               {kpis.activeSensors?.rate || 98.4}% Rate
             </span>
           </div>
@@ -176,7 +173,7 @@ export default function OverviewCommandDeck({
         >
           <div className="flex items-center justify-between text-[11px] text-[#64564B] font-semibold uppercase tracking-wider mb-1">
             <span>Forecast Surge</span>
-            <span className="text-[#362E28] bg-[#FAF8F5] border border-[#E8E2D9] px-1.5 py-0.5 rounded font-bold text-[10px]">
+            <span className="text-[#A86032] font-bold text-xs">
               +{activeHorizon}
             </span>
           </div>
@@ -472,7 +469,7 @@ export default function OverviewCommandDeck({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-white/90 backdrop-blur-2xl p-3 rounded-2xl border border-[#E8E2D9] shadow-xs flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
+            <div className="p-2 rounded-xl bg-[#FAF8F5] text-[#2D6A4F] border border-[#E8E2D9]">
               <Radio className="w-3.5 h-3.5" />
             </div>
             <div>
@@ -480,7 +477,6 @@ export default function OverviewCommandDeck({
               <span className="text-sm font-mono font-extrabold text-[#231E1A] block">+14s Green Wave</span>
             </div>
           </div>
-          <span className="text-[10px] font-bold text-[#2D6A4F] bg-[#EAF2EC] px-1.5 py-0.5 rounded">Synced</span>
         </div>
 
         <div className="bg-white/90 backdrop-blur-2xl p-3 rounded-2xl border border-[#E8E2D9] shadow-xs flex items-center justify-between">
@@ -493,12 +489,11 @@ export default function OverviewCommandDeck({
               <span className="text-sm font-mono font-extrabold text-[#231E1A] block">45 km/h Pacing</span>
             </div>
           </div>
-          <span className="text-[10px] font-bold text-[#362E28] bg-[#FAF8F5] border border-[#E8E2D9] px-1.5 py-0.5 rounded">Active</span>
         </div>
 
         <div className="bg-white/90 backdrop-blur-2xl p-3 rounded-2xl border border-[#E8E2D9] shadow-xs flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#FEF6F0] text-[#A86032] border border-[#F2D7C4]">
+            <div className="p-2 rounded-xl bg-[#FAF8F5] text-[#A86032] border border-[#E8E2D9]">
               <Zap className="w-3.5 h-3.5" />
             </div>
             <div>
@@ -506,12 +501,11 @@ export default function OverviewCommandDeck({
               <span className="text-sm font-mono font-extrabold text-[#231E1A] block">18 veh / min</span>
             </div>
           </div>
-          <span className="text-[10px] font-bold text-[#A86032] bg-[#FEF6F0] px-1.5 py-0.5 rounded border border-[#F2D7C4]">Metered</span>
         </div>
 
         <div className="bg-white/90 backdrop-blur-2xl p-3 rounded-2xl border border-[#E8E2D9] shadow-xs flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
+            <div className="p-2 rounded-xl bg-[#FAF8F5] text-[#2D6A4F] border border-[#E8E2D9]">
               <CheckCircle2 className="w-3.5 h-3.5" />
             </div>
             <div>
@@ -519,7 +513,6 @@ export default function OverviewCommandDeck({
               <span className="text-sm font-mono font-extrabold text-[#231E1A] block">-15.4% Emissions</span>
             </div>
           </div>
-          <span className="text-[10px] font-bold text-[#2D6A4F] bg-[#EAF2EC] px-1.5 py-0.5 rounded">Eco-Wave</span>
         </div>
       </div>
     </div>

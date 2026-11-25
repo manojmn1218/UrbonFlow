@@ -83,7 +83,7 @@ export default function PipelineFlowchartNav({
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-[10px] font-mono font-bold text-[#362E28] bg-[#FAF8F5] border border-[#E8E2D9] px-2.5 py-0.5 rounded-full">
+            <span className="text-xs font-semibold text-[#362E28] px-1">
               Stage {currentIndex + 1} of 3: {PIPELINE_STEPS[currentIndex]?.title}
             </span>
             <button
@@ -141,30 +141,13 @@ export default function PipelineFlowchartNav({
                       }
                     `}
                   >
-                    {/* Top Phase Ribbon & Status */}
+                    {/* Top Phase Ribbon */}
                     <div className="flex items-center justify-between mb-1">
                       <span className={`text-[9px] font-mono font-bold tracking-wider uppercase ${
                         isActive ? 'text-[#A86032]' : isCompleted ? 'text-[#2D6A4F]' : 'text-[#8C827A]'
                       }`}>
                         STEP {step.number} • {step.phase}
                       </span>
-
-                      {/* Status Indicator */}
-                      {isCompleted ? (
-                        <span className="flex items-center gap-1 text-[9px] font-bold text-[#2D6A4F] bg-white px-1.5 py-0.2 rounded-full border border-[#C8E4D1]">
-                          <CheckCircle2 className="w-2.5 h-2.5" />
-                          Done
-                        </span>
-                      ) : isActive ? (
-                        <span className="flex items-center gap-1 text-[9px] font-bold text-[#A86032] bg-[#FEF6F0] border border-[#F2D7C4] px-1.5 py-0.2 rounded-full">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#A86032] animate-ping"></span>
-                          Active
-                        </span>
-                      ) : (
-                        <span className="text-[9px] font-mono text-[#64564B] bg-[#FAF8F5] border border-[#E8E2D9] px-1.5 py-0.2 rounded">
-                          Next
-                        </span>
-                      )}
                     </div>
 
                     {/* Step Title & Icon */}

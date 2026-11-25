@@ -119,10 +119,6 @@ export default function AiPredictionsSection({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-[#231E1A] tracking-tight">AI Predictive Inference Engine</h2>
-                <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-[#EAF2EC] text-[#2D6A4F] flex items-center gap-1 border border-[#C4DFC8]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F] animate-pulse"></span>
-                  {currentLocation?.isRealtime ? 'TomTom Live Telemetry' : 'Spatial Graph ST-GNN'}
-                </span>
               </div>
               <p className="text-xs text-[#64564B]">
                 Spatial-Temporal Graph Neural Network (ST-GNN) inference for {currentLocation?.name}
@@ -219,7 +215,6 @@ export default function AiPredictionsSection({
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-extrabold font-mono text-[#231E1A] tracking-tight">{pred.confidence}%</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-md font-semibold bg-[#EAF2EC] text-[#2D6A4F]">High Fidelity</span>
             </div>
             <p className="text-[10px] text-[#64564B] mt-1.5">Bayesian ensemble variance &lt; 1.2%</p>
           </div>
@@ -227,9 +222,6 @@ export default function AiPredictionsSection({
           <div className="p-3.5 rounded-xl bg-[#FAF8F5]/50 backdrop-blur-md border border-[#E8E2D9]/60 shadow-subtle">
             <div className="flex items-center justify-between text-xs text-[#64564B] mb-1.5">
               <span className="font-medium">Monitored Area</span>
-              <span className="text-[10px] font-mono font-bold bg-[#FFFFFF] px-2 py-0.5 rounded border border-[#E8E2D9] text-[#A86032]">
-                GPS
-              </span>
             </div>
             <h4 className="text-xs font-bold text-[#231E1A] truncate">
               {shortName}
@@ -351,7 +343,7 @@ export default function AiPredictionsSection({
             </div>
             <div className="flex items-center gap-2 text-xs">
               <span className="text-[#64564B] font-medium">Active Interventions:</span>
-              <span className="font-mono font-bold text-[#2D6A4F] bg-[#EAF2EC] px-2 py-0.5 rounded-md border border-[#C4DFC8]">
+              <span className="font-mono font-bold text-[#2D6A4F]">
                 {Object.values(activePolicies).filter(Boolean).length} / 4 Engaged
               </span>
             </div>

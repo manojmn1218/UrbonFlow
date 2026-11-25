@@ -356,7 +356,7 @@ export default function AnalyticsSection({ currentLocation, onLocationChange }) 
                   <p className="text-[11px] text-[#64564B]">Vehicle mix and fuel optimization metrics</p>
                 </div>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
+              <span className="text-xs font-mono font-bold text-[#2D6A4F]">
                 -15.4% Idle
               </span>
             </div>

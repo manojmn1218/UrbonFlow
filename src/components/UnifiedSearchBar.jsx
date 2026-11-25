@@ -44,12 +44,6 @@ export default function UnifiedSearchBar({
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 leading-none">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#64564B]">Active Area</span>
-              {currentLocation?.isRealtime && (
-                <span className="text-[9px] font-mono font-bold bg-[#EAF2EC] text-[#2D6A4F] px-1.5 py-0.2 rounded flex items-center gap-1 border border-[#C4DFC8]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F] animate-pulse"></span>
-                  TomTom Live
-                </span>
-              )}
             </div>
             <h4 className="text-xs font-extrabold text-[#231E1A] truncate">
               {currentLocation?.name || "Global Metropolitan Grid"}

@@ -217,10 +217,6 @@ export default function App() {
               <span className="text-[11px] font-bold">{activeBg.label} Backdrop</span>
             </button>
 
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF8F5] text-[#362E28] border border-[#E8E2D9] text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-[#A86032]"></span>
-              <span>{windows[currentWindowIndex]?.label || "Live System"}</span>
-            </div>
             <button
               onClick={() => setIsCommandPaletteOpen(true)}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#FAF8F5] hover:bg-white text-[#4C4138] text-xs font-medium transition-colors border border-[#E8E2D9]"

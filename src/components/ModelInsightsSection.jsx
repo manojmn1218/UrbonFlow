@@ -79,11 +79,6 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
             </p>
           </div>
         </div>
-
-        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#EAF2EC] text-[#2D6A4F] flex items-center gap-1.5 self-start sm:self-auto border border-[#C4DFC8]">
-          <CheckCircle2 className="w-3.5 h-3.5 text-[#2D6A4F]" />
-          Model Validated ({shortName})
-        </span>
       </div>
 
       {/* KPI METRICS ROW: MAE, RMSE, R2, LATENCY */}
@@ -101,9 +96,6 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-extrabold font-mono text-[#231E1A] tracking-tight">{m.value}</span>
                 {m.unit && <span className="text-xs font-semibold text-[#64564B]">{m.unit}</span>}
-                {card.badge && (
-                  <span className="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">{card.badge}</span>
-                )}
               </div>
               <div className="mt-1.5 text-xs font-medium text-[#2D6A4F] flex items-center gap-1">
                 <TrendIcon className="w-3.5 h-3.5" />
@@ -211,9 +203,6 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
                   <p className="text-[11px] text-[#64564B]">Spatial node adjacency and diffusion receptive field</p>
                 </div>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold bg-[#EAF2EC] text-[#2D6A4F] border border-[#C4DFC8]">
-                Normalized
-              </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">

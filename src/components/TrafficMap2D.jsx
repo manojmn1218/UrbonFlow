@@ -788,10 +788,6 @@ export default function TrafficMap2D({
               <h3 className="text-xs font-bold text-[#231E1A] tracking-tight truncate">
                 {mapMode === 'planner' ? 'Point-to-Point Trip Navigation' : 'Live GIS Traffic Grid'}
               </h3>
-              <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-[#EAF2EC] text-[#2D6A4F] hidden sm:flex items-center gap-1 border border-[#C4DFC8]">
-                <span className="w-1 h-1 rounded-full bg-[#2D6A4F] animate-pulse"></span>
-                {routesData?.data_source ? routesData.data_source : 'TomTom Real-Time'}
-              </span>
             </div>
             <p className="text-[11px] text-[#64564B] truncate max-w-[180px] sm:max-w-xs md:max-w-sm">
               {mapMode === 'planner' 
