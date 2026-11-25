@@ -776,16 +776,16 @@ export default function TrafficMap2D({
   };
 
   return (
-    <div className="relative w-full h-[620px] sm:h-[680px] lg:h-[720px] rounded-3xl overflow-hidden bg-[#2C1810] border border-[#EADBCE]/70 shadow-premium flex flex-col">
+    <div className="relative w-full h-[620px] sm:h-[680px] lg:h-[720px] rounded-3xl overflow-hidden bg-[#231E1A] border border-[#E8E2D9]/70 shadow-premium flex flex-col">
       {/* Top Header Controls Bar */}
-      <div className="p-3 sm:p-4 bg-[#FFFDF9]/75 backdrop-blur-xl border-b border-[#EADBCE]/70 flex flex-wrap items-center justify-between gap-3 z-20">
+      <div className="p-3 sm:p-4 bg-[#FFFFFF]/75 backdrop-blur-xl border-b border-[#E8E2D9]/70 flex flex-wrap items-center justify-between gap-3 z-20">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE] shadow-sm">
+          <div className="p-2.5 rounded-2xl bg-[#FAF8F5] text-[#A86032] border border-[#E8E2D9] shadow-sm">
             <Route className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-extrabold text-[#2C1810] tracking-tight">
+              <h3 className="text-sm font-extrabold text-[#231E1A] tracking-tight">
                 {mapMode === 'planner' ? 'Point-to-Point Trip & Route Navigation' : 'Live GIS Traffic Grid'}
               </h3>
               <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#EAF2EC] text-[#2D6A4F] flex items-center gap-1 border border-[#C4DFC8]">
@@ -793,7 +793,7 @@ export default function TrafficMap2D({
                 {routesData?.data_source ? routesData.data_source : 'TomTom Real-Time Vector Engine'}
               </span>
             </div>
-            <p className="text-xs text-[#7D5138] truncate max-w-[280px] sm:max-w-md">
+            <p className="text-xs text-[#64564B] truncate max-w-[280px] sm:max-w-md">
               {mapMode === 'planner' 
                 ? (origin?.name && destination?.name 
                     ? `${origin.name.split(',')[0]} ➔ ${destination.name.split(',')[0]}`
@@ -813,14 +813,14 @@ export default function TrafficMap2D({
                   placeholder="Search any city or address..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#F5EFEB]/90 hover:bg-[#FFFDF9] border border-[#EADBCE] text-[#2C1810] text-xs font-medium rounded-xl pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#5C331E]/20 focus:bg-[#FFFDF9] transition-all placeholder:text-[#9C6D52]/60"
+                  className="w-full bg-[#FAF8F5]/90 hover:bg-[#FFFFFF] border border-[#E8E2D9] text-[#231E1A] text-xs font-medium rounded-xl pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#A86032]/20 focus:bg-[#FFFFFF] transition-all placeholder:text-[#8C827A]/60"
                 />
-                <Search className="w-3.5 h-3.5 text-[#9C6D52] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className="w-3.5 h-3.5 text-[#8C827A] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
               <button
                 type="submit"
                 disabled={isSearching || !searchQuery.trim()}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#5C331E] to-[#422213] hover:from-[#4A2818] hover:to-[#361A0E] text-[#FFFDF9] text-xs font-semibold disabled:opacity-50 transition-colors"
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#A86032] to-[#422213] hover:from-[#4A2818] hover:to-[#361A0E] text-[#FFFFFF] text-xs font-semibold disabled:opacity-50 transition-colors"
               >
                 {isSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Find'}
               </button>
@@ -828,20 +828,20 @@ export default function TrafficMap2D({
 
             {/* Autocomplete Dropdown */}
             {searchResults.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFDF9]/95 backdrop-blur-2xl border border-[#EADBCE] rounded-2xl shadow-float z-50 max-h-56 overflow-y-auto divide-y divide-[#EADBCE]/50">
-                <div className="p-2 bg-[#F5EFEB] text-[10px] font-bold uppercase tracking-wider text-[#7D5138] flex justify-between items-center">
+              <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFFFF]/95 backdrop-blur-2xl border border-[#E8E2D9] rounded-2xl shadow-float z-50 max-h-56 overflow-y-auto divide-y divide-[#E8E2D9]/50">
+                <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold uppercase tracking-wider text-[#64564B] flex justify-between items-center">
                   <span>Select Target Coordinates</span>
-                  <button onClick={() => setSearchResults([])}><X className="w-3 h-3 text-[#7D5138]" /></button>
+                  <button onClick={() => setSearchResults([])}><X className="w-3 h-3 text-[#64564B]" /></button>
                 </div>
                 {searchResults.map((res, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => handleSelectSearchedResult(res)}
-                    className="w-full p-2.5 text-left hover:bg-[#F5EFEB] transition-colors flex flex-col"
+                    className="w-full p-2.5 text-left hover:bg-[#FAF8F5] transition-colors flex flex-col"
                   >
-                    <span className="text-xs font-semibold text-[#2C1810] truncate">{res.name}</span>
-                    <span className="text-[10px] text-[#7D5138] truncate">{res.address}</span>
+                    <span className="text-xs font-semibold text-[#231E1A] truncate">{res.name}</span>
+                    <span className="text-[10px] text-[#64564B] truncate">{res.address}</span>
                   </button>
                 ))}
               </div>
@@ -852,13 +852,13 @@ export default function TrafficMap2D({
         {/* Mode Switcher & HD Retina Tile Selectors */}
         <div className="flex items-center gap-2">
           {/* Planner vs Telemetry toggle */}
-          <div className="flex items-center bg-[#F5EFEB] p-1 rounded-2xl border border-[#EADBCE]/70">
+          <div className="flex items-center bg-[#FAF8F5] p-1 rounded-2xl border border-[#E8E2D9]/70">
             <button
               onClick={() => handleModeChange('planner')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
                 mapMode === 'planner'
-                  ? 'bg-[#5C331E] text-[#FFFDF9] shadow-sm shadow-[#3D2317]/25'
-                  : 'text-[#7D5138] hover:text-[#2C1810]'
+                  ? 'bg-[#A86032] text-[#FFFFFF] shadow-sm shadow-[#362E28]/25'
+                  : 'text-[#64564B] hover:text-[#231E1A]'
               }`}
             >
               <Compass className="w-3.5 h-3.5" />
@@ -868,8 +868,8 @@ export default function TrafficMap2D({
               onClick={() => handleModeChange('telemetry')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
                 mapMode === 'telemetry'
-                  ? 'bg-[#5C331E] text-[#FFFDF9] shadow-sm shadow-[#3D2317]/25'
-                  : 'text-[#7D5138] hover:text-[#2C1810]'
+                  ? 'bg-[#A86032] text-[#FFFFFF] shadow-sm shadow-[#362E28]/25'
+                  : 'text-[#64564B] hover:text-[#231E1A]'
               }`}
             >
               <Navigation className="w-3.5 h-3.5" />
@@ -878,11 +878,11 @@ export default function TrafficMap2D({
           </div>
 
           {/* 100% Watermark-Free HD GIS Basemaps */}
-          <div className="flex items-center bg-[#F5EFEB] p-1 rounded-xl border border-[#EADBCE]/70">
+          <div className="flex items-center bg-[#FAF8F5] p-1 rounded-xl border border-[#E8E2D9]">
             <button
               onClick={() => setTileMode('osm')}
               className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                tileMode === 'osm' ? 'bg-[#FFFDF9] text-[#5C331E] font-bold shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+                tileMode === 'osm' ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
               }`}
               title="Ultra-detailed OpenStreetMap with street & building details (zoom up to 22)"
             >
@@ -891,7 +891,7 @@ export default function TrafficMap2D({
             <button
               onClick={() => setTileMode('satellite')}
               className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                tileMode === 'satellite' ? 'bg-[#FFFDF9] text-[#5C331E] font-bold shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+                tileMode === 'satellite' ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
               }`}
               title="Photorealistic Satellite Imagery (zoom up to 22)"
             >
@@ -900,7 +900,7 @@ export default function TrafficMap2D({
             <button
               onClick={() => setTileMode('esri_streets')}
               className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                tileMode === 'esri_streets' ? 'bg-[#FFFDF9] text-[#5C331E] font-bold shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+                tileMode === 'esri_streets' ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
               }`}
               title="Esri World Street Map (zoom up to 22)"
             >
@@ -909,7 +909,7 @@ export default function TrafficMap2D({
             <button
               onClick={() => setTileMode('esri_canvas')}
               className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                tileMode === 'esri_canvas' ? 'bg-[#FFFDF9] text-[#5C331E] font-bold shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+                tileMode === 'esri_canvas' ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
               }`}
               title="Minimalist light canvas (zoom up to 22)"
             >
@@ -918,7 +918,7 @@ export default function TrafficMap2D({
             <button
               onClick={() => setTileMode('tomtom')}
               className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                tileMode === 'tomtom' ? 'bg-[#FFFDF9] text-[#5C331E] font-bold shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+                tileMode === 'tomtom' ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
               }`}
               title="TomTom Live Vector Tiles"
             >
@@ -927,8 +927,8 @@ export default function TrafficMap2D({
           </div>
 
           {/* 4-Way Directional Pan, Zoom & Recenter Controls */}
-          <div className="flex items-center gap-1 bg-[#F5EFEB] p-1 rounded-xl border border-[#EADBCE]/70">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138] px-1 hidden sm:inline">
+          <div className="flex items-center gap-1 bg-[#FAF8F5] p-1 rounded-xl border border-[#E8E2D9]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#64564B] px-1 hidden sm:inline">
               Pan
             </span>
             <button 
@@ -936,7 +936,7 @@ export default function TrafficMap2D({
               onMouseUp={stopContinuousPan}
               onMouseLeave={stopContinuousPan}
               onClick={() => handlePan(-200, 0)}
-              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
               title="Move Map Left (West)"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -946,7 +946,7 @@ export default function TrafficMap2D({
               onMouseUp={stopContinuousPan}
               onMouseLeave={stopContinuousPan}
               onClick={() => handlePan(0, -200)}
-              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
               title="Move Map Up (North)"
             >
               <ArrowUp className="w-3.5 h-3.5" />
@@ -956,7 +956,7 @@ export default function TrafficMap2D({
               onMouseUp={stopContinuousPan}
               onMouseLeave={stopContinuousPan}
               onClick={() => handlePan(0, 200)}
-              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
               title="Move Map Down (South)"
             >
               <ArrowDown className="w-3.5 h-3.5" />
@@ -966,35 +966,35 @@ export default function TrafficMap2D({
               onMouseUp={stopContinuousPan}
               onMouseLeave={stopContinuousPan}
               onClick={() => handlePan(200, 0)}
-              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
               title="Move Map Right (East)"
             >
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
 
-            <div className="w-[1px] h-4 bg-[#EADBCE]/80 mx-0.5" />
+            <div className="w-[1px] h-4 bg-[#E8E2D9] mx-0.5" />
 
             {/* Dedicated Zoom In / Out Controls */}
             <button 
               onClick={() => mapInstanceRef.current?.zoomOut(1)} 
-              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
               title="Zoom Out (-)"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
             <button 
               onClick={() => mapInstanceRef.current?.zoomIn(1)} 
-              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
               title="Zoom In (+)"
             >
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
 
-            <div className="w-[1px] h-4 bg-[#EADBCE]/80 mx-0.5" />
+            <div className="w-[1px] h-4 bg-[#E8E2D9] mx-0.5" />
 
             <button 
               onClick={handleRecenter} 
-              className="p-1.5 rounded-lg text-[#5C331E] hover:bg-[#FFFDF9] hover:text-[#3D2317] transition-all active:scale-95 font-bold" 
+              className="p-1.5 rounded-lg text-[#362E28] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95 font-bold" 
               title="Recenter Map on Target Location"
             >
               <Crosshair className="w-3.5 h-3.5" />
@@ -1013,10 +1013,10 @@ export default function TrafficMap2D({
         />
 
         {/* Floating 4-Way Directional Navigator & Zoom Pad on Map */}
-        <div className="hidden sm:flex absolute top-4 right-4 z-[400] bg-[#FFFDF9]/90 backdrop-blur-2xl rounded-2xl border border-[#EADBCE] shadow-xl p-2.5 flex-col items-center select-none">
-          <div className="flex items-center justify-between w-full pb-1 mb-1.5 border-b border-[#EADBCE]/60">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-[#7D5138] font-mono flex items-center gap-1">
-              <Move className="w-3 h-3 text-[#5C331E]" />
+        <div className="hidden sm:flex absolute top-4 right-4 z-[400] bg-white/95 backdrop-blur-2xl rounded-2xl border border-[#E8E2D9] shadow-lg p-2.5 flex-col items-center select-none">
+          <div className="flex items-center justify-between w-full pb-1 mb-1.5 border-b border-[#E8E2D9]/70">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-[#A86032] font-mono flex items-center gap-1">
+              <Move className="w-3 h-3 text-[#A86032]" />
               Move & Zoom
             </span>
           </div>
@@ -1028,7 +1028,7 @@ export default function TrafficMap2D({
               onMouseUp={stopContinuousPan}
               onMouseLeave={stopContinuousPan}
               onClick={() => handlePan(0, -220)}
-              className="absolute top-0 p-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 shadow-2xs"
+              className="absolute top-0 p-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#362E28] hover:text-white text-[#64564B] border border-[#E8E2D9] transition-all active:scale-90 shadow-2xs"
               title="Move Up (North)"
             >
               <ArrowUp className="w-3.5 h-3.5" />
@@ -1040,7 +1040,7 @@ export default function TrafficMap2D({
               onMouseUp={stopContinuousPan}
               onMouseLeave={stopContinuousPan}
               onClick={() => handlePan(-220, 0)}
-              className="absolute left-0 p-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 shadow-2xs"
+              className="absolute left-0 p-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#362E28] hover:text-white text-[#64564B] border border-[#E8E2D9] transition-all active:scale-90 shadow-2xs"
               title="Move Left (West)"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -1049,7 +1049,7 @@ export default function TrafficMap2D({
             {/* Center Recenter Button */}
             <button
               onClick={handleRecenter}
-              className="p-2 rounded-full bg-[#5C331E] hover:bg-[#3D2317] text-[#FFFDF9] transition-all active:scale-90 shadow-sm"
+              className="p-2 rounded-full bg-[#362E28] hover:bg-[#231E1A] text-white transition-all active:scale-90 shadow-xs"
               title="Recenter on Target"
             >
               <Crosshair className="w-3.5 h-3.5" />
@@ -1061,7 +1061,7 @@ export default function TrafficMap2D({
               onMouseUp={stopContinuousPan}
               onMouseLeave={stopContinuousPan}
               onClick={() => handlePan(220, 0)}
-              className="absolute right-0 p-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 shadow-2xs"
+              className="absolute right-0 p-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#362E28] hover:text-white text-[#64564B] border border-[#E8E2D9] transition-all active:scale-90 shadow-2xs"
               title="Move Right (East)"
             >
               <ArrowRight className="w-3.5 h-3.5" />
@@ -1073,7 +1073,7 @@ export default function TrafficMap2D({
               onMouseUp={stopContinuousPan}
               onMouseLeave={stopContinuousPan}
               onClick={() => handlePan(0, 220)}
-              className="absolute bottom-0 p-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 shadow-2xs"
+              className="absolute bottom-0 p-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#362E28] hover:text-white text-[#64564B] border border-[#E8E2D9] transition-all active:scale-90 shadow-2xs"
               title="Move Down (South)"
             >
               <ArrowDown className="w-3.5 h-3.5" />
@@ -1081,10 +1081,10 @@ export default function TrafficMap2D({
           </div>
 
           {/* Dedicated Zoom In & Out Cluster on Pad */}
-          <div className="flex items-center gap-1.5 w-full mt-2 pt-1.5 border-t border-[#EADBCE]/60">
+          <div className="flex items-center gap-1.5 w-full mt-2 pt-1.5 border-t border-[#E8E2D9]/70">
             <button
               onClick={() => mapInstanceRef.current?.zoomOut(1)}
-              className="flex-1 py-1 px-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 flex items-center justify-center gap-1 text-[10px] font-bold shadow-2xs"
+              className="flex-1 py-1 px-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#362E28] hover:text-white text-[#64564B] border border-[#E8E2D9] transition-all active:scale-90 flex items-center justify-center gap-1 text-[10px] font-bold shadow-2xs"
               title="Zoom Out (-)"
             >
               <ZoomOut className="w-3 h-3" />
@@ -1092,34 +1092,34 @@ export default function TrafficMap2D({
             </button>
             <button
               onClick={() => mapInstanceRef.current?.zoomIn(1)}
-              className="flex-1 py-1 px-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 flex items-center justify-center gap-1 text-[10px] font-bold shadow-2xs"
+              className="flex-1 py-1 px-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#362E28] hover:text-white text-[#64564B] border border-[#E8E2D9] transition-all active:scale-90 flex items-center justify-center gap-1 text-[10px] font-bold shadow-2xs"
               title="Zoom In (+)"
             >
               <ZoomIn className="w-3 h-3" />
               <span>In</span>
             </button>
           </div>
-          <span className="text-[8px] font-mono text-[#9C6D52] mt-1">Pan, Drag or Zoom</span>
+          <span className="text-[8px] font-mono text-[#8C827A] mt-1">Pan, Drag or Zoom</span>
         </div>
 
         {/* ======================================================== */}
         {/* REDESIGNED 2-LOCATION TRIP & ROUTE PLANNER DOCK PANEL    */}
         {/* ======================================================== */}
         {mapMode === 'planner' && (
-          <div className="absolute top-4 left-4 z-[400] w-84 sm:w-96 max-h-[calc(100%-32px)] overflow-y-auto bg-[#FFFDF9]/85 backdrop-blur-2xl rounded-3xl border border-[#EADBCE]/80 shadow-2xl p-4 flex flex-col gap-3 animate-in fade-in slide-in-from-left-4 no-scrollbar">
+          <div className="absolute top-4 left-4 z-[400] w-84 sm:w-96 max-h-[calc(100%-32px)] overflow-y-auto bg-[#FFFFFF]/85 backdrop-blur-2xl rounded-3xl border border-[#E8E2D9]/80 shadow-2xl p-4 flex flex-col gap-3 animate-in fade-in slide-in-from-left-4 no-scrollbar">
             {/* Header toggle for minimizing panel */}
-            <div className="flex items-center justify-between pb-2 border-b border-[#EADBCE]/50">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D9]/50">
               <div className="flex items-center gap-2">
-                <span className="p-1 rounded-lg bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE]">
+                <span className="p-1 rounded-lg bg-[#FAF8F5] text-[#A86032] border border-[#E8E2D9]">
                   <Compass className="w-4 h-4" />
                 </span>
-                <span className="text-xs font-extrabold text-[#2C1810] tracking-tight">
+                <span className="text-xs font-extrabold text-[#231E1A] tracking-tight">
                   Trip Route Planner
                 </span>
               </div>
               <button
                 onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
-                className="text-[#7D5138] hover:text-[#2C1810] p-1 rounded-lg hover:bg-[#F5EFEB] transition-colors"
+                className="text-[#64564B] hover:text-[#231E1A] p-1 rounded-lg hover:bg-[#FAF8F5] transition-colors"
                 title={isPanelCollapsed ? "Expand Panel" : "Collapse Panel"}
               >
                 {isPanelCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
@@ -1129,14 +1129,14 @@ export default function TrafficMap2D({
             {!isPanelCollapsed && (
               <>
                 {/* 2-Location Inputs Stack with Connector Line & Swap */}
-                <div className="relative space-y-2 p-2.5 rounded-2xl bg-[#F5EFEB]/50 backdrop-blur-md border border-[#EADBCE]/60">
+                <div className="relative space-y-2 p-2.5 rounded-2xl bg-[#FAF8F5]/50 backdrop-blur-md border border-[#E8E2D9]/60">
                   {/* Vertical Route Dotted Connecting Line */}
-                  <div className="absolute left-[26px] top-[26px] bottom-[26px] w-0.5 border-l-2 border-dashed border-[#DFC4B3] pointer-events-none" />
+                  <div className="absolute left-[26px] top-[26px] bottom-[26px] w-0.5 border-l-2 border-dashed border-[#D5CCC0] pointer-events-none" />
 
                   {/* Origin (A) Field */}
                   <div className="relative z-20">
-                    <div className="flex items-center gap-2.5 px-3 py-2 bg-[#FFFDF9]/70 backdrop-blur-sm border border-[#EADBCE] rounded-xl focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 focus-within:border-[#2D6A4F] shadow-sm transition-all">
-                      <div className="w-6 h-6 rounded-full bg-[#2D6A4F] text-[#FFFDF9] text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm shadow-[#2D6A4F]/30">
+                    <div className="flex items-center gap-2.5 px-3 py-2 bg-[#FFFFFF]/70 backdrop-blur-sm border border-[#E8E2D9] rounded-xl focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 focus-within:border-[#2D6A4F] shadow-sm transition-all">
+                      <div className="w-6 h-6 rounded-full bg-[#2D6A4F] text-[#FFFFFF] text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm shadow-[#2D6A4F]/30">
                         A
                       </div>
                       <input
@@ -1146,14 +1146,14 @@ export default function TrafficMap2D({
                         onFocus={() => setActiveSearchField('origin')}
                         onChange={(e) => handleOriginInputChange(e.target.value)}
                         onKeyDown={handleOriginKeyDown}
-                        className="w-full bg-transparent text-xs font-semibold text-[#2C1810] placeholder-[#9C6D52]/60 focus:outline-none truncate"
+                        className="w-full bg-transparent text-xs font-semibold text-[#231E1A] placeholder-[#8C827A]/60 focus:outline-none truncate"
                       />
-                      {isSearchingOrigin && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7D5138] shrink-0" />}
+                      {isSearchingOrigin && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#64564B] shrink-0" />}
                       {originInput && !isSearchingOrigin && (
                         <button
                           type="button"
                           onClick={() => { setOriginInput(''); setOriginSuggestions([]); }}
-                          className="text-[#9C6D52] hover:text-[#2C1810] shrink-0"
+                          className="text-[#8C827A] hover:text-[#231E1A] shrink-0"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -1162,10 +1162,10 @@ export default function TrafficMap2D({
 
                     {/* Origin Suggestions Dropdown */}
                     {originSuggestions.length > 0 && activeSearchField === 'origin' && (
-                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFDF9]/95 backdrop-blur-2xl border border-[#EADBCE] rounded-2xl shadow-float z-50 max-h-48 overflow-y-auto divide-y divide-[#EADBCE]/50">
-                        <div className="p-2 bg-[#F5EFEB] text-[10px] font-bold text-[#7D5138] uppercase tracking-wider flex justify-between items-center">
+                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFFFF]/95 backdrop-blur-2xl border border-[#E8E2D9] rounded-2xl shadow-float z-50 max-h-48 overflow-y-auto divide-y divide-[#E8E2D9]/50">
+                        <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold text-[#64564B] uppercase tracking-wider flex justify-between items-center">
                           <span>Select Origin</span>
-                          <button onClick={() => setOriginSuggestions([])}><X className="w-3 h-3 text-[#7D5138]" /></button>
+                          <button onClick={() => setOriginSuggestions([])}><X className="w-3 h-3 text-[#64564B]" /></button>
                         </div>
                         {originSuggestions.map((place, i) => (
                           <button
@@ -1174,8 +1174,8 @@ export default function TrafficMap2D({
                             onClick={() => handleSelectOrigin(place)}
                             className="w-full p-2.5 text-left hover:bg-[#EAF2EC] transition-colors flex flex-col"
                           >
-                            <span className="text-xs font-bold text-[#2C1810] truncate">{place.name}</span>
-                            <span className="text-[10px] text-[#7D5138] truncate">{place.address}</span>
+                            <span className="text-xs font-bold text-[#231E1A] truncate">{place.name}</span>
+                            <span className="text-[10px] text-[#64564B] truncate">{place.address}</span>
                           </button>
                         ))}
                       </div>
@@ -1187,7 +1187,7 @@ export default function TrafficMap2D({
                     <button
                       type="button"
                       onClick={handleSwapLocations}
-                      className="p-1.5 rounded-full bg-[#FFFDF9] border border-[#EADBCE] text-[#5C331E] hover:text-[#2C1810] hover:border-[#5C331E] shadow-sm transition-all hover:scale-105 active:scale-95"
+                      className="p-1.5 rounded-full bg-[#FFFFFF] border border-[#E8E2D9] text-[#A86032] hover:text-[#231E1A] hover:border-[#A86032] shadow-sm transition-all hover:scale-105 active:scale-95"
                       title="Swap Origin and Destination"
                     >
                       <ArrowUpDown className="w-3.5 h-3.5" />
@@ -1196,8 +1196,8 @@ export default function TrafficMap2D({
 
                   {/* Destination (B) Field */}
                   <div className="relative z-20">
-                    <div className="flex items-center gap-2.5 px-3 py-2 bg-[#FFFDF9]/70 backdrop-blur-sm border border-[#EADBCE] rounded-xl focus-within:ring-2 focus-within:ring-[#9E2A2B]/20 focus-within:border-[#9E2A2B] shadow-sm transition-all">
-                      <div className="w-6 h-6 rounded-full bg-[#9E2A2B] text-[#FFFDF9] text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm shadow-[#9E2A2B]/30">
+                    <div className="flex items-center gap-2.5 px-3 py-2 bg-[#FFFFFF]/70 backdrop-blur-sm border border-[#E8E2D9] rounded-xl focus-within:ring-2 focus-within:ring-[#9E2A2B]/20 focus-within:border-[#9E2A2B] shadow-sm transition-all">
+                      <div className="w-6 h-6 rounded-full bg-[#9E2A2B] text-[#FFFFFF] text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm shadow-[#9E2A2B]/30">
                         B
                       </div>
                       <input
@@ -1207,14 +1207,14 @@ export default function TrafficMap2D({
                         onFocus={() => setActiveSearchField('dest')}
                         onChange={(e) => handleDestInputChange(e.target.value)}
                         onKeyDown={handleDestKeyDown}
-                        className="w-full bg-transparent text-xs font-semibold text-[#2C1810] placeholder-[#9C6D52]/60 focus:outline-none truncate"
+                        className="w-full bg-transparent text-xs font-semibold text-[#231E1A] placeholder-[#8C827A]/60 focus:outline-none truncate"
                       />
-                      {isSearchingDest && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7D5138] shrink-0" />}
+                      {isSearchingDest && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#64564B] shrink-0" />}
                       {destInput && !isSearchingDest && (
                         <button
                           type="button"
                           onClick={() => { setDestInput(''); setDestSuggestions([]); }}
-                          className="text-[#9C6D52] hover:text-[#2C1810] shrink-0"
+                          className="text-[#8C827A] hover:text-[#231E1A] shrink-0"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -1223,10 +1223,10 @@ export default function TrafficMap2D({
 
                     {/* Destination Suggestions Dropdown */}
                     {destSuggestions.length > 0 && activeSearchField === 'dest' && (
-                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFDF9]/95 backdrop-blur-2xl border border-[#EADBCE] rounded-2xl shadow-float z-50 max-h-48 overflow-y-auto divide-y divide-[#EADBCE]/50">
-                        <div className="p-2 bg-[#F5EFEB] text-[10px] font-bold text-[#7D5138] uppercase tracking-wider flex justify-between items-center">
+                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFFFF]/95 backdrop-blur-2xl border border-[#E8E2D9] rounded-2xl shadow-float z-50 max-h-48 overflow-y-auto divide-y divide-[#E8E2D9]/50">
+                        <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold text-[#64564B] uppercase tracking-wider flex justify-between items-center">
                           <span>Select Destination</span>
-                          <button onClick={() => setDestSuggestions([])}><X className="w-3 h-3 text-[#7D5138]" /></button>
+                          <button onClick={() => setDestSuggestions([])}><X className="w-3 h-3 text-[#64564B]" /></button>
                         </div>
                         {destSuggestions.map((place, i) => (
                           <button
@@ -1235,8 +1235,8 @@ export default function TrafficMap2D({
                             onClick={() => handleSelectDest(place)}
                             className="w-full p-2.5 text-left hover:bg-[#FBEAEA] transition-colors flex flex-col"
                           >
-                            <span className="text-xs font-bold text-[#2C1810] truncate">{place.name}</span>
-                            <span className="text-[10px] text-[#7D5138] truncate">{place.address}</span>
+                            <span className="text-xs font-bold text-[#231E1A] truncate">{place.name}</span>
+                            <span className="text-[10px] text-[#64564B] truncate">{place.address}</span>
                           </button>
                         ))}
                       </div>
@@ -1248,7 +1248,7 @@ export default function TrafficMap2D({
                 <button
                   onClick={() => fetchAndDrawRoutes(origin, destination)}
                   disabled={isCalculatingRoutes || !origin?.lat || !destination?.lat}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#5C331E] via-[#4A2818] to-[#3B1F13] hover:from-[#4A2818] hover:to-[#2C1810] text-[#FFFDF9] text-xs font-bold shadow-md shadow-[#4A2818]/25 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#A86032] via-[#4A2818] to-[#3B1F13] hover:from-[#4A2818] hover:to-[#231E1A] text-[#FFFFFF] text-xs font-bold shadow-md shadow-[#4A2818]/25 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {isCalculatingRoutes ? (
                     <>
@@ -1265,10 +1265,10 @@ export default function TrafficMap2D({
 
                 {/* Empty State / Prompt if no routes yet */}
                 {!routesData && (
-                  <div className="p-4 rounded-2xl bg-[#F5EFEB]/50 backdrop-blur-md border border-dashed border-[#EADBCE] text-center space-y-1">
-                    <Route className="w-5 h-5 text-[#9C6D52] mx-auto" />
-                    <p className="text-xs font-bold text-[#2C1810]">No Routes Calculated Yet</p>
-                    <p className="text-[11px] text-[#7D5138] leading-relaxed">
+                  <div className="p-4 rounded-2xl bg-[#FAF8F5]/50 backdrop-blur-md border border-dashed border-[#E8E2D9] text-center space-y-1">
+                    <Route className="w-5 h-5 text-[#8C827A] mx-auto" />
+                    <p className="text-xs font-bold text-[#231E1A]">No Routes Calculated Yet</p>
+                    <p className="text-[11px] text-[#64564B] leading-relaxed">
                       Enter any starting location and destination above, then calculate routes to see real-time flow and alternatives.
                     </p>
                   </div>
@@ -1277,9 +1277,9 @@ export default function TrafficMap2D({
                 {/* Route Options Comparison List */}
                 {routesData && routesData.routes && routesData.routes.length > 0 && (
                   <div className="space-y-2 mt-1">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-[#7D5138] uppercase tracking-wider">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-[#64564B] uppercase tracking-wider">
                       <span>Available Routes ({routesData.routes.length})</span>
-                      <span className="text-[#9C6D52] lowercase font-normal font-mono">
+                      <span className="text-[#8C827A] lowercase font-normal font-mono">
                         direct {routesData.direct_distance_km} km
                       </span>
                     </div>
@@ -1296,18 +1296,18 @@ export default function TrafficMap2D({
                             }}
                             className={`p-3 rounded-2xl border cursor-pointer transition-all ${
                               isSelected
-                                ? 'bg-[#F5EFEB]/90 border-[#5C331E] shadow-sm ring-2 ring-[#5C331E]/20 backdrop-blur-md'
-                                : 'bg-[#FFFDF9]/50 border-[#EADBCE]/60 hover:bg-[#FFFDF9]/80 backdrop-blur-md'
+                                ? 'bg-[#FAF8F5]/90 border-[#A86032] shadow-sm ring-2 ring-[#A86032]/20 backdrop-blur-md'
+                                : 'bg-[#FFFFFF]/50 border-[#E8E2D9]/60 hover:bg-[#FFFFFF]/80 backdrop-blur-md'
                             }`}
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-xs font-bold text-[#2C1810] truncate">
+                              <span className="text-xs font-bold text-[#231E1A] truncate">
                                 {route.name}
                               </span>
                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
                                 isSelected 
-                                  ? 'bg-[#5C331E] text-[#FFFDF9]' 
-                                  : 'bg-[#EADBCE] text-[#4E2E1E]'
+                                  ? 'bg-[#A86032] text-[#FFFFFF]' 
+                                  : 'bg-[#E8E2D9] text-[#4C4138]'
                               }`}>
                                 {route.badge}
                               </span>
@@ -1316,10 +1316,10 @@ export default function TrafficMap2D({
                             {/* Route Metrics: Duration & Distance */}
                             <div className="mt-2 flex items-baseline justify-between">
                               <div className="flex items-baseline gap-1.5">
-                                <span className="text-xl font-mono font-black text-[#2C1810]">
+                                <span className="text-xl font-mono font-black text-[#231E1A]">
                                   {route.duration_min}
                                 </span>
-                                <span className="text-xs font-bold text-[#7D5138]">min</span>
+                                <span className="text-xs font-bold text-[#64564B]">min</span>
                                 {route.delay_min > 0 && (
                                   <span className="text-[10px] font-semibold text-[#C47D3B] ml-1">
                                     (+{route.delay_min}m delay)
@@ -1328,24 +1328,24 @@ export default function TrafficMap2D({
                               </div>
 
                               <div className="text-right">
-                                <span className="text-sm font-mono font-bold text-[#3D2317]">
+                                <span className="text-sm font-mono font-bold text-[#362E28]">
                                   {route.distance_km}
                                 </span>
-                                <span className="text-[10px] text-[#7D5138] ml-0.5">km</span>
+                                <span className="text-[10px] text-[#64564B] ml-0.5">km</span>
                               </div>
                             </div>
 
                             {/* Traffic Status Indicator */}
-                            <div className="mt-1.5 flex items-center justify-between text-[10px] pt-1.5 border-t border-[#EADBCE]/60 text-[#7D5138]">
+                            <div className="mt-1.5 flex items-center justify-between text-[10px] pt-1.5 border-t border-[#E8E2D9]/60 text-[#64564B]">
                               <span className="flex items-center gap-1 font-medium">
                                 <span className={`w-2 h-2 rounded-full ${
                                   route.traffic_status === 'Optimal Flow' 
                                     ? 'bg-[#2D6A4F]' 
-                                    : (route.traffic_status === 'Steady Flow' ? 'bg-[#5C331E]' : 'bg-[#C47D3B]')
+                                    : (route.traffic_status === 'Steady Flow' ? 'bg-[#A86032]' : 'bg-[#C47D3B]')
                                 }`}></span>
                                 {route.traffic_status}
                               </span>
-                              <span className={`font-semibold ${isSelected ? 'text-[#5C331E]' : 'text-[#9C6D52]'}`}>
+                              <span className={`font-semibold ${isSelected ? 'text-[#A86032]' : 'text-[#8C827A]'}`}>
                                 {isSelected ? 'Active Route' : 'Click to select'}
                               </span>
                             </div>
@@ -1364,38 +1364,38 @@ export default function TrafficMap2D({
         {/* SINGLE AREA TELEMETRY HUD (When in 'telemetry' mode)     */}
         {/* ======================================================== */}
         {mapMode === 'telemetry' && (
-          <div className="absolute bottom-4 left-4 z-[400] max-w-xs sm:max-w-sm bg-[#FFFDF9]/80 backdrop-blur-2xl rounded-2xl border border-[#EADBCE]/70 shadow-2xl p-3.5 animate-in fade-in slide-in-from-bottom-2">
-            <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-[#EADBCE]/50">
+          <div className="absolute bottom-4 left-4 z-[400] max-w-xs sm:max-w-sm bg-[#FFFFFF]/80 backdrop-blur-2xl rounded-2xl border border-[#E8E2D9]/70 shadow-2xl p-3.5 animate-in fade-in slide-in-from-bottom-2">
+            <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-[#E8E2D9]/50">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#5C331E] animate-ping"></span>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#7D5138]">
+                <span className="w-2 h-2 rounded-full bg-[#A86032] animate-ping"></span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#64564B]">
                   Target Area Telemetry
                 </span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-[#5C331E] bg-[#F5EFEB] border border-[#EADBCE] px-1.5 py-0.2 rounded">
+              <span className="text-[10px] font-mono font-bold text-[#A86032] bg-[#FAF8F5] border border-[#E8E2D9] px-1.5 py-0.2 rounded">
                 {lat.toFixed(3)}, {lon.toFixed(3)}
               </span>
             </div>
 
-            <h4 className="text-xs font-extrabold text-[#2C1810] truncate mb-2">
+            <h4 className="text-xs font-extrabold text-[#231E1A] truncate mb-2">
               {name}
             </h4>
 
             <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60">
-                <span className="text-[10px] text-[#7D5138] font-medium block">Current Speed</span>
+              <div className="p-2 rounded-xl bg-[#FAF8F5]/50 backdrop-blur-sm border border-[#E8E2D9]/60">
+                <span className="text-[10px] text-[#64564B] font-medium block">Current Speed</span>
                 <div className="flex items-baseline gap-1 mt-0.5">
-                  <span className="text-lg font-mono font-extrabold text-[#2C1810]">
+                  <span className="text-lg font-mono font-extrabold text-[#231E1A]">
                     {currentSpeed}
                   </span>
-                  <span className="text-[10px] font-semibold text-[#7D5138]">km/h</span>
+                  <span className="text-[10px] font-semibold text-[#64564B]">km/h</span>
                 </div>
               </div>
 
-              <div className="p-2 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-sm border border-[#EADBCE]/60">
-                <span className="text-[10px] text-[#7D5138] font-medium block">Congestion Index</span>
+              <div className="p-2 rounded-xl bg-[#FAF8F5]/50 backdrop-blur-sm border border-[#E8E2D9]/60">
+                <span className="text-[10px] text-[#64564B] font-medium block">Congestion Index</span>
                 <div className="flex items-baseline gap-1 mt-0.5">
-                  <span className="text-lg font-mono font-extrabold text-[#2C1810]">
+                  <span className="text-lg font-mono font-extrabold text-[#231E1A]">
                     {congestion}%
                   </span>
                   <span className={`text-[9px] px-1 py-0.2 rounded font-bold ${
@@ -1409,30 +1409,30 @@ export default function TrafficMap2D({
               </div>
             </div>
 
-            <div className="mt-2 text-[10px] text-[#9C6D52] font-medium flex items-center justify-between">
+            <div className="mt-2 text-[10px] text-[#8C827A] font-medium flex items-center justify-between">
               <span className="truncate max-w-[200px]">Source: {currentLocation?.dataSource || 'TomTom GIS Engine'}</span>
-              <span className="text-[#5C331E] font-bold">Live Flow Sync</span>
+              <span className="text-[#A86032] font-bold">Live Flow Sync</span>
             </div>
           </div>
         )}
 
         {/* Floating Route Legend on Bottom Right */}
-        <div className="hidden sm:flex absolute bottom-4 right-4 z-[400] bg-[#FFFDF9]/80 backdrop-blur-md rounded-2xl border border-[#EADBCE]/70 shadow-lg px-3 py-2 items-center gap-3 text-xs font-semibold">
+        <div className="hidden sm:flex absolute bottom-4 right-4 z-[400] bg-[#FFFFFF]/80 backdrop-blur-md rounded-2xl border border-[#E8E2D9]/70 shadow-lg px-3 py-2 items-center gap-3 text-xs font-semibold">
           <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-2 rounded-full bg-[#5C331E] shadow-sm shadow-[#5C331E]/40"></span>
-            <span className="text-[#2C1810] text-[11px] font-bold">Selected Route</span>
+            <span className="w-3.5 h-2 rounded-full bg-[#A86032] shadow-sm shadow-[#A86032]/40"></span>
+            <span className="text-[#231E1A] text-[11px] font-bold">Selected Route</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3.5 h-1.5 rounded-full bg-[#C49A80]"></span>
-            <span className="text-[#7D5138] text-[11px]">Alternative Path</span>
+            <span className="text-[#64564B] text-[11px]">Alternative Path</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#2D6A4F]"></span>
-            <span className="text-[#7D5138] text-[11px]">Origin A</span>
+            <span className="text-[#64564B] text-[11px]">Origin A</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#9E2A2B]"></span>
-            <span className="text-[#7D5138] text-[11px]">Dest B</span>
+            <span className="text-[#64564B] text-[11px]">Dest B</span>
           </div>
         </div>
       </div>

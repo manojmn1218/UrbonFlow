@@ -56,17 +56,17 @@ export default function PipelineFlowchartNav({
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   return (
-    <div className="w-full bg-[#FFFDF9]/70 backdrop-blur-xl border-b border-[#EADBCE]/70 shadow-sm z-20 transition-all select-none">
+    <div className="w-full bg-white/80 backdrop-blur-xl border-b border-[#E8E2D9] shadow-2xs z-20 transition-all select-none">
       {/* Top Flowchart Header Bar */}
       <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-1 rounded-lg bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE]">
-            <Workflow className="w-3.5 h-3.5" />
+          <div className="p-1 rounded-lg bg-[#FAF8F5] text-[#4C4138] border border-[#E8E2D9]">
+            <Workflow className="w-3.5 h-3.5 text-[#A86032]" />
           </div>
-          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#2C1810]">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#231E1A]">
             AI Traffic Engineering Pipeline
           </span>
-          <span className="text-[10px] text-[#7D5138] font-mono hidden md:inline">
+          <span className="text-[10px] text-[#64564B] font-mono hidden md:inline">
             • 3-Stage Workflow: City Ingestion ➔ Spatial GIS Routing ➔ AI Intelligence & Analytics
           </span>
         </div>
@@ -78,19 +78,19 @@ export default function PipelineFlowchartNav({
               type="button"
               onClick={() => onSelectIndex(Math.max(0, currentIndex - 1))}
               disabled={currentIndex === 0}
-              className="p-1 rounded-lg text-[#7D5138] hover:text-[#2C1810] hover:bg-[#F5EFEB] disabled:opacity-25 disabled:pointer-events-none transition-all"
+              className="p-1 rounded-lg text-[#64564B] hover:text-[#231E1A] hover:bg-[#FAF8F5] disabled:opacity-25 disabled:pointer-events-none transition-all"
               title="Previous Pipeline Stage (←)"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-[10px] font-mono font-bold text-[#4E2E1E] bg-[#F5EFEB] border border-[#EADBCE] px-2.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-mono font-bold text-[#362E28] bg-[#FAF8F5] border border-[#E8E2D9] px-2.5 py-0.5 rounded-full">
               Stage {currentIndex + 1} of 3: {PIPELINE_STEPS[currentIndex]?.title}
             </span>
             <button
               type="button"
               onClick={() => onSelectIndex(Math.min(PIPELINE_STEPS.length - 1, currentIndex + 1))}
               disabled={currentIndex === PIPELINE_STEPS.length - 1}
-              className="p-1 rounded-lg text-[#7D5138] hover:text-[#2C1810] hover:bg-[#F5EFEB] disabled:opacity-25 disabled:pointer-events-none transition-all"
+              className="p-1 rounded-lg text-[#64564B] hover:text-[#231E1A] hover:bg-[#FAF8F5] disabled:opacity-25 disabled:pointer-events-none transition-all"
               title="Next Pipeline Stage (→)"
             >
               <ChevronRight className="w-4 h-4" />
@@ -99,7 +99,7 @@ export default function PipelineFlowchartNav({
 
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1 rounded-lg text-[#7D5138] hover:text-[#2C1810] hover:bg-[#F5EFEB] transition-colors"
+            className="p-1 rounded-lg text-[#64564B] hover:text-[#231E1A] hover:bg-[#FAF8F5] transition-colors"
             title={isCollapsed ? "Expand Flowchart" : "Collapse Flowchart"}
           >
             {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
@@ -108,9 +108,9 @@ export default function PipelineFlowchartNav({
       </div>
 
       {/* Visual Pipeline Progress Bar Connecting All Stages */}
-      <div className="w-full bg-[#EADBCE]/40 h-1 relative overflow-hidden">
+      <div className="w-full bg-[#E8E2D9]/50 h-1 relative overflow-hidden">
         <div 
-          className="h-full bg-gradient-to-r from-[#C47D3B] via-[#5C331E] to-[#2D6A4F] transition-all duration-500 ease-out"
+          className="h-full bg-gradient-to-r from-[#A86032] via-[#4C4138] to-[#2D6A4F] transition-all duration-500 ease-out"
           style={{ width: `${((currentIndex + 1) / PIPELINE_STEPS.length) * 100}%` }}
         />
       </div>
@@ -134,34 +134,34 @@ export default function PipelineFlowchartNav({
                     className={`
                       group relative flex-1 text-left p-2.5 sm:p-3 rounded-2xl border transition-all duration-300
                       ${isActive 
-                        ? 'bg-gradient-to-br from-[#4E2E1E] via-[#3D2317] to-[#2C1810] text-[#FFFDF9] border-[#3D2317] shadow-lg shadow-[#2C1810]/20 ring-2 ring-[#7D5138]/40 scale-[1.02] backdrop-blur-md' 
+                        ? 'bg-white text-[#231E1A] border-[#A86032] shadow-sm ring-2 ring-[#A86032]/25 scale-[1.01] backdrop-blur-md' 
                         : isCompleted
-                          ? 'bg-[#EAF2EC]/60 hover:bg-[#EAF2EC]/85 border-[#C4DFC8] text-[#2C1810] backdrop-blur-md'
-                          : 'bg-[#FFFDF9]/55 hover:bg-[#FFFDF9]/85 border-[#EADBCE]/70 text-[#4E2E1E] hover:border-[#C49A80] backdrop-blur-md shadow-2xs'
+                          ? 'bg-[#F0F7F2]/80 hover:bg-[#EAF5EE] border-[#C8E4D1] text-[#1E5631] backdrop-blur-md'
+                          : 'bg-white/60 hover:bg-white border-[#E8E2D9] text-[#64564B] hover:text-[#231E1A] hover:border-[#D5CCC0] backdrop-blur-md shadow-2xs'
                       }
                     `}
                   >
                     {/* Top Phase Ribbon & Status */}
                     <div className="flex items-center justify-between mb-1">
                       <span className={`text-[9px] font-mono font-bold tracking-wider uppercase ${
-                        isActive ? 'text-[#DFC4B3]' : isCompleted ? 'text-[#2D6A4F]' : 'text-[#9C6D52]'
+                        isActive ? 'text-[#A86032]' : isCompleted ? 'text-[#2D6A4F]' : 'text-[#8C827A]'
                       }`}>
                         STEP {step.number} • {step.phase}
                       </span>
 
                       {/* Status Indicator */}
                       {isCompleted ? (
-                        <span className="flex items-center gap-1 text-[9px] font-bold text-[#2D6A4F] bg-[#FFFDF9]/90 px-1.5 py-0.2 rounded-full border border-[#C4DFC8]">
+                        <span className="flex items-center gap-1 text-[9px] font-bold text-[#2D6A4F] bg-white px-1.5 py-0.2 rounded-full border border-[#C8E4D1]">
                           <CheckCircle2 className="w-2.5 h-2.5" />
                           Done
                         </span>
                       ) : isActive ? (
-                        <span className="flex items-center gap-1 text-[9px] font-bold text-[#FFFDF9] bg-white/20 px-1.5 py-0.2 rounded-full">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span className="flex items-center gap-1 text-[9px] font-bold text-[#A86032] bg-[#FEF6F0] border border-[#F2D7C4] px-1.5 py-0.2 rounded-full">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#A86032] animate-ping"></span>
                           Active
                         </span>
                       ) : (
-                        <span className="text-[9px] font-mono text-[#7D5138] bg-[#F5EFEB] border border-[#EADBCE] px-1.5 py-0.2 rounded">
+                        <span className="text-[9px] font-mono text-[#64564B] bg-[#FAF8F5] border border-[#E8E2D9] px-1.5 py-0.2 rounded">
                           Next
                         </span>
                       )}
@@ -171,21 +171,19 @@ export default function PipelineFlowchartNav({
                     <div className="flex items-center gap-2">
                       <div className={`p-1.5 rounded-xl shrink-0 transition-all ${
                         isActive 
-                          ? 'bg-white/20 text-[#FFFDF9]' 
+                          ? 'bg-[#FEF6F0] text-[#A86032] border border-[#F2D7C4]' 
                           : isCompleted 
                             ? 'bg-[#D8EADB] text-[#2D6A4F]' 
-                            : 'bg-[#F5EFEB] text-[#653D28] group-hover:bg-[#EADBCE] group-hover:text-[#3D2317]'
+                            : 'bg-[#FAF8F5] text-[#64564B] group-hover:bg-[#F3EFE9] group-hover:text-[#231E1A]'
                       }`}>
                         <Icon className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className={`text-xs font-black truncate leading-tight ${
-                          isActive ? 'text-[#FFFDF9]' : 'text-[#2C1810]'
-                        }`}>
+                        <h4 className="text-xs font-black truncate leading-tight text-[#231E1A]">
                           {step.title}
                         </h4>
                         <p className={`text-[10px] truncate leading-tight ${
-                          isActive ? 'text-[#DFC4B3]' : 'text-[#7D5138]'
+                          isActive ? 'text-[#837367]' : 'text-[#8C827A]'
                         }`}>
                           {step.subtitle}
                         </p>
@@ -200,11 +198,11 @@ export default function PipelineFlowchartNav({
                         isCompleted 
                           ? 'text-[#2D6A4F]' 
                           : isActive 
-                            ? 'text-[#5C331E] animate-pulse' 
-                            : 'text-[#DFC4B3]'
+                            ? 'text-[#A86032]' 
+                            : 'text-[#D5CCC0]'
                       }`}>
                         <div className={`hidden lg:block w-3 sm:w-4 h-0.5 ${
-                          isCompleted ? 'bg-[#2D6A4F]' : isActive ? 'bg-[#5C331E]' : 'bg-[#EADBCE]'
+                          isCompleted ? 'bg-[#2D6A4F]' : isActive ? 'bg-[#A86032]' : 'bg-[#E8E2D9]'
                         }`} />
                         <ArrowRight className="w-3.5 h-3.5" />
                       </div>

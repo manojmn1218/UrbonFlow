@@ -110,21 +110,21 @@ export default function AiPredictionsSection({
         onLocationChange={onLocationChange} 
       />
 
-      <div className="bg-[#FFFDF9]/90 backdrop-blur-2xl rounded-2xl border border-[#EADBCE] shadow-sm p-4 sm:p-5">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3.5 border-b border-[#EADBCE]/50">
+      <div className="bg-[#FFFFFF]/90 backdrop-blur-2xl rounded-2xl border border-[#E8E2D9] shadow-sm p-4 sm:p-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3.5 border-b border-[#E8E2D9]/50">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-[#F5EFEB] text-[#5C331E] border border-[#EADBCE]">
+            <div className="p-2 rounded-xl bg-[#FAF8F5] text-[#A86032] border border-[#E8E2D9]">
               <Cpu className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-[#2C1810] tracking-tight">AI Predictive Inference Engine</h2>
+                <h2 className="text-lg font-bold text-[#231E1A] tracking-tight">AI Predictive Inference Engine</h2>
                 <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-[#EAF2EC] text-[#2D6A4F] flex items-center gap-1 border border-[#C4DFC8]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F] animate-pulse"></span>
                   {currentLocation?.isRealtime ? 'TomTom Live Telemetry' : 'Spatial Graph ST-GNN'}
                 </span>
               </div>
-              <p className="text-xs text-[#7D5138]">
+              <p className="text-xs text-[#64564B]">
                 Spatial-Temporal Graph Neural Network (ST-GNN) inference for {currentLocation?.name}
               </p>
             </div>
@@ -132,13 +132,13 @@ export default function AiPredictionsSection({
 
           <div className="flex flex-wrap items-center gap-3">
             {/* Forecast Horizon Tabs */}
-            <div className="flex items-center bg-[#F5EFEB] border border-[#EADBCE]/60 p-1 rounded-xl">
+            <div className="flex items-center bg-[#FAF8F5] border border-[#E8E2D9]/60 p-1 rounded-xl">
               {['15m', '30m', '60m'].map((horizon) => (
                 <button
                   key={horizon}
                   onClick={() => setActiveHorizon(horizon)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    activeHorizon === horizon ? 'bg-[#5C331E] text-[#FFFDF9] shadow-sm' : 'text-[#7D5138] hover:text-[#2C1810]'
+                    activeHorizon === horizon ? 'bg-[#A86032] text-[#FFFFFF] shadow-sm' : 'text-[#64564B] hover:text-[#231E1A]'
                   }`}
                 >
                   {horizon === '15m' ? '+15 Mins' : horizon === '30m' ? '+30 Mins' : '+60 Mins'}
@@ -149,9 +149,9 @@ export default function AiPredictionsSection({
             <button
               onClick={handleRunSimulation}
               disabled={isSimulating}
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#5C331E] to-[#422213] hover:from-[#4A2818] hover:to-[#361A0E] text-[#FFFDF9] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#A86032] to-[#422213] hover:from-[#4A2818] hover:to-[#361A0E] text-[#FFFFFF] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
             >
-              <RotateCw className={`w-3.5 h-3.5 ${isSimulating ? 'animate-spin text-[#DFC4B3]' : ''}`} />
+              <RotateCw className={`w-3.5 h-3.5 ${isSimulating ? 'animate-spin text-[#D5CCC0]' : ''}`} />
               <span>{isSimulating ? 'Computing...' : 'Recalculate'}</span>
             </button>
           </div>
@@ -170,14 +170,14 @@ export default function AiPredictionsSection({
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-3.5">
-          <div className="p-3.5 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-md border border-[#EADBCE]/60 shadow-subtle">
-            <div className="flex items-center justify-between text-xs text-[#7D5138] mb-1.5">
+          <div className="p-3.5 rounded-xl bg-[#FAF8F5]/50 backdrop-blur-md border border-[#E8E2D9]/60 shadow-subtle">
+            <div className="flex items-center justify-between text-xs text-[#64564B] mb-1.5">
               <span className="font-medium">Predicted Speed (+{activeHorizon})</span>
-              <Clock className="w-3.5 h-3.5 text-[#5C331E]" />
+              <Clock className="w-3.5 h-3.5 text-[#A86032]" />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold font-mono text-[#2C1810] tracking-tight">{pred.speed}</span>
-              <span className="text-xs font-semibold text-[#7D5138]">km/h</span>
+              <span className="text-2xl font-extrabold font-mono text-[#231E1A] tracking-tight">{pred.speed}</span>
+              <span className="text-xs font-semibold text-[#64564B]">km/h</span>
             </div>
             <div className="flex items-center gap-1.5 mt-1.5 text-xs font-medium">
               {pred.speed < currentSpeed ? (
@@ -185,24 +185,24 @@ export default function AiPredictionsSection({
               ) : (
                 <span className="text-[#2D6A4F] flex items-center gap-0.5"><TrendingUp className="w-3.5 h-3.5" />{pred.change} recovery</span>
               )}
-              <span className="text-[#9C6D52]">vs current {currentSpeed} km/h</span>
+              <span className="text-[#8C827A]">vs current {currentSpeed} km/h</span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-md border border-[#EADBCE]/60 shadow-subtle">
-            <div className="flex items-center justify-between text-xs text-[#7D5138] mb-1.5">
+          <div className="p-3.5 rounded-xl bg-[#FAF8F5]/50 backdrop-blur-md border border-[#E8E2D9]/60 shadow-subtle">
+            <div className="flex items-center justify-between text-xs text-[#64564B] mb-1.5">
               <span className="font-medium">Forecast Congestion</span>
               <AlertOctagon className="w-3.5 h-3.5 text-[#C47D3B]" />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold font-mono text-[#2C1810] tracking-tight">{pred.congestion}%</span>
+              <span className="text-2xl font-extrabold font-mono text-[#231E1A] tracking-tight">{pred.congestion}%</span>
               <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${
                 pred.congestion > 70 ? 'bg-[#FBEAEA] text-[#9E2A2B]' : 'bg-[#FDF2E9] text-[#C47D3B]'
               }`}>
                 {pred.risk}
               </span>
             </div>
-            <div className="w-full bg-[#EADBCE] rounded-full h-1.5 mt-2 overflow-hidden">
+            <div className="w-full bg-[#E8E2D9] rounded-full h-1.5 mt-2 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
                   pred.congestion > 70 ? 'bg-[#9E2A2B]' : 'bg-[#C47D3B]'
@@ -212,91 +212,91 @@ export default function AiPredictionsSection({
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-md border border-[#EADBCE]/60 shadow-subtle">
-            <div className="flex items-center justify-between text-xs text-[#7D5138] mb-1.5">
+          <div className="p-3.5 rounded-xl bg-[#FAF8F5]/50 backdrop-blur-md border border-[#E8E2D9]/60 shadow-subtle">
+            <div className="flex items-center justify-between text-xs text-[#64564B] mb-1.5">
               <span className="font-medium">Model Confidence</span>
               <ShieldCheck className="w-3.5 h-3.5 text-[#2D6A4F]" />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold font-mono text-[#2C1810] tracking-tight">{pred.confidence}%</span>
+              <span className="text-2xl font-extrabold font-mono text-[#231E1A] tracking-tight">{pred.confidence}%</span>
               <span className="text-[10px] px-2 py-0.5 rounded-md font-semibold bg-[#EAF2EC] text-[#2D6A4F]">High Fidelity</span>
             </div>
-            <p className="text-[10px] text-[#7D5138] mt-1.5">Bayesian ensemble variance &lt; 1.2%</p>
+            <p className="text-[10px] text-[#64564B] mt-1.5">Bayesian ensemble variance &lt; 1.2%</p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-md border border-[#EADBCE]/60 shadow-subtle">
-            <div className="flex items-center justify-between text-xs text-[#7D5138] mb-1.5">
+          <div className="p-3.5 rounded-xl bg-[#FAF8F5]/50 backdrop-blur-md border border-[#E8E2D9]/60 shadow-subtle">
+            <div className="flex items-center justify-between text-xs text-[#64564B] mb-1.5">
               <span className="font-medium">Monitored Area</span>
-              <span className="text-[10px] font-mono font-bold bg-[#FFFDF9] px-2 py-0.5 rounded border border-[#EADBCE] text-[#5C331E]">
+              <span className="text-[10px] font-mono font-bold bg-[#FFFFFF] px-2 py-0.5 rounded border border-[#E8E2D9] text-[#A86032]">
                 GPS
               </span>
             </div>
-            <h4 className="text-xs font-bold text-[#2C1810] truncate">
+            <h4 className="text-xs font-bold text-[#231E1A] truncate">
               {shortName}
             </h4>
-            <div className="flex items-center justify-between text-xs text-[#7D5138] mt-1.5 pt-1.5 border-t border-[#EADBCE]/60">
-              <span>Current: <strong className="text-[#2C1810]">{currentSpeed} km/h</strong></span>
-              <span>Free-Flow: <strong className="text-[#2C1810]">{freeFlow} km/h</strong></span>
+            <div className="flex items-center justify-between text-xs text-[#64564B] mt-1.5 pt-1.5 border-t border-[#E8E2D9]/60">
+              <span>Current: <strong className="text-[#231E1A]">{currentSpeed} km/h</strong></span>
+              <span>Free-Flow: <strong className="text-[#231E1A]">{freeFlow} km/h</strong></span>
             </div>
           </div>
         </div>
 
-        <div className="mt-3 p-3 rounded-xl bg-[#F5EFEB]/80 backdrop-blur-md border border-[#EADBCE] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="mt-3 p-3 rounded-xl bg-[#FAF8F5]/80 backdrop-blur-md border border-[#E8E2D9] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-start gap-2.5">
-            <div className="p-1.5 rounded-lg bg-[#5C331E] text-[#FFFDF9] shadow-sm mt-0.5">
+            <div className="p-1.5 rounded-lg bg-[#A86032] text-[#FFFFFF] shadow-sm mt-0.5">
               <Sparkles className="w-3.5 h-3.5 text-[#E08E45]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#3D2317]">AI Prescriptive Recommendation</span>
-                <span className="text-[10px] bg-[#EADBCE] text-[#4E2E1E] font-mono px-1.5 py-0.2 rounded font-semibold">Autonomous Level 3</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#362E28]">AI Prescriptive Recommendation</span>
+                <span className="text-[10px] bg-[#E8E2D9] text-[#4C4138] font-mono px-1.5 py-0.2 rounded font-semibold">Autonomous Level 3</span>
               </div>
-              <p className="text-xs font-medium text-[#2C1810] mt-0.5">"{pred.action}"</p>
+              <p className="text-xs font-medium text-[#231E1A] mt-0.5">"{pred.action}"</p>
             </div>
           </div>
-          <button className="px-3 py-1.5 rounded-lg bg-[#FFFDF9] hover:bg-[#F5EFEB] border border-[#EADBCE] text-[#5C331E] text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-auto">
+          <button className="px-3 py-1.5 rounded-lg bg-[#FFFFFF] hover:bg-[#FAF8F5] border border-[#E8E2D9] text-[#A86032] text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-auto">
             Execute Policy Override
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 mt-3.5">
-          <div className="p-3.5 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-md border border-[#EADBCE]/60">
+          <div className="p-3.5 rounded-xl bg-[#FAF8F5]/50 backdrop-blur-md border border-[#E8E2D9]/60">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-bold text-[#2C1810]">Prediction Factor Breakdown</h3>
-                <p className="text-xs text-[#7D5138]">Shapley value contributions for {shortName}</p>
+                <h3 className="text-sm font-bold text-[#231E1A]">Prediction Factor Breakdown</h3>
+                <p className="text-xs text-[#64564B]">Shapley value contributions for {shortName}</p>
               </div>
-              <Sliders className="w-4 h-4 text-[#7D5138]" />
+              <Sliders className="w-4 h-4 text-[#64564B]" />
             </div>
             <div className="space-y-3.5">
               {influences.map((inf, idx) => (
                 <div key={idx} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium text-[#2C1810]">{inf.factor}</span>
-                    <span className="font-mono font-bold text-[#2C1810]">{inf.weight}%</span>
+                    <span className="font-medium text-[#231E1A]">{inf.factor}</span>
+                    <span className="font-mono font-bold text-[#231E1A]">{inf.weight}%</span>
                   </div>
-                  <div className="w-full bg-[#EADBCE] rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-[#E8E2D9] rounded-full h-2 overflow-hidden">
                     <div
-                      className={`h-full rounded-full ${idx === 0 ? 'bg-[#5C331E]' : idx === 1 ? 'bg-[#7D5138]' : idx === 2 ? 'bg-[#C47D3B]' : 'bg-[#2D6A4F]'}`}
+                      className={`h-full rounded-full ${idx === 0 ? 'bg-[#A86032]' : idx === 1 ? 'bg-[#64564B]' : idx === 2 ? 'bg-[#C47D3B]' : 'bg-[#2D6A4F]'}`}
                       style={{ width: `${inf.weight}%` }}
                     />
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-3 border-t border-[#EADBCE]/60 flex items-center justify-between text-[11px] text-[#7D5138]">
-              <span>Spatial Graph Weight: <strong className="text-[#2C1810]">0.84</strong></span>
-              <span>Periodicity Fit: <strong className="text-[#2C1810]">0.92</strong></span>
+            <div className="mt-4 pt-3 border-t border-[#E8E2D9]/60 flex items-center justify-between text-[11px] text-[#64564B]">
+              <span>Spatial Graph Weight: <strong className="text-[#231E1A]">0.84</strong></span>
+              <span>Periodicity Fit: <strong className="text-[#231E1A]">0.92</strong></span>
             </div>
           </div>
 
-          <div className="p-5 rounded-xl bg-[#F5EFEB]/50 backdrop-blur-md border border-[#EADBCE]/60 flex flex-col justify-between">
+          <div className="p-5 rounded-xl bg-[#FAF8F5]/50 backdrop-blur-md border border-[#E8E2D9]/60 flex flex-col justify-between">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-bold text-[#2C1810]">Projected 60-Minute Velocity Trajectory</h3>
-                <p className="text-xs text-[#7D5138]">Forecasted velocity (km/h) across time horizons in {shortName}</p>
+                <h3 className="text-sm font-bold text-[#231E1A]">Projected 60-Minute Velocity Trajectory</h3>
+                <p className="text-xs text-[#64564B]">Forecasted velocity (km/h) across time horizons in {shortName}</p>
               </div>
-              <span className="text-[10px] font-mono bg-[#EADBCE] text-[#4E2E1E] px-2 py-0.5 rounded font-semibold">
+              <span className="text-[10px] font-mono bg-[#E8E2D9] text-[#4C4138] px-2 py-0.5 rounded font-semibold">
                 ST-GNN Feed
               </span>
             </div>
@@ -305,52 +305,52 @@ export default function AiPredictionsSection({
               <svg viewBox="0 0 400 150" className="w-full h-full overflow-visible">
                 <defs>
                   <linearGradient id="predCurveGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#5C331E" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#5C331E" stopOpacity="0.0" />
+                    <stop offset="0%" stopColor="#A86032" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#A86032" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
-                <line x1="40" y1="20" x2="380" y2="20" stroke="#EADBCE" strokeDasharray="3 3" />
-                <line x1="40" y1="65" x2="380" y2="65" stroke="#EADBCE" strokeDasharray="3 3" />
-                <line x1="40" y1="110" x2="380" y2="110" stroke="#EADBCE" strokeDasharray="3 3" />
-                <text x="32" y="24" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">80</text>
-                <text x="32" y="69" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">40</text>
-                <text x="32" y="114" fill="#9C6D52" fontSize="10" textAnchor="end" fontFamily="monospace">0</text>
+                <line x1="40" y1="20" x2="380" y2="20" stroke="#E8E2D9" strokeDasharray="3 3" />
+                <line x1="40" y1="65" x2="380" y2="65" stroke="#E8E2D9" strokeDasharray="3 3" />
+                <line x1="40" y1="110" x2="380" y2="110" stroke="#E8E2D9" strokeDasharray="3 3" />
+                <text x="32" y="24" fill="#8C827A" fontSize="10" textAnchor="end" fontFamily="monospace">80</text>
+                <text x="32" y="69" fill="#8C827A" fontSize="10" textAnchor="end" fontFamily="monospace">40</text>
+                <text x="32" y="114" fill="#8C827A" fontSize="10" textAnchor="end" fontFamily="monospace">0</text>
 
                 <g>
                   <path d={areaPath} fill="url(#predCurveGrad)" />
-                  <path d={dPath} fill="none" stroke="#5C331E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d={dPath} fill="none" stroke="#A86032" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                   {points.map((p, i) => (
                     <g key={i}>
-                      <circle cx={p.x} cy={p.y} r="4.5" fill="#FFFDF9" stroke="#5C331E" strokeWidth="2.5" />
-                      <text x={p.x} y={p.y - 9} fill="#2C1810" fontSize="10" fontWeight="700" textAnchor="middle" fontFamily="monospace">{p.speed}</text>
-                      <text x={p.x} y="130" fill="#7D5138" fontSize="10" textAnchor="middle" fontWeight="500">{p.time}</text>
+                      <circle cx={p.x} cy={p.y} r="4.5" fill="#FFFFFF" stroke="#A86032" strokeWidth="2.5" />
+                      <text x={p.x} y={p.y - 9} fill="#231E1A" fontSize="10" fontWeight="700" textAnchor="middle" fontFamily="monospace">{p.speed}</text>
+                      <text x={p.x} y="130" fill="#64564B" fontSize="10" textAnchor="middle" fontWeight="500">{p.time}</text>
                     </g>
                   ))}
                 </g>
               </svg>
             </div>
 
-            <div className="mt-3 flex items-center justify-between text-xs text-[#7D5138]">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#5C331E]"></span>Predicted velocity trajectory</span>
-              <span className="font-mono text-[11px] text-[#9C6D52]">Telemetry: {currentLocation?.dataSource || "Live"}</span>
+            <div className="mt-3 flex items-center justify-between text-xs text-[#64564B]">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#A86032]"></span>Predicted velocity trajectory</span>
+              <span className="font-mono text-[11px] text-[#8C827A]">Telemetry: {currentLocation?.dataSource || "Live"}</span>
             </div>
           </div>
         </div>
 
         {/* DENSE LOWER VIEWPORT SECTION: AUTONOMOUS MITIGATION POLICY SIMULATION DECK */}
-        <div className="mt-3.5 pt-3.5 border-t border-[#EADBCE]/50">
+        <div className="mt-3.5 pt-3.5 border-t border-[#E8E2D9]/50">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-[#5C331E] text-[#FFFDF9]">
-                <Layers className="w-4 h-4 text-[#DFC4B3]" />
+              <div className="p-1.5 rounded-lg bg-[#A86032] text-[#FFFFFF]">
+                <Layers className="w-4 h-4 text-[#D5CCC0]" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-[#2C1810]">Autonomous Mitigation Policy Simulation Deck</h3>
-                <p className="text-[11px] text-[#7D5138]">Real-time scenario testing for automated signal and flow intervention</p>
+                <h3 className="text-sm font-bold text-[#231E1A]">Autonomous Mitigation Policy Simulation Deck</h3>
+                <p className="text-[11px] text-[#64564B]">Real-time scenario testing for automated signal and flow intervention</p>
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-[#7D5138] font-medium">Active Interventions:</span>
+              <span className="text-[#64564B] font-medium">Active Interventions:</span>
               <span className="font-mono font-bold text-[#2D6A4F] bg-[#EAF2EC] px-2 py-0.5 rounded-md border border-[#C4DFC8]">
                 {Object.values(activePolicies).filter(Boolean).length} / 4 Engaged
               </span>
@@ -364,21 +364,21 @@ export default function AiPredictionsSection({
               className={`p-3 rounded-2xl border transition-all cursor-pointer backdrop-blur-md ${
                 activePolicies.greenWave 
                   ? 'bg-[#EAF2EC]/70 border-[#2D6A4F]/40 shadow-sm' 
-                  : 'bg-[#F5EFEB]/40 border-[#EADBCE]/60 opacity-70'
+                  : 'bg-[#FAF8F5]/40 border-[#E8E2D9]/60 opacity-70'
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138]">Strategy #1</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#64564B]">Strategy #1</span>
                 <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                  activePolicies.greenWave ? 'bg-[#2D6A4F] text-[#FFFDF9]' : 'bg-[#EADBCE] text-[#7D5138]'
+                  activePolicies.greenWave ? 'bg-[#2D6A4F] text-[#FFFFFF]' : 'bg-[#E8E2D9] text-[#64564B]'
                 }`}>
                   {activePolicies.greenWave ? 'Engaged' : 'Standby'}
                 </span>
               </div>
-              <h4 className="text-xs font-bold text-[#2C1810]">Coordinated Green Wave</h4>
-              <p className="text-[10px] text-[#7D5138] mt-1">Extends phase timing by +14s along primary arterial to dissipate platoons.</p>
-              <div className="mt-2 pt-2 border-t border-[#EADBCE]/60 flex items-center justify-between text-[11px]">
-                <span className="text-[#7D5138]">Queue Delay</span>
+              <h4 className="text-xs font-bold text-[#231E1A]">Coordinated Green Wave</h4>
+              <p className="text-[10px] text-[#64564B] mt-1">Extends phase timing by +14s along primary arterial to dissipate platoons.</p>
+              <div className="mt-2 pt-2 border-t border-[#E8E2D9]/60 flex items-center justify-between text-[11px]">
+                <span className="text-[#64564B]">Queue Delay</span>
                 <span className="font-mono font-bold text-[#2D6A4F]">-24% Drop</span>
               </div>
             </div>
@@ -389,21 +389,21 @@ export default function AiPredictionsSection({
               className={`p-3 rounded-2xl border transition-all cursor-pointer backdrop-blur-md ${
                 activePolicies.vsl 
                   ? 'bg-[#EAF2EC]/70 border-[#2D6A4F]/40 shadow-sm' 
-                  : 'bg-[#F5EFEB]/40 border-[#EADBCE]/60 opacity-70'
+                  : 'bg-[#FAF8F5]/40 border-[#E8E2D9]/60 opacity-70'
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138]">Strategy #2</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#64564B]">Strategy #2</span>
                 <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                  activePolicies.vsl ? 'bg-[#2D6A4F] text-[#FFFDF9]' : 'bg-[#EADBCE] text-[#7D5138]'
+                  activePolicies.vsl ? 'bg-[#2D6A4F] text-[#FFFFFF]' : 'bg-[#E8E2D9] text-[#64564B]'
                 }`}>
                   {activePolicies.vsl ? 'Engaged' : 'Standby'}
                 </span>
               </div>
-              <h4 className="text-xs font-bold text-[#2C1810]">Dynamic Speed Harmonization</h4>
-              <p className="text-[10px] text-[#7D5138] mt-1">Harmonizes inbound speed to 45 km/h to prevent shockwave propagation.</p>
-              <div className="mt-2 pt-2 border-t border-[#EADBCE]/60 flex items-center justify-between text-[11px]">
-                <span className="text-[#7D5138]">Shockwave Risk</span>
+              <h4 className="text-xs font-bold text-[#231E1A]">Dynamic Speed Harmonization</h4>
+              <p className="text-[10px] text-[#64564B] mt-1">Harmonizes inbound speed to 45 km/h to prevent shockwave propagation.</p>
+              <div className="mt-2 pt-2 border-t border-[#E8E2D9]/60 flex items-center justify-between text-[11px]">
+                <span className="text-[#64564B]">Shockwave Risk</span>
                 <span className="font-mono font-bold text-[#2D6A4F]">-88% Mitigated</span>
               </div>
             </div>
@@ -414,21 +414,21 @@ export default function AiPredictionsSection({
               className={`p-3 rounded-2xl border transition-all cursor-pointer backdrop-blur-md ${
                 activePolicies.rampMetering 
                   ? 'bg-[#EAF2EC]/70 border-[#2D6A4F]/40 shadow-sm' 
-                  : 'bg-[#F5EFEB]/40 border-[#EADBCE]/60 opacity-70'
+                  : 'bg-[#FAF8F5]/40 border-[#E8E2D9]/60 opacity-70'
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138]">Strategy #3</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#64564B]">Strategy #3</span>
                 <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                  activePolicies.rampMetering ? 'bg-[#2D6A4F] text-[#FFFDF9]' : 'bg-[#EADBCE] text-[#7D5138]'
+                  activePolicies.rampMetering ? 'bg-[#2D6A4F] text-[#FFFFFF]' : 'bg-[#E8E2D9] text-[#64564B]'
                 }`}>
                   {activePolicies.rampMetering ? 'Engaged' : 'Standby'}
                 </span>
               </div>
-              <h4 className="text-xs font-bold text-[#2C1810]">Adaptive Ramp Metering</h4>
-              <p className="text-[10px] text-[#7D5138] mt-1">Regulates merge ingress to 16 veh/min to preserve expressway capacity.</p>
-              <div className="mt-2 pt-2 border-t border-[#EADBCE]/60 flex items-center justify-between text-[11px]">
-                <span className="text-[#7D5138]">Mainline Speed</span>
+              <h4 className="text-xs font-bold text-[#231E1A]">Adaptive Ramp Metering</h4>
+              <p className="text-[10px] text-[#64564B] mt-1">Regulates merge ingress to 16 veh/min to preserve expressway capacity.</p>
+              <div className="mt-2 pt-2 border-t border-[#E8E2D9]/60 flex items-center justify-between text-[11px]">
+                <span className="text-[#64564B]">Mainline Speed</span>
                 <span className="font-mono font-bold text-[#2D6A4F]">+8.2 km/h</span>
               </div>
             </div>
@@ -439,21 +439,21 @@ export default function AiPredictionsSection({
               className={`p-3 rounded-2xl border transition-all cursor-pointer backdrop-blur-md ${
                 activePolicies.corridorDiversion 
                   ? 'bg-[#EAF2EC]/70 border-[#2D6A4F]/40 shadow-sm' 
-                  : 'bg-[#F5EFEB]/40 border-[#EADBCE]/60 opacity-70'
+                  : 'bg-[#FAF8F5]/40 border-[#E8E2D9]/60 opacity-70'
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138]">Strategy #4</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#64564B]">Strategy #4</span>
                 <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                  activePolicies.corridorDiversion ? 'bg-[#2D6A4F] text-[#FFFDF9]' : 'bg-[#EADBCE] text-[#7D5138]'
+                  activePolicies.corridorDiversion ? 'bg-[#2D6A4F] text-[#FFFFFF]' : 'bg-[#E8E2D9] text-[#64564B]'
                 }`}>
                   {activePolicies.corridorDiversion ? 'Engaged' : 'Standby'}
                 </span>
               </div>
-              <h4 className="text-xs font-bold text-[#2C1810]">VMS Corridor Diversion</h4>
-              <p className="text-[10px] text-[#7D5138] mt-1">Re-routes 14% of non-local through traffic via dynamic digital signs.</p>
-              <div className="mt-2 pt-2 border-t border-[#EADBCE]/60 flex items-center justify-between text-[11px]">
-                <span className="text-[#7D5138]">Corridor Load</span>
+              <h4 className="text-xs font-bold text-[#231E1A]">VMS Corridor Diversion</h4>
+              <p className="text-[10px] text-[#64564B] mt-1">Re-routes 14% of non-local through traffic via dynamic digital signs.</p>
+              <div className="mt-2 pt-2 border-t border-[#E8E2D9]/60 flex items-center justify-between text-[11px]">
+                <span className="text-[#64564B]">Corridor Load</span>
                 <span className="font-mono font-bold text-[#2D6A4F]">-18% Volume</span>
               </div>
             </div>

@@ -12,23 +12,23 @@ export default function PipelineFlowFooter({
   const nextStep = currentIndex < PIPELINE_STEPS.length - 1 ? PIPELINE_STEPS[currentIndex + 1] : null;
 
   return (
-    <div className="mt-5 bg-[#FFFDF9]/75 backdrop-blur-xl p-3 sm:px-4 sm:py-3 rounded-2xl border border-[#EADBCE]/70 shadow-premium flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all select-none">
+    <div className="mt-5 bg-white/85 backdrop-blur-xl p-3 sm:px-4 sm:py-3 rounded-2xl border border-[#E8E2D9] shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all select-none">
       {/* Left: Previous Stage CTA */}
       <div className="flex items-center gap-2">
         {prevStep ? (
           <button
             type="button"
             onClick={() => onSelectIndex(currentIndex - 1)}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#F5EFEB]/70 hover:bg-[#FFFDF9] border border-[#EADBCE] text-[#4E2E1E] hover:text-[#2C1810] text-xs font-bold transition-all shadow-2xs group"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-white border border-[#E8E2D9] text-[#362E28] hover:text-[#231E1A] text-xs font-bold transition-all shadow-2xs group"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-[#7D5138] group-hover:-translate-x-0.5 transition-transform" />
+            <ArrowLeft className="w-3.5 h-3.5 text-[#64564B] group-hover:-translate-x-0.5 transition-transform" />
             <div className="text-left">
-              <span className="text-[9px] uppercase tracking-wider text-[#9C6D52] block font-mono">Stage {prevStep.number}</span>
+              <span className="text-[9px] uppercase tracking-wider text-[#8C827A] block font-mono">Stage {prevStep.number}</span>
               <span className="truncate">{prevStep.title}</span>
             </div>
           </button>
         ) : (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#F5EFEB]/40 border border-[#EADBCE]/50 text-[11px] font-semibold text-[#7D5138]">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#FAF8F5]/80 border border-[#E8E2D9]/70 text-[11px] font-semibold text-[#64564B]">
             <span className="w-2 h-2 rounded-full bg-[#2D6A4F]"></span>
             <span>Stage 01: Ingestion Active</span>
           </div>
@@ -47,10 +47,10 @@ export default function PipelineFlowFooter({
                 onClick={() => onSelectIndex(step.index)}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${
                   isActive
-                    ? 'bg-[#5C331E] text-[#FFFDF9] shadow-sm ring-2 ring-[#7D5138]/30 scale-105'
+                    ? 'bg-[#362E28] text-white shadow-xs scale-105'
                     : isDone
-                      ? 'bg-[#EAF2EC] text-[#2D6A4F] hover:bg-[#D8EADB]'
-                      : 'bg-[#F5EFEB] text-[#7D5138] hover:bg-[#EADBCE]'
+                      ? 'bg-[#F0F7F2] text-[#1E5631] hover:bg-[#EAF5EE] border border-[#C8E4D1]'
+                      : 'bg-[#FAF8F5] text-[#64564B] hover:bg-[#F3EFE9] border border-[#E8E2D9]'
                 }`}
                 title={`Jump to Stage ${step.number}: ${step.title}`}
               >
@@ -60,7 +60,7 @@ export default function PipelineFlowFooter({
             );
           })}
         </div>
-        <span className="text-[10px] font-mono text-[#9C6D52] hidden sm:block">
+        <span className="text-[10px] font-mono text-[#8C827A] hidden sm:block">
           Pipeline Flow: Step {currentIndex + 1} of 3 • Press ← / → or 1-3
         </span>
       </div>
@@ -71,19 +71,19 @@ export default function PipelineFlowFooter({
           <button
             type="button"
             onClick={() => onSelectIndex(currentIndex + 1)}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#5C331E] via-[#4A2818] to-[#3B1F13] hover:from-[#4A2818] hover:to-[#2C1810] text-[#FFFDF9] text-xs font-bold transition-all shadow-md shadow-[#4A2818]/25 group"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#362E28] hover:bg-[#231E1A] text-white text-xs font-bold transition-all shadow-xs group"
           >
             <div className="text-right">
-              <span className="text-[9px] uppercase tracking-wider text-[#DFC4B3] block font-mono">Next: Stage {nextStep.number}</span>
+              <span className="text-[9px] uppercase tracking-wider text-[#CBBFB4] block font-mono">Next: Stage {nextStep.number}</span>
               <span className="truncate">{nextStep.title}</span>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#FFFDF9] group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-0.5 transition-transform" />
           </button>
         ) : (
           <button
             type="button"
             onClick={() => onSelectIndex(0)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#2D6A4F] to-[#1E4A37] text-[#FFFDF9] text-xs font-bold shadow-md shadow-[#2D6A4F]/25 hover:opacity-95 transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#2D6A4F] to-[#1E4A37] text-white text-xs font-bold shadow-xs hover:opacity-95 transition-all"
           >
             <span>Restart Pipeline Cycle</span>
             <RotateCcw className="w-3.5 h-3.5" />
