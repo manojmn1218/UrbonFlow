@@ -1,5 +1,6 @@
 import os
 import math
+from typing import Any, Dict
 import requests
 from dotenv import load_dotenv, set_key
 try:
@@ -321,6 +322,39 @@ def get_traffic_flow(lat: float, lon: float, location_name: str = "Selected Loca
         ]
     }
 
+def _compute_stgnn_corridor_context(origin_lat: float, origin_lon: float, dest_lat: float, dest_lon: float) -> Dict[str, Any]:
+    """Query trained PyTorch ST-GNN forecasts for the closest Origin & Destination Bengaluru corridors."""
+    origin_pred = ml_service.predict_traffic(lat=origin_lat, lon=origin_lon, horizon="15m")
+    dest_pred = ml_service.predict_traffic(lat=dest_lat, lon=dest_lon, horizon="15m")
+
+    if origin_pred and dest_pred:
+        avg_speed = round((origin_pred["predicted_speed"] + dest_pred["predicted_speed"]) / 2.0, 1)
+        avg_congestion = int(round((origin_pred["predicted_congestion"] + dest_pred["predicted_congestion"]) / 2.0))
+        return {
+            "enabled": True,
+            "model_engine": origin_pred.get("model_engine", "UrbanFlow PyTorch ST-GNN"),
+            "origin_corridor": origin_pred["matched_area_code"],
+            "origin_corridor_name": origin_pred["matched_area_name"],
+            "origin_predicted_speed": origin_pred["predicted_speed"],
+            "dest_corridor": dest_pred["matched_area_code"],
+            "dest_corridor_name": dest_pred["matched_area_name"],
+            "dest_predicted_speed": dest_pred["predicted_speed"],
+            "predicted_avg_speed": avg_speed,
+            "predicted_avg_congestion": avg_congestion,
+        }
+
+    return {
+        "enabled": False,
+        "model_engine": "Heuristic Speed Model",
+        "origin_corridor": None,
+        "origin_corridor_name": None,
+        "dest_corridor": None,
+        "dest_corridor_name": None,
+        "predicted_avg_speed": 42.0,
+        "predicted_avg_congestion": 32,
+    }
+
+
 def calculate_routes(
     origin_lat: float, origin_lon: float,
     dest_lat: float, dest_lon: float,
@@ -329,9 +363,14 @@ def calculate_routes(
 ):
     """
     Calculate multiple route options between Origin and Destination with
-    varying distances, estimated travel times, traffic delays, and coordinate polylines.
+    varying distances, estimated travel times, traffic delays, coordinate polylines,
+    and trained ST-GNN corridor speed/congestion enrichment.
     """
     dist_direct = haversine_km(origin_lat, origin_lon, dest_lat, dest_lon)
+    stgnn_ctx = _compute_stgnn_corridor_context(origin_lat, origin_lon, dest_lat, dest_lon)
+
+    routes = []
+    source = "UrbanFlow ST-GNN Route Synthesizer"
 
     # 1. Primary: Google Directions API with live traffic pacing (if configured in .env)
     google_routes_res = google_service.calculate_routes_google(
@@ -342,15 +381,14 @@ def calculate_routes(
         origin_name=origin_name,
         dest_name=dest_name
     )
-    if google_routes_res:
-        return google_routes_res
+    if google_routes_res and google_routes_res.get("routes"):
+        routes = google_routes_res["routes"]
+        source = google_routes_res.get("data_source", "Google Maps Directions API")
 
     api_key = get_api_key()
-    routes = []
-    source = "UrbanFlow ST-GNN Route Synthesizer"
 
-    # 2. Secondary: TomTom Routing API if API key configured
-    if api_key:
+    # 2. Secondary: TomTom Routing API if API key configured and Google returned nothing
+    if not routes and api_key:
         try:
             url = f"https://api.tomtom.com/routing/1/calculateRoute/{origin_lat},{origin_lon}:{dest_lat},{dest_lon}/json"
             params = {
@@ -475,21 +513,32 @@ def calculate_routes(
         except Exception as e:
             print(f"OSRM routing fallback failed/timed out: {e}")
 
-    # 3. Deterministic Corridor Simulation Fallback (Guaranteed to always work)
+    # 3. Deterministic ST-GNN Corridor Simulation Fallback (Guaranteed to always work)
     if not routes:
+        base_spd = float(stgnn_ctx.get("predicted_avg_speed", 42.0))
+        base_cong = int(stgnn_ctx.get("predicted_avg_congestion", 32))
+
+        spd_1 = max(24.0, min(68.0, base_spd * 1.24))
+        spd_2 = max(16.0, min(48.0, base_spd * 0.82))
+        spd_3 = max(28.0, min(72.0, base_spd * 1.32))
+
+        delay_1 = max(1, int(round(base_cong / 18.0)))
+        delay_2 = max(3, int(round(base_cong / 8.0)))
+        delay_3 = max(1, int(round(base_cong / 24.0)))
+
         # Route 1: Fastest via Highway / Arterial
         dist_1 = round(dist_direct * 1.22, 1)
-        dur_1 = max(3, int(round((dist_1 / 62.0) * 60)) + 2)
+        dur_1 = max(3, int(round((dist_1 / spd_1) * 60)) + delay_1)
         r1_coords = generate_curved_waypoints(origin_lat, origin_lon, dest_lat, dest_lon, curvature=0.18, steps=22)
 
         # Route 2: Shortest direct city street route (more stop-and-go)
         dist_2 = round(dist_direct * 1.05, 1)
-        dur_2 = max(4, int(round((dist_2 / 36.0) * 60)) + 6)
+        dur_2 = max(4, int(round((dist_2 / spd_2) * 60)) + delay_2)
         r2_coords = generate_curved_waypoints(origin_lat, origin_lon, dest_lat, dest_lon, curvature=-0.08, steps=20)
 
         # Route 3: Outer Ring / Parkway (least congestion, longer distance)
         dist_3 = round(dist_direct * 1.38, 1)
-        dur_3 = max(5, int(round((dist_3 / 68.0) * 60)) + 1)
+        dur_3 = max(5, int(round((dist_3 / spd_3) * 60)) + delay_3)
         r3_coords = generate_curved_waypoints(origin_lat, origin_lon, dest_lat, dest_lon, curvature=0.36, steps=24)
 
         routes = [
@@ -499,8 +548,8 @@ def calculate_routes(
                 "badge": "Fastest Route",
                 "distance_km": dist_1,
                 "duration_min": dur_1,
-                "delay_min": 2,
-                "traffic_status": "Optimal Flow",
+                "delay_min": delay_1,
+                "traffic_status": "Optimal Flow" if delay_1 <= 2 else "Moderate Congestion",
                 "color": "#2563EB",
                 "coordinates": r1_coords
             },
@@ -510,8 +559,8 @@ def calculate_routes(
                 "badge": "Shortest Distance",
                 "distance_km": dist_2,
                 "duration_min": dur_2,
-                "delay_min": 6,
-                "traffic_status": "Moderate Congestion",
+                "delay_min": delay_2,
+                "traffic_status": "Moderate Congestion" if delay_2 <= 5 else "Heavy Flow",
                 "color": "#0D9488",
                 "coordinates": r2_coords
             },
@@ -521,12 +570,25 @@ def calculate_routes(
                 "badge": "Alternative Route",
                 "distance_km": dist_3,
                 "duration_min": dur_3,
-                "delay_min": 1,
-                "traffic_status": "Free Flow",
+                "delay_min": delay_3,
+                "traffic_status": "Optimal Flow" if delay_3 <= 2 else "Steady Flow",
                 "color": "#7C3AED",
                 "coordinates": r3_coords
             }
         ]
+
+    # Enrich all routes with ST-GNN corridor forecast and optimize ordering (fastest + lowest delay first)
+    corridor_label = (
+        f"{stgnn_ctx['origin_corridor']} -> {stgnn_ctx['dest_corridor']}"
+        if stgnn_ctx.get("origin_corridor") and stgnn_ctx.get("dest_corridor")
+        else None
+    )
+    for r in routes:
+        r["stgnn_predicted_speed"] = stgnn_ctx.get("predicted_avg_speed")
+        if corridor_label:
+            r["corridor_forecast"] = corridor_label
+
+    routes.sort(key=lambda r: (r.get("duration_min", 9999), r.get("delay_min", 9999)))
 
     return {
         "origin": {
@@ -541,5 +603,6 @@ def calculate_routes(
         },
         "direct_distance_km": round(dist_direct, 1),
         "data_source": source,
+        "stgnn_context": stgnn_ctx,
         "routes": routes
     }

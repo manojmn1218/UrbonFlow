@@ -20,7 +20,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import UnifiedSearchBar from './UnifiedSearchBar';
-import { fetchApi } from '../services/api';
+import { fetchApi, retrainModel } from '../services/api';
 
 const METRICS_CARDS = [
   { label: 'Mean Absolute Error (MAE)', key: 'mae', icon: Target, iconColor: 'text-blue-600', trendIcon: TrendingDown, trendColor: 'text-emerald-600' },
@@ -33,6 +33,21 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [showConfidenceBand, setShowConfidenceBand] = useState(true);
   const [backendReport, setBackendReport] = useState(null);
+  const [isRetraining, setIsRetraining] = useState(false);
+
+  const handleRetrain = async () => {
+    setIsRetraining(true);
+    try {
+      const data = await retrainModel();
+      if (data && data.mae) {
+        setBackendReport(data);
+      }
+    } catch (err) {
+      console.warn('Model retraining failed:', err);
+    } finally {
+      setIsRetraining(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -96,6 +111,16 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
             </p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleRetrain}
+          disabled={isRetraining}
+          className="px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#F3ECE4] border border-[#E8E2D9] text-[#A86032] text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-60 shrink-0"
+          title="Retrain PyTorch ST-GNN on Bengaluru 4-corridor dataset (IND, KOR, WHI, HEB)"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isRetraining ? 'animate-spin' : ''}`} />
+          <span>{isRetraining ? 'Training ST-GNN...' : 'Retrain ST-GNN'}</span>
+        </button>
       </div>
 
       {/* KPI METRICS ROW: MAE, RMSE, R2, LATENCY */}

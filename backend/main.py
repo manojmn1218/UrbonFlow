@@ -11,8 +11,9 @@ except ImportError:
     from backend import google_service
 try:
     import ml_service
+    import train_model
 except ImportError:
-    from backend import ml_service
+    from backend import ml_service, train_model
 
 app = FastAPI(
     title="UrbanFlow AI - Smart City Traffic Prediction Engine",
@@ -158,6 +159,29 @@ def get_horizon_accuracy():
             },
         ]
     return traffic_data.HORIZON_ACCURACY
+
+
+@app.post("/api/model/train")
+def retrain_stgnn_model():
+    """
+    Re-run the PyTorch ST-GNN training pipeline on the Bengaluru corridor dataset
+    (HEB, IND, KOR, WHI) and reload updated weights into live inference.
+    """
+    payload = train_model.train_and_evaluate()
+    ml_service.invalidate_cache()
+    ml_service.is_model_ready()
+    return {
+        "status": "trained",
+        "model_name": payload.get("model_name"),
+        "trained_at": payload.get("trained_at"),
+        "training_duration_sec": payload.get("training_duration_sec"),
+        "dataset": payload.get("dataset"),
+        "architecture": payload.get("architecture"),
+        "evaluation": payload.get("evaluation"),
+        **payload.get("ui_metrics", {}),
+        "sample_trajectory": payload.get("sample_trajectory"),
+        "baselines": payload.get("baselines"),
+    }
 
 
 @app.get("/api/model/area-predict")

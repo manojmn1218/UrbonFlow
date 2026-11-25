@@ -170,6 +170,10 @@ def build_feature_tensor(df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray, List
         lambda r: max(0.0, 1.0 - float(r["speed_kmph"]) / AREA_META[r["area"]]["free_flow_speed"]),
         axis=1,
     )
+    # Explicit spatial location priors matching frontend selectable Bengaluru corridors
+    df["lat_norm"] = df["area"].map(lambda a: (AREA_META[a]["lat"] - 12.97) / 0.05).astype(np.float32)
+    df["lon_norm"] = df["area"].map(lambda a: (AREA_META[a]["lon"] - 77.65) / 0.05).astype(np.float32)
+    df["free_flow_norm"] = df["area"].map(lambda a: AREA_META[a]["free_flow_speed"] / 65.0).astype(np.float32)
 
     for idx, area in enumerate(AREAS):
         df[f"node_{area}"] = (df["area"] == area).astype(np.float32)
@@ -187,6 +191,9 @@ def build_feature_tensor(df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray, List
         "month_cos",
         "is_weekend",
         "is_morning_peak",
+        "lat_norm",
+        "lon_norm",
+        "free_flow_norm",
         "node_HEB",
         "node_IND",
         "node_KOR",
@@ -419,6 +426,16 @@ def train_and_evaluate():
             "total_rows": int(len(df)),
             "unique_timestamps": int(len(ts_strs)),
             "areas": AREAS,
+            "trained_locations": [
+                {
+                    "code": code,
+                    "name": AREA_META[code]["name"],
+                    "lat": AREA_META[code]["lat"],
+                    "lon": AREA_META[code]["lon"],
+                    "free_flow_speed": AREA_META[code]["free_flow_speed"],
+                }
+                for code in AREAS
+            ],
             "date_range": f"{ts_strs[0]} -> {ts_strs[-1]}",
             "data_status": str(df["data_status"].iloc[0]),
             "split": {
@@ -516,6 +533,7 @@ def train_and_evaluate():
     print(f"Avg CPU Inference Latency: {avg_latency_ms} ms")
     print(f"Saved weights -> {MODEL_WEIGHTS_PATH}")
     print(f"Saved metrics -> {METRICS_JSON_PATH}")
+    return metrics_payload
 
 
 if __name__ == "__main__":

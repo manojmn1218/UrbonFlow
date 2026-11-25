@@ -1458,16 +1458,21 @@ export default function TrafficMap2D({
                             </div>
 
                             {/* Traffic Status Indicator */}
-                            <div className="mt-1.5 flex items-center justify-between text-[10px] pt-1.5 border-t border-[#E8E2D9]/60 text-[#64564B]">
-                              <span className="flex items-center gap-1 font-medium">
-                                <span className={`w-2 h-2 rounded-full ${
+                            <div className="mt-1.5 flex items-center justify-between text-[10px] pt-1.5 border-t border-[#E8E2D9]/60 text-[#64564B] gap-1.5">
+                              <span className="flex items-center gap-1 font-medium truncate">
+                                <span className={`w-2 h-2 rounded-full shrink-0 ${
                                   route.traffic_status === 'Optimal Flow' 
                                     ? 'bg-[#2D6A4F]' 
                                     : (route.traffic_status === 'Steady Flow' ? 'bg-[#A86032]' : 'bg-[#C47D3B]')
                                 }`}></span>
                                 {route.traffic_status}
+                                {route.stgnn_predicted_speed && (
+                                  <span className="ml-1 font-mono text-[9px] px-1.5 py-0.5 rounded bg-[#EAF2EC] text-[#2D6A4F] font-semibold">
+                                    ST-GNN {route.stgnn_predicted_speed} km/h
+                                  </span>
+                                )}
                               </span>
-                              <span className={`font-semibold ${isSelected ? 'text-[#A86032]' : 'text-[#8C827A]'}`}>
+                              <span className={`font-semibold shrink-0 ${isSelected ? 'text-[#A86032]' : 'text-[#8C827A]'}`}>
                                 {isSelected ? 'Active Route' : 'Click to select'}
                               </span>
                             </div>

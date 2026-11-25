@@ -62,6 +62,14 @@ def is_model_ready() -> bool:
     return _ensure_loaded()
 
 
+def invalidate_cache() -> None:
+    """Clear in-memory model weights and metrics cache so freshly trained artifacts reload."""
+    _CACHE["loaded"] = False
+    _CACHE["model"] = None
+    _CACHE["checkpoint"] = None
+    _CACHE["metrics"] = None
+
+
 def map_coords_to_area(lat: Optional[float], lon: Optional[float]) -> Dict[str, Any]:
     if lat is None or lon is None:
         return {"area": "IND", "name": AREA_META["IND"]["name"], "distance_km": 0.0}
@@ -96,8 +104,12 @@ def _build_node_feature_vector(area: str, volume_15m: float, speed_kmph: float, 
     doy = float(when.timetuple().tm_yday)
 
     vol_speed_ratio = float(volume_15m) / max(float(speed_kmph), 1.0)
-    free_flow = AREA_META.get(area, AREA_META["IND"])["free_flow_speed"]
+    meta = AREA_META.get(area, AREA_META["IND"])
+    free_flow = meta["free_flow_speed"]
     cong_proxy = max(0.0, 1.0 - float(speed_kmph) / max(free_flow, 1.0))
+    lat_norm = (float(meta["lat"]) - 12.97) / 0.05
+    lon_norm = (float(meta["lon"]) - 77.65) / 0.05
+    free_flow_norm = float(free_flow) / 65.0
 
     node_onehot = [1.0 if a == area else 0.0 for a in AREAS]
     return np.array(
@@ -114,6 +126,9 @@ def _build_node_feature_vector(area: str, volume_15m: float, speed_kmph: float, 
             math.cos(2 * math.pi * doy / 365.25),
             1.0 if dow >= 5 else 0.0,
             1.0 if hour <= 12.0 else 0.0,
+            lat_norm,
+            lon_norm,
+            free_flow_norm,
             *node_onehot,
         ],
         dtype=np.float32,

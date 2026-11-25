@@ -152,3 +152,15 @@ export async function saveTomTomKey(apiKey) {
   }
 }
 
+/**
+ * Trigger ST-GNN model retraining on backend
+ */
+export async function retrainModel() {
+  const res = await fetch(`${API_BASE}/model/train`, {
+    method: 'POST',
+    headers: { 'Accept': 'application/json' },
+  });
+  if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+  return await res.json();
+}
+
