@@ -776,28 +776,28 @@ export default function TrafficMap2D({
   };
 
   return (
-    <div className="relative w-full h-[620px] sm:h-[680px] lg:h-[720px] rounded-3xl overflow-hidden bg-[#231E1A] border border-[#E8E2D9]/70 shadow-premium flex flex-col">
-      {/* Top Header Controls Bar */}
-      <div className="p-3 sm:p-4 bg-[#FFFFFF]/75 backdrop-blur-xl border-b border-[#E8E2D9]/70 flex flex-wrap items-center justify-between gap-3 z-20">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-[#FAF8F5] text-[#A86032] border border-[#E8E2D9] shadow-sm">
-            <Route className="w-5 h-5" />
+    <div className="relative w-full h-full flex-1 min-h-0 rounded-2xl overflow-hidden bg-white border border-[#E8E2D9] shadow-xs flex flex-col">
+      {/* Sleek Single-Line Header Controls Bar */}
+      <div className="px-3 py-2 bg-white/95 backdrop-blur-xl border-b border-[#E8E2D9] flex items-center justify-between gap-2 z-20 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="p-1.5 rounded-xl bg-[#FAF8F5] text-[#A86032] border border-[#E8E2D9] shrink-0">
+            <Route className="w-4 h-4" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-extrabold text-[#231E1A] tracking-tight">
-                {mapMode === 'planner' ? 'Point-to-Point Trip & Route Navigation' : 'Live GIS Traffic Grid'}
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-[#231E1A] tracking-tight truncate">
+                {mapMode === 'planner' ? 'Point-to-Point Trip Navigation' : 'Live GIS Traffic Grid'}
               </h3>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#EAF2EC] text-[#2D6A4F] flex items-center gap-1 border border-[#C4DFC8]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F] animate-pulse"></span>
-                {routesData?.data_source ? routesData.data_source : 'TomTom Real-Time Vector Engine'}
+              <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-[#EAF2EC] text-[#2D6A4F] hidden sm:flex items-center gap-1 border border-[#C4DFC8]">
+                <span className="w-1 h-1 rounded-full bg-[#2D6A4F] animate-pulse"></span>
+                {routesData?.data_source ? routesData.data_source : 'TomTom Real-Time'}
               </span>
             </div>
-            <p className="text-xs text-[#64564B] truncate max-w-[280px] sm:max-w-md">
+            <p className="text-[11px] text-[#64564B] truncate max-w-[180px] sm:max-w-xs md:max-w-sm">
               {mapMode === 'planner' 
                 ? (origin?.name && destination?.name 
                     ? `${origin.name.split(',')[0]} ➔ ${destination.name.split(',')[0]}`
-                    : 'Search starting point and destination to map routes')
+                    : 'Search A & B below to calculate route')
                 : `Tracking: ${name}`}
             </p>
           </div>
@@ -805,30 +805,30 @@ export default function TrafficMap2D({
 
         {/* Global Single Search (Available in Telemetry Mode) */}
         {mapMode === 'telemetry' && (
-          <div className="relative min-w-[240px] sm:min-w-[280px]">
-            <form onSubmit={handleSingleSearchSubmit} className="flex gap-1.5">
+          <div className="relative w-40 sm:w-56 md:w-64 shrink-0">
+            <form onSubmit={handleSingleSearchSubmit} className="flex gap-1">
               <div className="relative flex-1">
                 <input
                   type="text"
-                  placeholder="Search any city or address..."
+                  placeholder="Search city/coords..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#FAF8F5]/90 hover:bg-[#FFFFFF] border border-[#E8E2D9] text-[#231E1A] text-xs font-medium rounded-xl pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#A86032]/20 focus:bg-[#FFFFFF] transition-all placeholder:text-[#8C827A]/60"
+                  className="w-full bg-[#FAF8F5] hover:bg-white border border-[#E8E2D9] text-[#231E1A] text-xs font-medium rounded-lg pl-7 pr-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#A86032] focus:bg-white transition-all placeholder:text-[#8C827A]"
                 />
-                <Search className="w-3.5 h-3.5 text-[#8C827A] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className="w-3 h-3 text-[#8C827A] absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
               <button
                 type="submit"
                 disabled={isSearching || !searchQuery.trim()}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#A86032] to-[#422213] hover:from-[#4A2818] hover:to-[#361A0E] text-[#FFFFFF] text-xs font-semibold disabled:opacity-50 transition-colors"
+                className="px-2.5 py-1 rounded-lg bg-[#362E28] hover:bg-[#231E1A] text-white text-xs font-semibold disabled:opacity-50 transition-colors"
               >
-                {isSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Find'}
+                {isSearching ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Find'}
               </button>
             </form>
 
             {/* Autocomplete Dropdown */}
             {searchResults.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFFFF]/95 backdrop-blur-2xl border border-[#E8E2D9] rounded-2xl shadow-float z-50 max-h-56 overflow-y-auto divide-y divide-[#E8E2D9]/50">
+              <div className="absolute left-0 right-0 top-full mt-1.5 bg-white/95 backdrop-blur-2xl border border-[#E8E2D9] rounded-xl shadow-xl z-50 max-h-56 overflow-y-auto divide-y divide-[#E8E2D9]/50">
                 <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold uppercase tracking-wider text-[#64564B] flex justify-between items-center">
                   <span>Select Target Coordinates</span>
                   <button onClick={() => setSearchResults([])}><X className="w-3 h-3 text-[#64564B]" /></button>
@@ -849,167 +849,71 @@ export default function TrafficMap2D({
           </div>
         )}
 
-        {/* Mode Switcher & HD Retina Tile Selectors */}
-        <div className="flex items-center gap-2">
+        {/* Mode Switcher & HD Basemap Selectors */}
+        <div className="flex items-center gap-1.5 shrink-0">
           {/* Planner vs Telemetry toggle */}
-          <div className="flex items-center bg-[#FAF8F5] p-1 rounded-2xl border border-[#E8E2D9]/70">
+          <div className="flex items-center bg-[#FAF8F5] p-0.5 rounded-lg border border-[#E8E2D9]">
             <button
               onClick={() => handleModeChange('planner')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
+              className={`flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-md transition-all ${
                 mapMode === 'planner'
-                  ? 'bg-[#A86032] text-[#FFFFFF] shadow-sm shadow-[#362E28]/25'
+                  ? 'bg-[#A86032] text-white shadow-xs'
                   : 'text-[#64564B] hover:text-[#231E1A]'
               }`}
             >
-              <Compass className="w-3.5 h-3.5" />
-              Route Planner
+              <Compass className="w-3 h-3" />
+              <span className="hidden sm:inline">Planner</span>
             </button>
             <button
               onClick={() => handleModeChange('telemetry')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
+              className={`flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-md transition-all ${
                 mapMode === 'telemetry'
-                  ? 'bg-[#A86032] text-[#FFFFFF] shadow-sm shadow-[#362E28]/25'
+                  ? 'bg-[#A86032] text-white shadow-xs'
                   : 'text-[#64564B] hover:text-[#231E1A]'
               }`}
             >
-              <Navigation className="w-3.5 h-3.5" />
-              Area Telemetry
+              <Navigation className="w-3 h-3" />
+              <span className="hidden sm:inline">Telemetry</span>
             </button>
           </div>
 
-          {/* 100% Watermark-Free HD GIS Basemaps */}
-          <div className="flex items-center bg-[#FAF8F5] p-1 rounded-xl border border-[#E8E2D9]">
-            <button
-              onClick={() => setTileMode('osm')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                tileMode === 'osm' ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
-              }`}
-              title="Ultra-detailed OpenStreetMap with street & building details (zoom up to 22)"
-            >
-              OSM Streets
-            </button>
-            <button
-              onClick={() => setTileMode('satellite')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                tileMode === 'satellite' ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
-              }`}
-              title="Photorealistic Satellite Imagery (zoom up to 22)"
-            >
-              Satellite HD
-            </button>
-            <button
-              onClick={() => setTileMode('esri_streets')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                tileMode === 'esri_streets' ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
-              }`}
-              title="Esri World Street Map (zoom up to 22)"
-            >
-              Esri Streets
-            </button>
-            <button
-              onClick={() => setTileMode('esri_canvas')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                tileMode === 'esri_canvas' ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
-              }`}
-              title="Minimalist light canvas (zoom up to 22)"
-            >
-              Clean Canvas
-            </button>
-            <button
-              onClick={() => setTileMode('tomtom')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                tileMode === 'tomtom' ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
-              }`}
-              title="TomTom Live Vector Tiles"
-            >
-              TomTom Live
-            </button>
+          {/* Compact Basemap Selector */}
+          <div className="hidden sm:flex items-center bg-[#FAF8F5] p-0.5 rounded-lg border border-[#E8E2D9]">
+            {[
+              { id: 'osm', label: 'OSM' },
+              { id: 'satellite', label: 'Sat' },
+              { id: 'esri_canvas', label: 'Canvas' },
+              { id: 'tomtom', label: 'TomTom' }
+            ].map((b) => (
+              <button
+                key={b.id}
+                onClick={() => setTileMode(b.id)}
+                className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${
+                  tileMode === b.id ? 'bg-white text-[#231E1A] font-bold shadow-xs' : 'text-[#64564B] hover:text-[#231E1A]'
+                }`}
+              >
+                {b.label}
+              </button>
+            ))}
           </div>
 
-          {/* 4-Way Directional Pan, Zoom & Recenter Controls */}
-          <div className="flex items-center gap-1 bg-[#FAF8F5] p-1 rounded-xl border border-[#E8E2D9]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#64564B] px-1 hidden sm:inline">
-              Pan
-            </span>
-            <button 
-              onMouseDown={() => startContinuousPan(-200, 0)}
-              onMouseUp={stopContinuousPan}
-              onMouseLeave={stopContinuousPan}
-              onClick={() => handlePan(-200, 0)}
-              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
-              title="Move Map Left (West)"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </button>
-            <button 
-              onMouseDown={() => startContinuousPan(0, -200)}
-              onMouseUp={stopContinuousPan}
-              onMouseLeave={stopContinuousPan}
-              onClick={() => handlePan(0, -200)}
-              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
-              title="Move Map Up (North)"
-            >
-              <ArrowUp className="w-3.5 h-3.5" />
-            </button>
-            <button 
-              onMouseDown={() => startContinuousPan(0, 200)}
-              onMouseUp={stopContinuousPan}
-              onMouseLeave={stopContinuousPan}
-              onClick={() => handlePan(0, 200)}
-              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
-              title="Move Map Down (South)"
-            >
-              <ArrowDown className="w-3.5 h-3.5" />
-            </button>
-            <button 
-              onMouseDown={() => startContinuousPan(200, 0)}
-              onMouseUp={stopContinuousPan}
-              onMouseLeave={stopContinuousPan}
-              onClick={() => handlePan(200, 0)}
-              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
-              title="Move Map Right (East)"
-            >
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-
-            <div className="w-[1px] h-4 bg-[#E8E2D9] mx-0.5" />
-
-            {/* Dedicated Zoom In / Out Controls */}
-            <button 
-              onClick={() => mapInstanceRef.current?.zoomOut(1)} 
-              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
-              title="Zoom Out (-)"
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-            <button 
-              onClick={() => mapInstanceRef.current?.zoomIn(1)} 
-              className="p-1.5 rounded-lg text-[#64564B] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95" 
-              title="Zoom In (+)"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-
-            <div className="w-[1px] h-4 bg-[#E8E2D9] mx-0.5" />
-
-            <button 
-              onClick={handleRecenter} 
-              className="p-1.5 rounded-lg text-[#362E28] hover:bg-white hover:text-[#231E1A] transition-all active:scale-95 font-bold" 
-              title="Recenter Map on Target Location"
-            >
-              <Crosshair className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          {/* Quick Recenter */}
+          <button 
+            onClick={handleRecenter} 
+            className="p-1.5 rounded-lg bg-[#FAF8F5] text-[#362E28] hover:bg-white border border-[#E8E2D9] hover:text-[#231E1A] transition-all shadow-xs" 
+            title="Recenter Map"
+          >
+            <Crosshair className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
-      {/* Map Body Canvas with Floating Panels */}
-      <div className="relative flex-1 w-full h-full min-h-[480px]">
+      {/* Map Body Canvas with Floating Controls */}
+      <div className="relative flex-1 w-full h-full min-h-0 overflow-hidden">
         {/* Leaflet Canvas Container */}
         <div 
           ref={mapContainerRef} 
           className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing" 
-          style={{ minHeight: '480px' }} 
         />
 
         {/* Floating 4-Way Directional Navigator & Zoom Pad on Map */}
@@ -1106,9 +1010,9 @@ export default function TrafficMap2D({
         {/* REDESIGNED 2-LOCATION TRIP & ROUTE PLANNER DOCK PANEL    */}
         {/* ======================================================== */}
         {mapMode === 'planner' && (
-          <div className="absolute top-4 left-4 z-[400] w-84 sm:w-96 max-h-[calc(100%-32px)] overflow-y-auto bg-[#FFFFFF]/85 backdrop-blur-2xl rounded-3xl border border-[#E8E2D9]/80 shadow-2xl p-4 flex flex-col gap-3 animate-in fade-in slide-in-from-left-4 no-scrollbar">
+          <div className="absolute top-3 left-3 z-[400] w-76 sm:w-88 max-h-[calc(100%-24px)] overflow-y-auto bg-white/95 backdrop-blur-2xl rounded-2xl border border-[#E8E2D9] shadow-xl p-3.5 flex flex-col gap-2.5 animate-in fade-in slide-in-from-left-4 no-scrollbar">
             {/* Header toggle for minimizing panel */}
-            <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D9]/50">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D9]/70">
               <div className="flex items-center gap-2">
                 <span className="p-1 rounded-lg bg-[#FAF8F5] text-[#A86032] border border-[#E8E2D9]">
                   <Compass className="w-4 h-4" />

@@ -90,106 +90,12 @@ export default function App() {
       label: 'Live GIS Map',
       icon: Map,
       component: (
-        <div className="space-y-3.5">
-          <UnifiedSearchBar 
-            currentLocation={activeLocation} 
-            onLocationChange={setActiveLocation} 
-          />
-
+        <div className="w-full h-full flex-1 min-h-0 flex flex-col">
           <TrafficMap2D 
             currentLocation={activeLocation}
             onLocationChange={setActiveLocation}
             isVisible={currentWindowIndex === 1}
           />
-
-          {/* DENSE TELEMETRY & OPERATIONS STRIP UNDER MAP */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
-            {/* Left 7 Cols: Connected Arterial Corridors */}
-            <div className="lg:col-span-7 bg-white/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#E8E2D9] shadow-xs flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E2D9]/70">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#64564B]">
-                    Connected Arterial Corridors ({activeLocation?.shortName || "Active Area"})
-                  </span>
-                  <span className="text-[10px] font-mono text-[#8C827A]">Real-Time Velocity & Delays</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {(activeLocation?.corridors || [
-                    { id: 1, name: 'Main Expressway', speed: 48, length: '6.4 km', delay: '+2m', colorClass: 'bg-emerald-500' },
-                    { id: 2, name: 'Central Boulevard', speed: 32, length: '4.8 km', delay: '+6m', colorClass: 'bg-amber-500' },
-                    { id: 3, name: 'North Ring Road', speed: 54, length: '9.2 km', delay: 'Normal', colorClass: 'bg-emerald-500' },
-                    { id: 4, name: 'Financial Dist Ave', speed: 22, length: '3.1 km', delay: '+11m', colorClass: 'bg-red-500' },
-                  ]).map((route) => (
-                    <div key={route.id} className="p-3 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5]/80 backdrop-blur-md flex items-center justify-between gap-2 shadow-2xs hover:bg-white transition-all">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className={`w-3 h-3 rounded-full flex-shrink-0 ${route.colorClass || 'bg-[#4C4138]'}`}></span>
-                        <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-[#231E1A] truncate">{route.name}</h4>
-                          <span className="text-[10px] text-[#64564B]">{route.length}</span>
-                        </div>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <span className="text-xs font-mono font-bold text-[#362E28] block">{route.speed} km/h</span>
-                        <span className={`text-[10px] font-bold ${route.status === 'Severe' ? 'text-[#B91C1C]' : route.status === 'Heavy' ? 'text-[#A86032]' : 'text-[#2D6A4F]'}`}>
-                          {route.delay}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-3 pt-2.5 border-t border-[#E8E2D9]/70 flex items-center justify-between text-xs text-[#64564B]">
-                <span>Corridor speed profiles updated every 15s</span>
-                <span className="font-mono text-[11px] text-[#4C4138] font-bold">TomTom Telemetry</span>
-              </div>
-            </div>
-
-            {/* Right 5 Cols: Live Sector Operations & Incident Alert Feed */}
-            <div className="lg:col-span-5 bg-white/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#E8E2D9] shadow-xs flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E2D9]/70">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#2D6A4F] animate-pulse"></span>
-                    <h4 className="text-xs font-bold text-[#231E1A]">Metropolitan Operations HUD</h4>
-                  </div>
-                  <span className="text-[10px] font-mono text-[#2D6A4F] font-bold bg-[#EAF2EC] px-1.5 py-0.2 rounded border border-[#C4DFC8]">
-                    100% Online
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="p-2.5 rounded-xl bg-[#FAF8F5]/80 border border-[#E8E2D9] flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-bold text-[#231E1A] block">Signal Controllers Sync</span>
-                      <span className="text-[10px] text-[#64564B]">12 Adaptive SCATS Nodes • 90s Cycle</span>
-                    </div>
-                    <span className="font-mono font-bold text-[#2D6A4F] text-xs">Synched</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-[#FAF8F5]/80 border border-[#E8E2D9] flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-bold text-[#231E1A] block">Dynamic VMS Pacing Advisory</span>
-                      <span className="text-[10px] text-[#64564B]">Broadcast: Maintain 45 km/h green wave</span>
-                    </div>
-                    <span className="font-mono font-bold text-[#4C4138] text-xs">Broadcasting</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-[#FEF6F0]/80 border border-[#E8E2D9] flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-bold text-[#A86032] block">Sector Roadway Incidents</span>
-                      <span className="text-[10px] text-[#64564B]">0 Critical Blocks • Normal Flow Pacing</span>
-                    </div>
-                    <span className="font-mono font-bold text-[#A86032] text-xs">Optimal</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 pt-2.5 border-t border-[#E8E2D9]/70 flex items-center justify-between text-xs text-[#64564B]">
-                <span>Probe Pings: 1,420 pkts/s</span>
-                <span className="font-mono text-[11px] text-[#8C827A]">Latency: 14ms</span>
-              </div>
-            </div>
-          </div>
         </div>
       ),
     },
@@ -336,19 +242,31 @@ export default function App() {
         />
 
         {/* Fluid, Hardware-Accelerated Directional Tab Flow Container */}
-        <div className="flex-1 w-full h-full overflow-hidden relative flex flex-col">
+        <div className="flex-1 w-full h-full overflow-hidden relative flex flex-col min-h-0">
           <div 
             ref={contentContainerRef}
-            className="flex-1 w-full h-full overflow-y-auto overflow-x-hidden relative"
+            className={`flex-1 w-full h-full relative ${
+              currentWindowIndex === 1 
+                ? 'overflow-hidden flex flex-col' 
+                : 'overflow-y-auto overflow-x-hidden'
+            }`}
           >
-            <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-10 box-border">
+            <div className={`max-w-[1520px] mx-auto px-3 sm:px-6 lg:px-8 w-full box-border ${
+              currentWindowIndex === 1 
+                ? 'h-full flex-1 flex flex-col pt-2 pb-2 min-h-0' 
+                : 'pt-4 pb-10'
+            }`}>
               {windows.map((win, idx) => {
                 const isActive = currentWindowIndex === idx;
                 return (
                   <div 
                     key={win.id} 
-                    style={{ display: isActive ? 'block' : 'none' }}
-                    className={isActive ? (slideDirection === 'forward' ? 'tab-flow-forward' : 'tab-flow-backward') : ''}
+                    style={{ display: isActive ? (currentWindowIndex === 1 ? 'flex' : 'block') : 'none' }}
+                    className={`${
+                      currentWindowIndex === 1 ? 'h-full flex-1 flex flex-col min-h-0 w-full' : 'w-full'
+                    } ${
+                      isActive ? (slideDirection === 'forward' ? 'tab-flow-forward' : 'tab-flow-backward') : ''
+                    }`}
                   >
                     <ErrorBoundary>
                       {win.component}
