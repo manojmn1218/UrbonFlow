@@ -65,10 +65,10 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
     r2Score: backendReport.r2Score,
     latency: backendReport.latency,
   } : null) || currentLocation?.modelMetrics || {
-    mae: { value: "2.51", unit: "km/h", improvement: "Vol MAE: 54.8 veh/15m", definition: "Mean Absolute Error on held-out 2025 Bengaluru test split" },
-    rmse: { value: "3.16", unit: "km/h", improvement: "Vol RMSE: 70.0 veh/15m", definition: "Root Mean Square Error across IND, KOR, WHI, HEB" },
-    r2Score: { value: "0.758", unit: "R²", improvement: "Vol R²: 0.895", definition: "Coefficient of determination (75.8% speed / 89.5% vol)" },
-    latency: { value: "1.12", unit: "ms", improvement: "PyTorch ST-GNN (84.9k params)", definition: "Measured single-graph forward pass on CPU" },
+    mae: { value: "2.11", unit: "km/h", improvement: "12.7% better vs Linear (Vol MAE: 44.7)", definition: "Mean Absolute Error across 2,632 held-out 8-corridor test samples" },
+    rmse: { value: "2.70", unit: "km/h", improvement: "Vol RMSE: 57.9 veh/15m", definition: "Root Mean Square Error across 8 Bengaluru corridors" },
+    r2Score: { value: "0.902", unit: "R²", improvement: "Vol R²: 0.967", definition: "Coefficient of determination (90.2% speed / 96.7% vol)" },
+    latency: { value: "1.19", unit: "ms", improvement: "8-Node PyTorch ST-GNN (85.5k params)", definition: "Measured single-graph 8-node forward pass on CPU" },
   };
 
   const shortName = currentLocation?.shortName || "Bengaluru Grid";
@@ -244,7 +244,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-[#231E1A]">Trained ST-GNN Architecture & Dataset</h3>
-                  <p className="text-[11px] text-[#64564B]">{backendReport?.model_name || 'PyTorch GRU + Spatial Graph Diffusion (Bengaluru 2023–2025)'}</p>
+                  <p className="text-[11px] text-[#64564B]">{backendReport?.model_name || 'PyTorch GRU + Spatial Graph Diffusion (8 Bengaluru Corridors 2023–2026)'}</p>
                 </div>
               </div>
             </div>
@@ -252,22 +252,22 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/60 border border-[#E8E2D9]/60">
                 <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Graph Nodes</span>
-                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.num_nodes || 4}</span>
-                <span className="text-[10px] text-[#2D6A4F] font-medium">HEB, IND, KOR, WHI</span>
+                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.num_nodes || 8}</span>
+                <span className="text-[10px] text-[#2D6A4F] font-medium">8 Bengaluru Zones</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/60 border border-[#E8E2D9]/60">
                 <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Dataset Rows</span>
-                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.dataset?.total_rows?.toLocaleString() || '8,768'}</span>
+                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.dataset?.total_rows?.toLocaleString() || '17,536'}</span>
                 <span className="text-[10px] text-[#A86032] font-medium">70 / 15 / 15 Split</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/60 border border-[#E8E2D9]/60">
                 <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Seq Window</span>
                 <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.seq_len || 6} steps</span>
-                <span className="text-[10px] text-[#64564B] font-medium">{backendReport?.architecture?.num_features || 19} Features</span>
+                <span className="text-[10px] text-[#64564B] font-medium">{backendReport?.architecture?.num_features || 26} Features</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/60 border border-[#E8E2D9]/60">
                 <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Parameters</span>
-                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.parameters ? `${(backendReport.architecture.parameters / 1000).toFixed(1)}k` : '84.9k'}</span>
+                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.parameters ? `${(backendReport.architecture.parameters / 1000).toFixed(1)}k` : '85.5k'}</span>
                 <span className="text-[10px] text-[#2D6A4F] font-medium">PyTorch Weights</span>
               </div>
             </div>
@@ -279,6 +279,10 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
                 { code: 'IND', name: 'Indiranagar', lat: 12.9784, lon: 77.6408, free_flow_speed: 58 },
                 { code: 'KOR', name: 'Koramangala', lat: 12.9352, lon: 77.6245, free_flow_speed: 55 },
                 { code: 'WHI', name: 'Whitefield', lat: 12.9698, lon: 77.75, free_flow_speed: 60 },
+                { code: 'BEL', name: 'Bellandur', lat: 12.9255, lon: 77.6762, free_flow_speed: 50 },
+                { code: 'HSR', name: 'HSR Layout', lat: 12.9116, lon: 77.6389, free_flow_speed: 45 },
+                { code: 'JAY', name: 'Jayanagar', lat: 12.9308, lon: 77.5838, free_flow_speed: 42 },
+                { code: 'KRP', name: 'KR Puram', lat: 13.0031, lon: 77.695, free_flow_speed: 52 },
               ]).map((node) => {
                 const areaStat = backendReport?.evaluation?.per_area?.[node.code];
                 return (
@@ -319,7 +323,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
                   <span className="w-2 h-2 rounded-full bg-[#2D6A4F]"></span>
                   <span className="font-semibold text-[#231E1A]">Joint Volume + Speed Regression Head</span>
                 </div>
-                <span className="font-mono text-[11px] text-[#64564B]">Vol R²: {backendReport?.evaluation?.volume?.r2?.toFixed(3) || '0.895'}</span>
+                <span className="font-mono text-[11px] text-[#64564B]">Vol R²: {backendReport?.evaluation?.volume?.r2?.toFixed(3) || '0.967'}</span>
               </div>
             </div>
           </div>
@@ -329,7 +333,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
               <Radio className="w-3.5 h-3.5 text-[#2D6A4F]" />
               Trained at: {backendReport?.trained_at || 'Saved Checkpoint Active'}
             </span>
-            <span className="font-mono text-[11px] text-[#8C827A]">{backendReport?.dataset?.date_range || '2023–2025'}</span>
+            <span className="font-mono text-[11px] text-[#8C827A]">{backendReport?.dataset?.date_range || '2023–2026'}</span>
           </div>
         </div>
 
@@ -343,7 +347,7 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-[#231E1A]">Held-Out Test Split Benchmarks</h3>
-                  <p className="text-[11px] text-[#64564B]">Empirical comparison across 1,316 unseen 2025 node samples</p>
+                  <p className="text-[11px] text-[#64564B]">Empirical comparison across {backendReport?.dataset?.split?.test_rows?.toLocaleString() || '2,632'} unseen corridor test samples</p>
                 </div>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold bg-[#E8E2D9] text-[#4C4138]">
@@ -366,27 +370,27 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
                 <tbody className="divide-y divide-[#E8E2D9]/40 font-mono text-[11px]">
                   <tr className="text-[#64564B]">
                     <td className="py-2 font-sans font-medium text-[#231E1A]">Random Forest</td>
-                    <td className="py-2">{backendReport?.baselines?.random_forest?.speed?.mae?.toFixed(2) || '2.56'} km/h</td>
-                    <td className="py-2">{backendReport?.baselines?.random_forest?.volume?.mae?.toFixed(1) || '58.0'}</td>
-                    <td className="py-2">{backendReport?.baselines?.random_forest?.volume?.r2?.toFixed(3) || '0.880'}</td>
-                    <td className="py-2 text-right font-bold text-[#231E1A]">{backendReport?.baselines?.random_forest?.speed?.mape_pct?.toFixed(2) || '7.71'}%</td>
+                    <td className="py-2">{backendReport?.baselines?.random_forest?.speed?.mae?.toFixed(2) || '2.31'} km/h</td>
+                    <td className="py-2">{backendReport?.baselines?.random_forest?.volume?.mae?.toFixed(1) || '45.2'}</td>
+                    <td className="py-2">{backendReport?.baselines?.random_forest?.volume?.r2?.toFixed(3) || '0.963'}</td>
+                    <td className="py-2 text-right font-bold text-[#231E1A]">{backendReport?.baselines?.random_forest?.speed?.mape_pct?.toFixed(2) || '8.97'}%</td>
                   </tr>
                   <tr className="text-[#64564B]">
                     <td className="py-2 font-sans font-medium text-[#231E1A]">Ridge Linear</td>
-                    <td className="py-2">{backendReport?.baselines?.ridge_linear?.speed?.mae?.toFixed(2) || '2.50'} km/h</td>
-                    <td className="py-2">{backendReport?.baselines?.ridge_linear?.volume?.mae?.toFixed(1) || '57.8'}</td>
-                    <td className="py-2">{backendReport?.baselines?.ridge_linear?.volume?.r2?.toFixed(3) || '0.884'}</td>
-                    <td className="py-2 text-right font-bold text-[#231E1A]">{backendReport?.baselines?.ridge_linear?.speed?.mape_pct?.toFixed(2) || '7.55'}%</td>
+                    <td className="py-2">{backendReport?.baselines?.ridge_linear?.speed?.mae?.toFixed(2) || '2.42'} km/h</td>
+                    <td className="py-2">{backendReport?.baselines?.ridge_linear?.volume?.mae?.toFixed(1) || '52.5'}</td>
+                    <td className="py-2">{backendReport?.baselines?.ridge_linear?.volume?.r2?.toFixed(3) || '0.956'}</td>
+                    <td className="py-2 text-right font-bold text-[#231E1A]">{backendReport?.baselines?.ridge_linear?.speed?.mape_pct?.toFixed(2) || '9.64'}%</td>
                   </tr>
                   <tr className="bg-[#EAF2EC]/60 text-[#2D6A4F] font-bold rounded-lg">
                     <td className="py-2 px-1 font-sans font-bold text-[#231E1A] flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3 text-[#2D6A4F]" />
                       PyTorch ST-GNN
                     </td>
-                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.speed?.mae?.toFixed(2) || '2.51'} km/h</td>
-                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.volume?.mae?.toFixed(1) || '54.8'}</td>
-                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.volume?.r2?.toFixed(3) || '0.895'}</td>
-                    <td className="py-2 px-1 text-right font-bold text-[#2D6A4F]">{backendReport?.evaluation?.speed?.mape_pct?.toFixed(2) || '7.59'}%</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.speed?.mae?.toFixed(2) || '2.11'} km/h</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.volume?.mae?.toFixed(1) || '44.7'}</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.volume?.r2?.toFixed(3) || '0.967'}</td>
+                    <td className="py-2 px-1 text-right font-bold text-[#2D6A4F]">{backendReport?.evaluation?.speed?.mape_pct?.toFixed(2) || '7.98'}%</td>
                   </tr>
                 </tbody>
               </table>

@@ -250,31 +250,31 @@ export function generateLocationTelemetry(location, rawTraffic = null) {
     },
   ];
 
-  // 6. Empirical Model Evaluation Metrics (Aligned with trained PyTorch ST-GNN Bengaluru checkpoint)
+  // 6. Empirical Model Evaluation Metrics (Aligned with 8-node trained PyTorch ST-GNN checkpoint)
   const modelMetrics = {
     mae: {
-      value: "2.51",
+      value: "2.11",
       unit: "km/h",
-      improvement: "Vol MAE: 54.8 veh/15m",
-      definition: "Mean Absolute Error on held-out 2025 Bengaluru test split",
+      improvement: "12.7% better vs Linear (Vol MAE: 44.7)",
+      definition: "Mean Absolute Error across 2,632 held-out 8-corridor test samples",
     },
     rmse: {
-      value: "3.16",
+      value: "2.70",
       unit: "km/h",
-      improvement: "Vol RMSE: 70.0 veh/15m",
-      definition: "Root Mean Square Error across IND, KOR, WHI, HEB",
+      improvement: "Vol RMSE: 57.9 veh/15m",
+      definition: "Root Mean Square Error across 8 Bengaluru corridors (HEB..KRP)",
     },
     r2Score: {
-      value: "0.758",
+      value: "0.902",
       unit: "R²",
-      improvement: "Vol R²: 0.895",
-      definition: "Coefficient of determination (75.8% speed / 89.5% vol)",
+      improvement: "Vol R²: 0.967",
+      definition: "Coefficient of determination (90.2% speed / 96.7% vol)",
     },
     latency: {
-      value: "1.12",
+      value: "1.19",
       unit: "ms",
-      improvement: "PyTorch ST-GNN (84.9k params)",
-      definition: "Measured single-graph multi-node PyTorch inference latency on local CPU",
+      improvement: "8-Node PyTorch ST-GNN (85.5k params)",
+      definition: "Measured single-graph 8-node PyTorch inference latency on local CPU",
     },
   };
 

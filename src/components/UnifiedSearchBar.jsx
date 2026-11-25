@@ -139,7 +139,7 @@ export default function UnifiedSearchBar({
         <div className="flex items-center gap-1.5 flex-wrap pt-1.5 border-t border-[#E8E2D9]/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#64564B] flex items-center gap-1 mr-1">
             <Sparkles className="w-3 h-3 text-[#A86032]" />
-            Trained Nodes:
+            Trained Nodes (8):
           </span>
           {TRAINED_LOCATIONS.map((loc) => {
             const isActive = currentLocation?.name?.toLowerCase().includes(loc.shortLabel.toLowerCase());

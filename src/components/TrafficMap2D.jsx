@@ -1248,13 +1248,13 @@ export default function TrafficMap2D({
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#64564B] flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-[#A86032]" />
-                      Trained Corridors
+                      Trained Corridors (8)
                     </span>
                     <span className="text-[10px] font-semibold text-[#A86032]">
                       Sets {activeSearchField === 'dest' || (origin?.lat && !destination?.lat && activeSearchField !== 'origin') ? 'Dest (B)' : 'Origin (A)'}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className="grid grid-cols-2 gap-1">
                     {TRAINED_LOCATIONS.map((loc) => {
                       const isOrigin = origin?.name?.toLowerCase().includes(loc.shortLabel.toLowerCase());
                       const isDest = destination?.name?.toLowerCase().includes(loc.shortLabel.toLowerCase());
@@ -1263,7 +1263,7 @@ export default function TrafficMap2D({
                           key={loc.code}
                           type="button"
                           onClick={() => handleQuickCorridorSelect(loc)}
-                          className={`px-2 py-1.5 rounded-lg border text-left transition-all cursor-pointer flex items-center justify-between gap-1 ${
+                          className={`px-2 py-1 rounded-lg border text-left transition-all cursor-pointer flex items-center justify-between gap-1 ${
                             isOrigin
                               ? 'bg-[#EAF2EC] border-[#2D6A4F]/50 text-[#231E1A]'
                               : isDest

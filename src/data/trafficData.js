@@ -438,39 +438,39 @@ export const CONGESTION_HOTSPOTS = [
   },
 ];
 
-// Model Insights & Performance Metrics (Aligned with trained PyTorch ST-GNN Bengaluru checkpoint)
+// Model Insights & Performance Metrics (Aligned with 8-node trained PyTorch ST-GNN checkpoint)
 export const MODEL_METRICS = {
   mae: {
-    value: "2.51",
+    value: "2.11",
     unit: "km/h",
-    baseline: "2.50 km/h",
-    improvement: "Vol MAE: 54.8 veh/15m",
+    baseline: "2.42 km/h",
+    improvement: "12.7% better vs Linear baseline (Vol MAE: 44.7)",
     status: "Verified Test Split",
-    definition: "Mean Absolute Error on held-out 2025 Bengaluru test samples",
+    definition: "Mean Absolute Error across 2,632 held-out 8-corridor Bengaluru test samples",
   },
   rmse: {
-    value: "3.16",
+    value: "2.70",
     unit: "km/h",
-    baseline: "3.13 km/h",
-    improvement: "Vol RMSE: 70.0 veh/15m",
+    baseline: "3.01 km/h",
+    improvement: "10.3% lower RMSE vs Linear (Vol RMSE: 57.9)",
     status: "Verified Test Split",
-    definition: "Root Mean Squared Error across IND, KOR, WHI, HEB",
+    definition: "Root Mean Squared Error across 8 Bengaluru corridors (HEB..KRP)",
   },
   r2Score: {
-    value: "0.758",
+    value: "0.902",
     unit: "R²",
-    baseline: "0.762",
-    improvement: "Vol R²: 0.895 | MAPE: 7.59%",
+    baseline: "0.878",
+    improvement: "Vol R²: 0.967 | MAPE: 8.0%",
     status: "Verified Fit",
-    definition: "Explains 75.8% speed variance & 89.5% volume variance",
+    definition: "Explains 90.2% speed variance & 96.7% volume variance",
   },
   latency: {
-    value: "1.12",
+    value: "1.19",
     unit: "ms",
     baseline: "CPU Forward",
-    improvement: "PyTorch ST-GNN (84,932 params)",
+    improvement: "8-Node PyTorch ST-GNN (85,508 params)",
     status: "Edge Ready",
-    definition: "Measured single-graph multi-node PyTorch inference latency on local CPU",
+    definition: "Measured single-graph 8-node PyTorch inference latency on local CPU",
   },
 };
 

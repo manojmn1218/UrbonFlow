@@ -90,6 +90,38 @@ TRAINED_CORRIDOR_PLACES = [
         "code": "HEB",
         "source": "ST-GNN Trained Node",
     },
+    {
+        "name": "Bellandur, Bengaluru",
+        "address": "Outer Ring Rd & EcoSpace Junction, Bengaluru (Trained Node: BEL)",
+        "lat": 12.9255,
+        "lon": 77.6762,
+        "code": "BEL",
+        "source": "ST-GNN Trained Node",
+    },
+    {
+        "name": "HSR Layout, Bengaluru",
+        "address": "27th Main & Agara Flyover Corridor, Bengaluru (Trained Node: HSR)",
+        "lat": 12.9116,
+        "lon": 77.6389,
+        "code": "HSR",
+        "source": "ST-GNN Trained Node",
+    },
+    {
+        "name": "Jayanagar, Bengaluru",
+        "address": "4th Block & South End Circle Arterial, Bengaluru (Trained Node: JAY)",
+        "lat": 12.9308,
+        "lon": 77.5838,
+        "code": "JAY",
+        "source": "ST-GNN Trained Node",
+    },
+    {
+        "name": "KR Puram, Bengaluru",
+        "address": "Cable Bridge & Old Madras Rd Junction, Bengaluru (Trained Node: KRP)",
+        "lat": 13.0031,
+        "lon": 77.6950,
+        "code": "KRP",
+        "source": "ST-GNN Trained Node",
+    },
 ]
 
 
@@ -196,7 +228,7 @@ def search_locations(query: str):
             seen_names.add(item.get("name", "").lower())
 
     if combined:
-        return combined[:6]
+        return combined[:8]
 
     # 4. Default fallback
     return [
@@ -316,7 +348,7 @@ def get_traffic_flow(lat: float, lon: float, location_name: str = "Selected Loca
         "prescriptive_action": action,
         "influences": [
             {"factor": "PyTorch ST-GNN Temporal State", "weight": 44 if is_live else 38},
-            {"factor": "Spatial Corridor Adjacency (4-Node Graph)", "weight": 28},
+            {"factor": "Spatial Corridor Adjacency (8-Node Graph)", "weight": 28},
             {"factor": "15m Volume-to-Speed Ratio", "weight": 18},
             {"factor": "Diurnal Peak & Weekday Cyclicality", "weight": 10},
         ]

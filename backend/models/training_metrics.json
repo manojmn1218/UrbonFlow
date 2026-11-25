@@ -1,16 +1,21 @@
 {
-  "model_name": "UrbanFlow ST-GNN (PyTorch GRU + Spatial Graph Diffusion)",
-  "trained_at": "2026-11-25 18:32:09",
-  "training_duration_sec": 25.87,
+  "model_name": "UrbanFlow ST-GNN (8-Node Bengaluru PyTorch GRU + Spatial Graph Diffusion)",
+  "trained_at": "2026-11-25 19:00:20",
+  "training_duration_sec": 79.16,
   "dataset": {
-    "source_file": "backend/data/traffic_dataset.csv",
-    "total_rows": 8768,
-    "unique_timestamps": 2192,
+    "source_file": "backend/data/traffic_dataset.csv + backend/data/bengaluru_corridors_2.csv",
+    "unified_file": "backend/data/traffic_dataset_8_corridors.csv",
+    "total_rows": 17536,
+    "unique_timestamps": 2850,
     "areas": [
       "HEB",
       "IND",
       "KOR",
-      "WHI"
+      "WHI",
+      "BEL",
+      "HSR",
+      "JAY",
+      "KRP"
     ],
     "trained_locations": [
       {
@@ -40,107 +45,199 @@
         "lat": 12.9698,
         "lon": 77.75,
         "free_flow_speed": 60.0
+      },
+      {
+        "code": "BEL",
+        "name": "Bellandur",
+        "lat": 12.9255,
+        "lon": 77.6762,
+        "free_flow_speed": 50.0
+      },
+      {
+        "code": "HSR",
+        "name": "HSR Layout",
+        "lat": 12.9116,
+        "lon": 77.6389,
+        "free_flow_speed": 45.0
+      },
+      {
+        "code": "JAY",
+        "name": "Jayanagar",
+        "lat": 12.9308,
+        "lon": 77.5838,
+        "free_flow_speed": 42.0
+      },
+      {
+        "code": "KRP",
+        "name": "KR Puram",
+        "lat": 13.0031,
+        "lon": 77.695,
+        "free_flow_speed": 52.0
       }
     ],
-    "date_range": "2023-01-01 08:00:00 -> 2025-12-31 20:00:00",
-    "data_status": "SYNTHETIC",
+    "date_range": "2023-01-01 08:00:00 -> 2026-11-25 18:00:00",
+    "data_status": "SYNTHETIC_COMBINED_8_CORRIDORS",
     "split": {
-      "train_snapshots": 1530,
-      "val_snapshots": 328,
-      "test_snapshots": 329,
-      "train_rows": 6120,
-      "val_rows": 1312,
-      "test_rows": 1316
+      "train_snapshots": 2187,
+      "val_snapshots": 658,
+      "test_snapshots": 658,
+      "train_rows": 12252,
+      "val_rows": 2632,
+      "test_rows": 2632
     }
   },
   "architecture": {
     "type": "PyTorch ST-GNN",
     "seq_len": 6,
     "hidden_dim": 64,
-    "num_nodes": 4,
-    "num_features": 19,
-    "parameters": 84932
+    "num_nodes": 8,
+    "num_features": 26,
+    "parameters": 85508
   },
   "evaluation": {
     "speed": {
-      "mae": 2.5106,
-      "rmse": 3.161,
-      "r2": 0.7577,
-      "mape_pct": 7.59
+      "mae": 2.1144,
+      "rmse": 2.7015,
+      "r2": 0.9021,
+      "mape_pct": 7.98
     },
     "volume": {
-      "mae": 54.766,
-      "rmse": 69.9732,
-      "r2": 0.8947,
-      "mape_pct": 4.82
+      "mae": 44.7225,
+      "rmse": 57.8853,
+      "r2": 0.9666,
+      "mape_pct": 5.94
     },
     "normalized": {
-      "mae": 0.3301,
-      "rmse": 0.4284
+      "mae": 0.2061,
+      "rmse": 0.2767
     },
-    "inference_latency_ms": 1.12,
+    "inference_latency_ms": 1.19,
     "per_area": {
       "HEB": {
         "name": "Hebbal",
         "speed": {
-          "mae": 2.3571,
-          "rmse": 2.9683,
-          "r2": 0.5828,
-          "mape_pct": 5.59
+          "mae": 2.3594,
+          "rmse": 2.993,
+          "r2": 0.5759,
+          "mape_pct": 5.58
         },
         "volume": {
-          "mae": 57.7347,
-          "rmse": 73.1009,
-          "r2": 0.872,
-          "mape_pct": 4.9
+          "mae": 55.2906,
+          "rmse": 70.8888,
+          "r2": 0.8796,
+          "mape_pct": 4.75
         },
         "test_samples": 329
       },
       "IND": {
         "name": "Indiranagar",
         "speed": {
-          "mae": 2.8475,
-          "rmse": 3.5533,
-          "r2": 0.4694,
-          "mape_pct": 8.57
+          "mae": 2.7401,
+          "rmse": 3.4435,
+          "r2": 0.5017,
+          "mape_pct": 8.06
         },
         "volume": {
-          "mae": 48.9743,
-          "rmse": 62.3032,
-          "r2": 0.8673,
-          "mape_pct": 4.87
+          "mae": 46.5759,
+          "rmse": 59.2446,
+          "r2": 0.88,
+          "mape_pct": 4.78
         },
         "test_samples": 329
       },
       "KOR": {
         "name": "Koramangala",
         "speed": {
-          "mae": 2.4799,
-          "rmse": 3.0827,
-          "r2": 0.4349,
-          "mape_pct": 8.71
+          "mae": 2.4555,
+          "rmse": 3.0248,
+          "r2": 0.4559,
+          "mape_pct": 8.51
         },
         "volume": {
-          "mae": 55.5386,
-          "rmse": 72.4375,
-          "r2": 0.851,
-          "mape_pct": 4.96
+          "mae": 50.6724,
+          "rmse": 65.1631,
+          "r2": 0.8794,
+          "mape_pct": 4.68
         },
         "test_samples": 329
       },
       "WHI": {
         "name": "Whitefield",
         "speed": {
-          "mae": 2.3578,
-          "rmse": 3.0048,
-          "r2": 0.534,
-          "mape_pct": 7.5
+          "mae": 2.2582,
+          "rmse": 2.888,
+          "r2": 0.5695,
+          "mape_pct": 6.96
         },
         "volume": {
-          "mae": 56.8163,
-          "rmse": 71.5008,
-          "r2": 0.8869,
-          "mape_pct": 4.56
+          "mae": 54.8852,
+          "rmse": 68.8205,
+          "r2": 0.8953,
+          "mape_pct": 4.47
+        },
+        "test_samples": 329
+      },
+      "BEL": {
+        "name": "Bellandur",
+        "speed": {
+          "mae": 1.9456,
+          "rmse": 2.4715,
+          "r2": 0.8366,
+          "mape_pct": 11.08
+        },
+        "volume": {
+          "mae": 46.9625,
+          "rmse": 58.1066,
+          "r2": 0.9126,
+          "mape_pct": 7.37
+        },
+        "test_samples": 329
+      },
+      "HSR": {
+        "name": "HSR Layout",
+        "speed": {
+          "mae": 1.5072,
+          "rmse": 1.8918,
+          "r2": 0.8317,
+          "mape_pct": 6.97
+        },
+        "volume": {
+          "mae": 32.464,
+          "rmse": 41.7318,
+          "r2": 0.9189,
+          "mape_pct": 6.87
+        },
+        "test_samples": 329
+      },
+      "JAY": {
+        "name": "Jayanagar",
+        "speed": {
+          "mae": 1.623,
+          "rmse": 2.0259,
+          "r2": 0.7393,
+          "mape_pct": 7.05
+        },
+        "volume": {
+          "mae": 27.5042,
+          "rmse": 35.1067,
+          "r2": 0.9114,
+          "mape_pct": 7.09
+        },
+        "test_samples": 329
+      },
+      "KRP": {
+        "name": "KR Puram",
+        "speed": {
+          "mae": 2.0259,
+          "rmse": 2.5075,
+          "r2": 0.8179,
+          "mape_pct": 9.6
+        },
+        "volume": {
+          "mae": 43.4253,
+          "rmse": 54.1996,
+          "r2": 0.9048,
+          "mape_pct": 7.46
         },
         "test_samples": 329
       }
@@ -149,296 +246,306 @@
   "baselines": {
     "ridge_linear": {
       "speed": {
-        "mae": 2.4966,
-        "rmse": 3.1331,
-        "r2": 0.762,
-        "mape_pct": 7.55
+        "mae": 2.422,
+        "rmse": 3.012,
+        "r2": 0.8784,
+        "mape_pct": 9.64
       },
       "volume": {
-        "mae": 57.7572,
-        "rmse": 73.5115,
-        "r2": 0.8838,
-        "mape_pct": 5.12
+        "mae": 52.4782,
+        "rmse": 66.6395,
+        "r2": 0.9557,
+        "mape_pct": 7.03
       }
     },
     "random_forest": {
       "speed": {
-        "mae": 2.5569,
-        "rmse": 3.2267,
-        "r2": 0.7476,
-        "mape_pct": 7.71
+        "mae": 2.3061,
+        "rmse": 2.922,
+        "r2": 0.8855,
+        "mape_pct": 8.97
       },
       "volume": {
-        "mae": 59.1756,
-        "rmse": 76.0173,
-        "r2": 0.8757,
-        "mape_pct": 5.17
+        "mae": 45.1846,
+        "rmse": 60.7229,
+        "r2": 0.9633,
+        "mape_pct": 5.23
       }
     }
   },
   "training_history": [
     {
       "epoch": 1,
-      "train_loss": 0.13888,
-      "val_loss": 0.10687
+      "train_loss": 0.08998,
+      "val_loss": 0.04895
     },
     {
       "epoch": 10,
-      "train_loss": 0.08656,
-      "val_loss": 0.09093
+      "train_loss": 0.03902,
+      "val_loss": 0.04113
     },
     {
       "epoch": 20,
-      "train_loss": 0.08571,
-      "val_loss": 0.09492
+      "train_loss": 0.03832,
+      "val_loss": 0.04268
     },
     {
       "epoch": 30,
-      "train_loss": 0.08397,
-      "val_loss": 0.09451
+      "train_loss": 0.03762,
+      "val_loss": 0.04105
     },
     {
       "epoch": 40,
-      "train_loss": 0.08195,
-      "val_loss": 0.09683
+      "train_loss": 0.03752,
+      "val_loss": 0.04277
     },
     {
       "epoch": 50,
-      "train_loss": 0.08016,
-      "val_loss": 0.09603
+      "train_loss": 0.03679,
+      "val_loss": 0.04103
     },
     {
       "epoch": 60,
-      "train_loss": 0.07869,
-      "val_loss": 0.09642
+      "train_loss": 0.03616,
+      "val_loss": 0.04115
+    },
+    {
+      "epoch": 70,
+      "train_loss": 0.03605,
+      "val_loss": 0.04114
+    },
+    {
+      "epoch": 80,
+      "train_loss": 0.03599,
+      "val_loss": 0.0423
     }
   ],
   "sample_trajectory": [
     {
-      "time": "12-20 08:00",
-      "actual": 35.4,
-      "predicted": 36.9,
-      "upperConfidence": 40.0,
-      "lowerConfidence": 33.7,
-      "error": 1.46
+      "time": "11-14 09:00",
+      "actual": 33.7,
+      "predicted": 32.8,
+      "upperConfidence": 35.5,
+      "lowerConfidence": 30.1,
+      "error": -0.83
     },
     {
-      "time": "12-20 20:00",
-      "actual": 42.0,
-      "predicted": 40.1,
-      "upperConfidence": 43.3,
-      "lowerConfidence": 37.0,
-      "error": -1.82
+      "time": "11-14 18:00",
+      "actual": 26.4,
+      "predicted": 27.7,
+      "upperConfidence": 30.4,
+      "lowerConfidence": 25.0,
+      "error": 1.27
     },
     {
-      "time": "12-21 08:00",
-      "actual": 34.7,
-      "predicted": 36.6,
-      "upperConfidence": 39.8,
-      "lowerConfidence": 33.4,
-      "error": 1.9
+      "time": "11-15 09:00",
+      "actual": 31.8,
+      "predicted": 32.7,
+      "upperConfidence": 35.4,
+      "lowerConfidence": 30.0,
+      "error": 0.95
     },
     {
-      "time": "12-21 20:00",
-      "actual": 44.5,
-      "predicted": 40.1,
-      "upperConfidence": 43.3,
-      "lowerConfidence": 37.0,
-      "error": -4.32
+      "time": "11-15 18:00",
+      "actual": 26.9,
+      "predicted": 27.6,
+      "upperConfidence": 30.3,
+      "lowerConfidence": 24.9,
+      "error": 0.66
     },
     {
-      "time": "12-22 08:00",
-      "actual": 30.1,
-      "predicted": 31.2,
-      "upperConfidence": 34.3,
-      "lowerConfidence": 28.0,
-      "error": 1.02
+      "time": "11-16 09:00",
+      "actual": 22.5,
+      "predicted": 24.3,
+      "upperConfidence": 27.0,
+      "lowerConfidence": 21.6,
+      "error": 1.77
     },
     {
-      "time": "12-22 20:00",
-      "actual": 36.2,
-      "predicted": 35.9,
-      "upperConfidence": 39.0,
-      "lowerConfidence": 32.7,
-      "error": -0.29
+      "time": "11-16 18:00",
+      "actual": 22.8,
+      "predicted": 22.8,
+      "upperConfidence": 25.5,
+      "lowerConfidence": 20.1,
+      "error": -0.02
     },
     {
-      "time": "12-23 08:00",
-      "actual": 30.3,
-      "predicted": 31.1,
-      "upperConfidence": 34.3,
-      "lowerConfidence": 28.0,
-      "error": 0.84
+      "time": "11-17 09:00",
+      "actual": 21.5,
+      "predicted": 23.0,
+      "upperConfidence": 25.7,
+      "lowerConfidence": 20.3,
+      "error": 1.53
     },
     {
-      "time": "12-23 20:00",
-      "actual": 36.9,
-      "predicted": 35.8,
-      "upperConfidence": 38.9,
-      "lowerConfidence": 32.6,
-      "error": -1.12
+      "time": "11-17 18:00",
+      "actual": 21.4,
+      "predicted": 22.9,
+      "upperConfidence": 25.6,
+      "lowerConfidence": 20.2,
+      "error": 1.48
     },
     {
-      "time": "12-24 08:00",
-      "actual": 28.2,
-      "predicted": 31.4,
-      "upperConfidence": 34.6,
-      "lowerConfidence": 28.3,
-      "error": 3.16
-    },
-    {
-      "time": "12-24 20:00",
-      "actual": 33.9,
-      "predicted": 36.0,
-      "upperConfidence": 39.2,
-      "lowerConfidence": 32.9,
-      "error": 2.16
-    },
-    {
-      "time": "12-25 08:00",
-      "actual": 33.0,
-      "predicted": 31.5,
-      "upperConfidence": 34.6,
-      "lowerConfidence": 28.3,
-      "error": -1.49
-    },
-    {
-      "time": "12-25 20:00",
-      "actual": 36.5,
-      "predicted": 36.1,
-      "upperConfidence": 39.3,
-      "lowerConfidence": 32.9,
-      "error": -0.34
-    },
-    {
-      "time": "12-26 08:00",
-      "actual": 29.8,
-      "predicted": 31.0,
-      "upperConfidence": 34.2,
-      "lowerConfidence": 27.9,
-      "error": 1.3
-    },
-    {
-      "time": "12-26 20:00",
-      "actual": 35.4,
-      "predicted": 36.2,
-      "upperConfidence": 39.4,
-      "lowerConfidence": 33.1,
-      "error": 0.84
-    },
-    {
-      "time": "12-27 08:00",
-      "actual": 38.5,
-      "predicted": 36.5,
-      "upperConfidence": 39.7,
-      "lowerConfidence": 33.4,
-      "error": -1.97
-    },
-    {
-      "time": "12-27 20:00",
-      "actual": 38.8,
-      "predicted": 40.1,
-      "upperConfidence": 43.3,
-      "lowerConfidence": 36.9,
-      "error": 1.33
-    },
-    {
-      "time": "12-28 08:00",
-      "actual": 36.5,
-      "predicted": 36.7,
-      "upperConfidence": 39.8,
-      "lowerConfidence": 33.5,
-      "error": 0.15
-    },
-    {
-      "time": "12-28 20:00",
-      "actual": 43.1,
-      "predicted": 40.1,
-      "upperConfidence": 43.2,
-      "lowerConfidence": 36.9,
-      "error": -3.07
-    },
-    {
-      "time": "12-29 08:00",
-      "actual": 27.9,
-      "predicted": 31.0,
-      "upperConfidence": 34.2,
-      "lowerConfidence": 27.9,
-      "error": 3.16
-    },
-    {
-      "time": "12-29 20:00",
-      "actual": 34.7,
-      "predicted": 35.9,
-      "upperConfidence": 39.0,
-      "lowerConfidence": 32.7,
-      "error": 1.14
-    },
-    {
-      "time": "12-30 08:00",
-      "actual": 30.4,
-      "predicted": 31.2,
-      "upperConfidence": 34.3,
-      "lowerConfidence": 28.0,
-      "error": 0.81
-    },
-    {
-      "time": "12-30 20:00",
-      "actual": 35.6,
-      "predicted": 35.8,
-      "upperConfidence": 39.0,
-      "lowerConfidence": 32.7,
+      "time": "11-18 09:00",
+      "actual": 24.3,
+      "predicted": 24.5,
+      "upperConfidence": 27.2,
+      "lowerConfidence": 21.8,
       "error": 0.23
     },
     {
-      "time": "12-31 08:00",
-      "actual": 29.3,
-      "predicted": 31.1,
-      "upperConfidence": 34.3,
-      "lowerConfidence": 28.0,
-      "error": 1.81
+      "time": "11-18 18:00",
+      "actual": 20.2,
+      "predicted": 21.6,
+      "upperConfidence": 24.3,
+      "lowerConfidence": 18.9,
+      "error": 1.37
     },
     {
-      "time": "12-31 20:00",
-      "actual": 36.9,
-      "predicted": 35.9,
-      "upperConfidence": 39.0,
-      "lowerConfidence": 32.7,
-      "error": -1.04
+      "time": "11-19 09:00",
+      "actual": 22.5,
+      "predicted": 24.5,
+      "upperConfidence": 27.2,
+      "lowerConfidence": 21.8,
+      "error": 2.09
+    },
+    {
+      "time": "11-19 18:00",
+      "actual": 23.3,
+      "predicted": 22.8,
+      "upperConfidence": 25.5,
+      "lowerConfidence": 20.1,
+      "error": -0.44
+    },
+    {
+      "time": "11-20 09:00",
+      "actual": 21.8,
+      "predicted": 22.9,
+      "upperConfidence": 25.7,
+      "lowerConfidence": 20.2,
+      "error": 1.2
+    },
+    {
+      "time": "11-20 18:00",
+      "actual": 22.9,
+      "predicted": 22.8,
+      "upperConfidence": 25.5,
+      "lowerConfidence": 20.1,
+      "error": -0.19
+    },
+    {
+      "time": "11-21 09:00",
+      "actual": 30.4,
+      "predicted": 31.2,
+      "upperConfidence": 33.9,
+      "lowerConfidence": 28.5,
+      "error": 0.79
+    },
+    {
+      "time": "11-21 18:00",
+      "actual": 26.6,
+      "predicted": 27.8,
+      "upperConfidence": 30.5,
+      "lowerConfidence": 25.1,
+      "error": 1.1
+    },
+    {
+      "time": "11-22 09:00",
+      "actual": 31.1,
+      "predicted": 31.3,
+      "upperConfidence": 34.0,
+      "lowerConfidence": 28.6,
+      "error": 0.14
+    },
+    {
+      "time": "11-22 18:00",
+      "actual": 25.0,
+      "predicted": 27.5,
+      "upperConfidence": 30.2,
+      "lowerConfidence": 24.8,
+      "error": 2.51
+    },
+    {
+      "time": "11-23 09:00",
+      "actual": 25.8,
+      "predicted": 24.3,
+      "upperConfidence": 27.0,
+      "lowerConfidence": 21.6,
+      "error": -1.46
+    },
+    {
+      "time": "11-23 18:00",
+      "actual": 20.8,
+      "predicted": 22.8,
+      "upperConfidence": 25.5,
+      "lowerConfidence": 20.1,
+      "error": 2.05
+    },
+    {
+      "time": "11-24 09:00",
+      "actual": 24.1,
+      "predicted": 24.4,
+      "upperConfidence": 27.1,
+      "lowerConfidence": 21.7,
+      "error": 0.34
+    },
+    {
+      "time": "11-24 18:00",
+      "actual": 22.4,
+      "predicted": 22.9,
+      "upperConfidence": 25.6,
+      "lowerConfidence": 20.2,
+      "error": 0.49
+    },
+    {
+      "time": "11-25 09:00",
+      "actual": 22.5,
+      "predicted": 23.1,
+      "upperConfidence": 25.8,
+      "lowerConfidence": 20.4,
+      "error": 0.55
+    },
+    {
+      "time": "11-25 18:00",
+      "actual": 19.8,
+      "predicted": 21.6,
+      "upperConfidence": 24.3,
+      "lowerConfidence": 18.9,
+      "error": 1.84
     }
   ],
   "ui_metrics": {
     "mae": {
-      "value": "2.51",
+      "value": "2.11",
       "unit": "km/h",
-      "baseline": "2.50 km/h",
-      "improvement": "0.6% delta vs Linear baseline (Vol MAE: 54.8)",
+      "baseline": "2.42 km/h",
+      "improvement": "12.7% better vs Linear baseline (Vol MAE: 44.7)",
       "status": "Verified Test Split",
-      "definition": "Mean Absolute Error on 1316 held-out 2025 Bengaluru corridor test samples"
+      "definition": "Mean Absolute Error across 2,632 held-out 8-corridor Bengaluru test samples"
     },
     "rmse": {
-      "value": "3.16",
+      "value": "2.70",
       "unit": "km/h",
-      "baseline": "3.13 km/h",
-      "improvement": "0.9% delta RMSE vs Linear (Vol RMSE: 70.0)",
+      "baseline": "3.01 km/h",
+      "improvement": "10.3% lower RMSE vs Linear (Vol RMSE: 57.9)",
       "status": "Verified Test Split",
       "definition": "Root Mean Squared Error penalizing peak-hour congestion outliers"
     },
     "r2Score": {
-      "value": "0.758",
+      "value": "0.902",
       "unit": "R\u00b2",
-      "baseline": "0.762",
-      "improvement": "Vol R\u00b2: 0.895 | MAPE: 7.6%",
+      "baseline": "0.878",
+      "improvement": "Vol R\u00b2: 0.967 | MAPE: 8.0%",
       "status": "Verified Fit",
-      "definition": "Explains 75.8% speed variance & 89.5% volume variance"
+      "definition": "Explains 90.2% speed variance & 96.7% volume variance"
     },
     "latency": {
-      "value": "1.12",
+      "value": "1.19",
       "unit": "ms",
       "baseline": "CPU Forward",
-      "improvement": "PyTorch ST-GNN (84,932 params)",
+      "improvement": "8-Node PyTorch ST-GNN (85,508 params)",
       "status": "Edge Ready",
-      "definition": "Measured single-graph multi-node PyTorch inference latency on local CPU"
+      "definition": "Measured single-graph 8-node PyTorch inference latency on local CPU"
     }
   }
 }
