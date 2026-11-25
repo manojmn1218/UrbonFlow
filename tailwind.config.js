@@ -72,8 +72,8 @@ export default {
         'float': '0 20px 35px -10px rgba(44, 24, 16, 0.10), 0 1px 3px rgba(44, 24, 16, 0.05)',
         'glow-chocolate': '0 0 20px rgba(78, 46, 30, 0.20)',
         'glow-caramel': '0 0 20px rgba(196, 125, 59, 0.25)',
-        'glow-blue': '0 0 20px rgba(92, 51, 30, 0.15)',
-        'glow-red': '0 0 20px rgba(158, 42, 43, 0.2)',
+        'glow-blue': '0 0 20px rgba(108, 58, 33, 0.84)',
+        'glow-red': '0 0 20px rgba(158, 42, 44, 0.25)',
       },
       animation: {
         'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

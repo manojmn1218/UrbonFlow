@@ -5,13 +5,15 @@ import {
   Navigation, 
   Search, 
   MapPin, 
-  ZoomIn, 
-  ZoomOut, 
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  Move,
   Crosshair, 
   Loader2, 
   Layers, 
   X,
-  ArrowRight,
   ArrowUpDown,
   Route,
   Clock,
@@ -415,19 +417,23 @@ export default function TrafficMap2D({
       const initialCenter = [origin?.lat || lat, origin?.lon || lon];
       const map = L.map(container, {
         center: initialCenter,
-        zoom: 13,
+        zoom: 14,
         minZoom: 2,
         maxZoom: 22,
         zoomControl: false,
         attributionControl: false,
-        preferCanvas: true, // Hardware-accelerated canvas vector rendering
-        zoomAnimation: true,
+        scrollWheelZoom: false, // Disables wheel zoom - enables smooth page scroll & pan-only interaction
+        doubleClickZoom: false, // Disables double click zoom
+        touchZoom: false,       // Disables pinch zoom
+        boxZoom: false,         // Disables box zoom
+        dragging: true,         // Allows smooth dragging / moving in all directions
+        inertia: true,          // Smooth momentum panning
+        inertiaDeceleration: 2800,
+        inertiaMaxSpeed: 2400,
+        easeLinearity: 0.2,
+        preferCanvas: true,     // Hardware-accelerated canvas vector rendering
         fadeAnimation: true,
-        markerZoomAnimation: true,
-        wheelDebounceTime: 35,
-        wheelPxPerZoomLevel: 80,
-        zoomSnap: 0.5,
-        zoomDelta: 0.5,
+        zoomAnimation: false,
       });
 
       const initialCfg = getTileConfig(tileMode);
@@ -719,6 +725,35 @@ export default function TrafficMap2D({
     }
   };
 
+  const panIntervalRef = useRef(null);
+
+  const handlePan = (dx, dy) => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    map.panBy([dx, dy], { animate: true, duration: 0.28, easeLinearity: 0.2 });
+  };
+
+  const startContinuousPan = (dx, dy) => {
+    handlePan(dx, dy);
+    if (panIntervalRef.current) clearInterval(panIntervalRef.current);
+    panIntervalRef.current = setInterval(() => {
+      handlePan(dx * 0.75, dy * 0.75);
+    }, 140);
+  };
+
+  const stopContinuousPan = () => {
+    if (panIntervalRef.current) {
+      clearInterval(panIntervalRef.current);
+      panIntervalRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (panIntervalRef.current) clearInterval(panIntervalRef.current);
+    };
+  }, []);
+
   const handleRecenter = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -885,28 +920,58 @@ export default function TrafficMap2D({
             </button>
           </div>
 
-          {/* Zoom and Recenter Controls */}
+          {/* 4-Way Directional Pan & Recenter Controls */}
           <div className="flex items-center gap-1 bg-[#F5EFEB] p-1 rounded-xl border border-[#EADBCE]/70">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138] px-1 hidden sm:inline">
+              Pan
+            </span>
             <button 
-              onClick={() => mapInstanceRef.current?.zoomIn(1)} 
+              onMouseDown={() => startContinuousPan(-200, 0)}
+              onMouseUp={stopContinuousPan}
+              onMouseLeave={stopContinuousPan}
+              onClick={() => handlePan(-200, 0)}
               className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
-              title="Zoom In (up to level 22)"
+              title="Move Map Left (West)"
             >
-              <ZoomIn className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5" />
             </button>
             <button 
-              onClick={() => mapInstanceRef.current?.zoomOut(1)} 
+              onMouseDown={() => startContinuousPan(0, -200)}
+              onMouseUp={stopContinuousPan}
+              onMouseLeave={stopContinuousPan}
+              onClick={() => handlePan(0, -200)}
               className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
-              title="Zoom Out"
+              title="Move Map Up (North)"
             >
-              <ZoomOut className="w-4 h-4" />
+              <ArrowUp className="w-3.5 h-3.5" />
             </button>
+            <button 
+              onMouseDown={() => startContinuousPan(0, 200)}
+              onMouseUp={stopContinuousPan}
+              onMouseLeave={stopContinuousPan}
+              onClick={() => handlePan(0, 200)}
+              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              title="Move Map Down (South)"
+            >
+              <ArrowDown className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              onMouseDown={() => startContinuousPan(200, 0)}
+              onMouseUp={stopContinuousPan}
+              onMouseLeave={stopContinuousPan}
+              onClick={() => handlePan(200, 0)}
+              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              title="Move Map Right (East)"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <div className="w-[1px] h-4 bg-[#EADBCE]/80 mx-0.5" />
             <button 
               onClick={handleRecenter} 
-              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#5C331E] transition-all active:scale-95" 
-              title="Recenter Map"
+              className="p-1.5 rounded-lg text-[#5C331E] hover:bg-[#FFFDF9] hover:text-[#3D2317] transition-all active:scale-95 font-bold" 
+              title="Recenter Map on Target Location"
             >
-              <Crosshair className="w-4 h-4" />
+              <Crosshair className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -917,9 +982,79 @@ export default function TrafficMap2D({
         {/* Leaflet Canvas Container */}
         <div 
           ref={mapContainerRef} 
-          className="absolute inset-0 w-full h-full" 
+          className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing" 
           style={{ minHeight: '480px' }} 
         />
+
+        {/* Floating 4-Way Directional Navigator Pad on Map */}
+        <div className="hidden sm:flex absolute top-4 right-4 z-[400] bg-[#FFFDF9]/90 backdrop-blur-2xl rounded-2xl border border-[#EADBCE] shadow-xl p-2 flex-col items-center select-none">
+          <div className="flex items-center justify-between w-full pb-1 mb-1 border-b border-[#EADBCE]/60">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-[#7D5138] font-mono flex items-center gap-1">
+              <Move className="w-3 h-3 text-[#5C331E]" />
+              Move Map
+            </span>
+          </div>
+          
+          <div className="relative w-20 h-20 flex items-center justify-center">
+            {/* North */}
+            <button
+              onMouseDown={() => startContinuousPan(0, -220)}
+              onMouseUp={stopContinuousPan}
+              onMouseLeave={stopContinuousPan}
+              onClick={() => handlePan(0, -220)}
+              className="absolute top-0 p-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 shadow-2xs"
+              title="Move Up (North)"
+            >
+              <ArrowUp className="w-3.5 h-3.5" />
+            </button>
+
+            {/* West */}
+            <button
+              onMouseDown={() => startContinuousPan(-220, 0)}
+              onMouseUp={stopContinuousPan}
+              onMouseLeave={stopContinuousPan}
+              onClick={() => handlePan(-220, 0)}
+              className="absolute left-0 p-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 shadow-2xs"
+              title="Move Left (West)"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Center Recenter Button */}
+            <button
+              onClick={handleRecenter}
+              className="p-2 rounded-full bg-[#5C331E] hover:bg-[#3D2317] text-[#FFFDF9] transition-all active:scale-90 shadow-sm"
+              title="Recenter on Target"
+            >
+              <Crosshair className="w-3.5 h-3.5" />
+            </button>
+
+            {/* East */}
+            <button
+              onMouseDown={() => startContinuousPan(220, 0)}
+              onMouseUp={stopContinuousPan}
+              onMouseLeave={stopContinuousPan}
+              onClick={() => handlePan(220, 0)}
+              className="absolute right-0 p-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 shadow-2xs"
+              title="Move Right (East)"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+
+            {/* South */}
+            <button
+              onMouseDown={() => startContinuousPan(0, 220)}
+              onMouseUp={stopContinuousPan}
+              onMouseLeave={stopContinuousPan}
+              onClick={() => handlePan(0, 220)}
+              className="absolute bottom-0 p-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 shadow-2xs"
+              title="Move Down (South)"
+            >
+              <ArrowDown className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <span className="text-[8px] font-mono text-[#9C6D52] mt-1">Drag or Hold Arrow</span>
+        </div>
 
         {/* ======================================================== */}
         {/* REDESIGNED 2-LOCATION TRIP & ROUTE PLANNER DOCK PANEL    */}
