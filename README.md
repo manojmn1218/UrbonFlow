@@ -97,7 +97,7 @@ The FastAPI backend runs on `http://localhost:8000`.
 npm install
 npm run dev
 ```
-Open `http://localhost:8080` (or `http://localhost:5173`) in your browser.
+Open `http://localhost:8080` in your browser.
 
 ### 4. Build for Production
 ```bash
