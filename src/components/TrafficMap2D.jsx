@@ -10,6 +10,8 @@ import {
   ArrowLeft,
   ArrowRight,
   Move,
+  ZoomIn,
+  ZoomOut,
   Crosshair, 
   Loader2, 
   Layers, 
@@ -422,10 +424,14 @@ export default function TrafficMap2D({
         maxZoom: 22,
         zoomControl: false,
         attributionControl: false,
-        scrollWheelZoom: false, // Disables wheel zoom - enables smooth page scroll & pan-only interaction
-        doubleClickZoom: false, // Disables double click zoom
-        touchZoom: false,       // Disables pinch zoom
-        boxZoom: false,         // Disables box zoom
+        scrollWheelZoom: true,  // Smooth mouse-wheel zoom
+        wheelDebounceTime: 40,
+        wheelPxPerZoomLevel: 80,
+        zoomSnap: 0.5,
+        zoomDelta: 0.5,
+        doubleClickZoom: true,  // Double click zoom
+        touchZoom: true,        // Trackpad / touch pinch zoom
+        boxZoom: true,          // Shift + drag box zoom
         dragging: true,         // Allows smooth dragging / moving in all directions
         inertia: true,          // Smooth momentum panning
         inertiaDeceleration: 2800,
@@ -433,7 +439,7 @@ export default function TrafficMap2D({
         easeLinearity: 0.2,
         preferCanvas: true,     // Hardware-accelerated canvas vector rendering
         fadeAnimation: true,
-        zoomAnimation: false,
+        zoomAnimation: true,
       });
 
       const initialCfg = getTileConfig(tileMode);
@@ -920,7 +926,7 @@ export default function TrafficMap2D({
             </button>
           </div>
 
-          {/* 4-Way Directional Pan & Recenter Controls */}
+          {/* 4-Way Directional Pan, Zoom & Recenter Controls */}
           <div className="flex items-center gap-1 bg-[#F5EFEB] p-1 rounded-xl border border-[#EADBCE]/70">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D5138] px-1 hidden sm:inline">
               Pan
@@ -965,7 +971,27 @@ export default function TrafficMap2D({
             >
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
+
             <div className="w-[1px] h-4 bg-[#EADBCE]/80 mx-0.5" />
+
+            {/* Dedicated Zoom In / Out Controls */}
+            <button 
+              onClick={() => mapInstanceRef.current?.zoomOut(1)} 
+              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              title="Zoom Out (-)"
+            >
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              onClick={() => mapInstanceRef.current?.zoomIn(1)} 
+              className="p-1.5 rounded-lg text-[#7D5138] hover:bg-[#FFFDF9] hover:text-[#2C1810] transition-all active:scale-95" 
+              title="Zoom In (+)"
+            >
+              <ZoomIn className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="w-[1px] h-4 bg-[#EADBCE]/80 mx-0.5" />
+
             <button 
               onClick={handleRecenter} 
               className="p-1.5 rounded-lg text-[#5C331E] hover:bg-[#FFFDF9] hover:text-[#3D2317] transition-all active:scale-95 font-bold" 
@@ -986,12 +1012,12 @@ export default function TrafficMap2D({
           style={{ minHeight: '480px' }} 
         />
 
-        {/* Floating 4-Way Directional Navigator Pad on Map */}
-        <div className="hidden sm:flex absolute top-4 right-4 z-[400] bg-[#FFFDF9]/90 backdrop-blur-2xl rounded-2xl border border-[#EADBCE] shadow-xl p-2 flex-col items-center select-none">
-          <div className="flex items-center justify-between w-full pb-1 mb-1 border-b border-[#EADBCE]/60">
+        {/* Floating 4-Way Directional Navigator & Zoom Pad on Map */}
+        <div className="hidden sm:flex absolute top-4 right-4 z-[400] bg-[#FFFDF9]/90 backdrop-blur-2xl rounded-2xl border border-[#EADBCE] shadow-xl p-2.5 flex-col items-center select-none">
+          <div className="flex items-center justify-between w-full pb-1 mb-1.5 border-b border-[#EADBCE]/60">
             <span className="text-[9px] font-bold uppercase tracking-wider text-[#7D5138] font-mono flex items-center gap-1">
               <Move className="w-3 h-3 text-[#5C331E]" />
-              Move Map
+              Move & Zoom
             </span>
           </div>
           
@@ -1053,7 +1079,27 @@ export default function TrafficMap2D({
               <ArrowDown className="w-3.5 h-3.5" />
             </button>
           </div>
-          <span className="text-[8px] font-mono text-[#9C6D52] mt-1">Drag or Hold Arrow</span>
+
+          {/* Dedicated Zoom In & Out Cluster on Pad */}
+          <div className="flex items-center gap-1.5 w-full mt-2 pt-1.5 border-t border-[#EADBCE]/60">
+            <button
+              onClick={() => mapInstanceRef.current?.zoomOut(1)}
+              className="flex-1 py-1 px-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 flex items-center justify-center gap-1 text-[10px] font-bold shadow-2xs"
+              title="Zoom Out (-)"
+            >
+              <ZoomOut className="w-3 h-3" />
+              <span>Out</span>
+            </button>
+            <button
+              onClick={() => mapInstanceRef.current?.zoomIn(1)}
+              className="flex-1 py-1 px-1.5 rounded-lg bg-[#F5EFEB] hover:bg-[#5C331E] hover:text-[#FFFDF9] text-[#7D5138] border border-[#EADBCE] transition-all active:scale-90 flex items-center justify-center gap-1 text-[10px] font-bold shadow-2xs"
+              title="Zoom In (+)"
+            >
+              <ZoomIn className="w-3 h-3" />
+              <span>In</span>
+            </button>
+          </div>
+          <span className="text-[8px] font-mono text-[#9C6D52] mt-1">Pan, Drag or Zoom</span>
         </div>
 
         {/* ======================================================== */}
