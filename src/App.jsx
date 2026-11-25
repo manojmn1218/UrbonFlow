@@ -4,7 +4,6 @@ import OverviewCommandDeck from './components/OverviewCommandDeck';
 import TrafficMap2D from './components/TrafficMap2D';
 import AiStudioSection from './components/AiStudioSection';
 import PipelineFlowchartNav from './components/PipelineFlowchartNav';
-import PipelineFlowFooter from './components/PipelineFlowFooter';
 import CommandPaletteModal from './components/CommandPaletteModal';
 import UnifiedSearchBar from './components/UnifiedSearchBar';
 import { generateLocationTelemetry } from './services/trafficGenerator';
@@ -354,13 +353,6 @@ export default function App() {
                     <ErrorBoundary>
                       {win.component}
                     </ErrorBoundary>
-
-                    {/* Integrated Pipeline Flow Stepper Footer */}
-                    <PipelineFlowFooter 
-                      currentIndex={currentWindowIndex}
-                      onSelectIndex={handleSelectTab}
-                      currentLocation={activeLocation}
-                    />
                   </div>
                 );
               })}
