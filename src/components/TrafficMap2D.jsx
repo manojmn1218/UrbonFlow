@@ -41,6 +41,8 @@ export default function TrafficMap2D({
   const targetMarkerRef = useRef(null);
   const routePolylinesRef = useRef([]);
   const routeMarkersRef = useRef([]);
+  const destInputRef = useRef(null);
+  const plannerDockRef = useRef(null);
 
   // Map Modes & High-Clarity Visual Styles
   const [mapMode, setMapMode] = useState('planner'); // 'planner' | 'telemetry'
@@ -654,6 +656,7 @@ export default function TrafficMap2D({
       clearRouteLayers();
       setRoutesData(null);
       mapInstanceRef.current?.flyTo([newOrigin.lat, newOrigin.lon], 13);
+      setTimeout(() => destInputRef.current?.focus(), 150);
     }
   };
 
@@ -758,6 +761,18 @@ export default function TrafficMap2D({
     return () => {
       if (panIntervalRef.current) clearInterval(panIntervalRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (plannerDockRef.current && !plannerDockRef.current.contains(e.target)) {
+        setOriginSuggestions([]);
+        setDestSuggestions([]);
+        setActiveSearchField(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleRecenter = () => {
@@ -1006,7 +1021,7 @@ export default function TrafficMap2D({
         {/* REDESIGNED 2-LOCATION TRIP & ROUTE PLANNER DOCK PANEL    */}
         {/* ======================================================== */}
         {mapMode === 'planner' && (
-          <div className="absolute top-3 left-3 z-[400] w-76 sm:w-88 max-h-[calc(100%-24px)] overflow-y-auto bg-white/95 backdrop-blur-2xl rounded-2xl border border-[#E8E2D9] shadow-xl p-3.5 flex flex-col gap-2.5 animate-in fade-in slide-in-from-left-4 no-scrollbar">
+          <div ref={plannerDockRef} className="absolute top-3 left-3 z-[400] w-76 sm:w-88 max-h-[calc(100%-24px)] overflow-y-auto bg-white/95 backdrop-blur-2xl rounded-2xl border border-[#E8E2D9] shadow-xl p-3.5 flex flex-col gap-2.5 animate-in fade-in slide-in-from-left-4 no-scrollbar">
             {/* Header toggle for minimizing panel */}
             <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D9]/70">
               <div className="flex items-center gap-2">
@@ -1029,14 +1044,14 @@ export default function TrafficMap2D({
             {!isPanelCollapsed && (
               <>
                 {/* 2-Location Inputs Stack with Connector Line & Swap */}
-                <div className="relative space-y-2 p-2.5 rounded-2xl bg-[#FAF8F5]/50 backdrop-blur-md border border-[#E8E2D9]/60">
+                <div className="relative space-y-2 p-2.5 rounded-2xl bg-[#FAF8F5]/80 border border-[#E8E2D9]">
                   {/* Vertical Route Dotted Connecting Line */}
                   <div className="absolute left-[26px] top-[26px] bottom-[26px] w-0.5 border-l-2 border-dashed border-[#D5CCC0] pointer-events-none" />
 
                   {/* Origin (A) Field */}
-                  <div className="relative z-20">
-                    <div className="flex items-center gap-2.5 px-3 py-2 bg-[#FFFFFF]/70 backdrop-blur-sm border border-[#E8E2D9] rounded-xl focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 focus-within:border-[#2D6A4F] shadow-sm transition-all">
-                      <div className="w-6 h-6 rounded-full bg-[#2D6A4F] text-[#FFFFFF] text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm shadow-[#2D6A4F]/30">
+                  <div className="relative">
+                    <div className="flex items-center gap-2.5 px-3 py-2 bg-white border border-[#E8E2D9] rounded-xl focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 focus-within:border-[#2D6A4F] shadow-xs transition-all">
+                      <div className="w-6 h-6 rounded-full bg-[#2D6A4F] text-white text-[11px] font-black flex items-center justify-center shrink-0 shadow-xs">
                         A
                       </div>
                       <input
@@ -1046,48 +1061,27 @@ export default function TrafficMap2D({
                         onFocus={() => setActiveSearchField('origin')}
                         onChange={(e) => handleOriginInputChange(e.target.value)}
                         onKeyDown={handleOriginKeyDown}
-                        className="w-full bg-transparent text-xs font-semibold text-[#231E1A] placeholder-[#8C827A]/60 focus:outline-none truncate"
+                        className="w-full bg-transparent text-xs font-semibold text-[#231E1A] placeholder-[#8C827A] focus:outline-none truncate"
                       />
                       {isSearchingOrigin && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#64564B] shrink-0" />}
                       {originInput && !isSearchingOrigin && (
                         <button
                           type="button"
-                          onClick={() => { setOriginInput(''); setOriginSuggestions([]); }}
-                          className="text-[#8C827A] hover:text-[#231E1A] shrink-0"
+                          onClick={() => { setOriginInput(''); setOriginSuggestions([]); setOrigin(null); }}
+                          className="text-[#8C827A] hover:text-[#231E1A] shrink-0 p-0.5"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
                       )}
                     </div>
-
-                    {/* Origin Suggestions Dropdown */}
-                    {originSuggestions.length > 0 && activeSearchField === 'origin' && (
-                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFFFF]/95 backdrop-blur-2xl border border-[#E8E2D9] rounded-2xl shadow-float z-50 max-h-48 overflow-y-auto divide-y divide-[#E8E2D9]/50">
-                        <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold text-[#64564B] uppercase tracking-wider flex justify-between items-center">
-                          <span>Select Origin</span>
-                          <button onClick={() => setOriginSuggestions([])}><X className="w-3 h-3 text-[#64564B]" /></button>
-                        </div>
-                        {originSuggestions.map((place, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => handleSelectOrigin(place)}
-                            className="w-full p-2.5 text-left hover:bg-[#EAF2EC] transition-colors flex flex-col"
-                          >
-                            <span className="text-xs font-bold text-[#231E1A] truncate">{place.name}</span>
-                            <span className="text-[10px] text-[#64564B] truncate">{place.address}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
 
                   {/* Swap Button Divider */}
-                  <div className="relative flex items-center justify-end pr-3 py-0.5 z-10">
+                  <div className="relative flex items-center justify-end pr-3 py-0.5">
                     <button
                       type="button"
                       onClick={handleSwapLocations}
-                      className="p-1.5 rounded-full bg-[#FFFFFF] border border-[#E8E2D9] text-[#A86032] hover:text-[#231E1A] hover:border-[#A86032] shadow-sm transition-all hover:scale-105 active:scale-95"
+                      className="p-1.5 rounded-full bg-white border border-[#E8E2D9] text-[#A86032] hover:text-[#231E1A] hover:border-[#A86032] shadow-2xs transition-all hover:scale-105 active:scale-95"
                       title="Swap Origin and Destination"
                     >
                       <ArrowUpDown className="w-3.5 h-3.5" />
@@ -1095,54 +1089,85 @@ export default function TrafficMap2D({
                   </div>
 
                   {/* Destination (B) Field */}
-                  <div className="relative z-20">
-                    <div className="flex items-center gap-2.5 px-3 py-2 bg-[#FFFFFF]/70 backdrop-blur-sm border border-[#E8E2D9] rounded-xl focus-within:ring-2 focus-within:ring-[#9E2A2B]/20 focus-within:border-[#9E2A2B] shadow-sm transition-all">
-                      <div className="w-6 h-6 rounded-full bg-[#9E2A2B] text-[#FFFFFF] text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm shadow-[#9E2A2B]/30">
+                  <div className="relative">
+                    <div className="flex items-center gap-2.5 px-3 py-2 bg-white border border-[#E8E2D9] rounded-xl focus-within:ring-2 focus-within:ring-[#9E2A2B]/20 focus-within:border-[#9E2A2B] shadow-xs transition-all">
+                      <div className="w-6 h-6 rounded-full bg-[#9E2A2B] text-white text-[11px] font-black flex items-center justify-center shrink-0 shadow-xs">
                         B
                       </div>
                       <input
+                        ref={destInputRef}
                         type="text"
                         placeholder="Search destination location..."
                         value={destInput}
                         onFocus={() => setActiveSearchField('dest')}
                         onChange={(e) => handleDestInputChange(e.target.value)}
                         onKeyDown={handleDestKeyDown}
-                        className="w-full bg-transparent text-xs font-semibold text-[#231E1A] placeholder-[#8C827A]/60 focus:outline-none truncate"
+                        className="w-full bg-transparent text-xs font-semibold text-[#231E1A] placeholder-[#8C827A] focus:outline-none truncate"
                       />
                       {isSearchingDest && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#64564B] shrink-0" />}
                       {destInput && !isSearchingDest && (
                         <button
                           type="button"
-                          onClick={() => { setDestInput(''); setDestSuggestions([]); }}
-                          className="text-[#8C827A] hover:text-[#231E1A] shrink-0"
+                          onClick={() => { setDestInput(''); setDestSuggestions([]); setDestination(null); }}
+                          className="text-[#8C827A] hover:text-[#231E1A] shrink-0 p-0.5"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
                       )}
                     </div>
-
-                    {/* Destination Suggestions Dropdown */}
-                    {destSuggestions.length > 0 && activeSearchField === 'dest' && (
-                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#FFFFFF]/95 backdrop-blur-2xl border border-[#E8E2D9] rounded-2xl shadow-float z-50 max-h-48 overflow-y-auto divide-y divide-[#E8E2D9]/50">
-                        <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold text-[#64564B] uppercase tracking-wider flex justify-between items-center">
-                          <span>Select Destination</span>
-                          <button onClick={() => setDestSuggestions([])}><X className="w-3 h-3 text-[#64564B]" /></button>
-                        </div>
-                        {destSuggestions.map((place, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => handleSelectDest(place)}
-                            className="w-full p-2.5 text-left hover:bg-[#FBEAEA] transition-colors flex flex-col"
-                          >
-                            <span className="text-xs font-bold text-[#231E1A] truncate">{place.name}</span>
-                            <span className="text-[10px] text-[#64564B] truncate">{place.address}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
+
+                {/* DEDICATED AUTOCOMPLETE SUGGESTIONS CONTAINER (NON-COLLIDING) */}
+                {activeSearchField === 'origin' && originSuggestions.length > 0 && (
+                  <div className="bg-white rounded-xl border border-[#E8E2D9] shadow-md max-h-52 overflow-y-auto divide-y divide-[#E8E2D9]/60 animate-in fade-in slide-in-from-top-1">
+                    <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold text-[#64564B] uppercase tracking-wider flex justify-between items-center sticky top-0 z-10 border-b border-[#E8E2D9]/60">
+                      <span className="flex items-center gap-1.5 text-[#2D6A4F]">
+                        <span className="w-4 h-4 rounded-full bg-[#2D6A4F] text-white text-[9px] font-black flex items-center justify-center">A</span>
+                        Select Starting Point
+                      </span>
+                      <button onClick={() => setOriginSuggestions([])} className="text-[#8C827A] hover:text-[#231E1A] p-0.5">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    {originSuggestions.map((place, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSelectOrigin(place)}
+                        className="w-full p-2.5 text-left hover:bg-[#FAF8F5] transition-colors flex flex-col group cursor-pointer"
+                      >
+                        <span className="text-xs font-bold text-[#231E1A] group-hover:text-[#A86032] truncate">{place.name}</span>
+                        <span className="text-[10px] text-[#64564B] truncate">{place.address}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {activeSearchField === 'dest' && destSuggestions.length > 0 && (
+                  <div className="bg-white rounded-xl border border-[#E8E2D9] shadow-md max-h-52 overflow-y-auto divide-y divide-[#E8E2D9]/60 animate-in fade-in slide-in-from-top-1">
+                    <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold text-[#64564B] uppercase tracking-wider flex justify-between items-center sticky top-0 z-10 border-b border-[#E8E2D9]/60">
+                      <span className="flex items-center gap-1.5 text-[#9E2A2B]">
+                        <span className="w-4 h-4 rounded-full bg-[#9E2A2B] text-white text-[9px] font-black flex items-center justify-center">B</span>
+                        Select Destination
+                      </span>
+                      <button onClick={() => setDestSuggestions([])} className="text-[#8C827A] hover:text-[#231E1A] p-0.5">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    {destSuggestions.map((place, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSelectDest(place)}
+                        className="w-full p-2.5 text-left hover:bg-[#FAF8F5] transition-colors flex flex-col group cursor-pointer"
+                      >
+                        <span className="text-xs font-bold text-[#231E1A] group-hover:text-[#A86032] truncate">{place.name}</span>
+                        <span className="text-[10px] text-[#64564B] truncate">{place.address}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {/* Calculate Route Action Button in Chocolate Gradient */}
                 <button
