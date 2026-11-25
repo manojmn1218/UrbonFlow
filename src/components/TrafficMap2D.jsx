@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { searchLocations, getLocationTraffic, calculateRoutes } from '../services/api';
 import { generateLocationTelemetry } from '../services/trafficGenerator';
+import { TRAINED_LOCATIONS, filterTrainedLocations } from '../services/trainedLocations';
 
 export default function TrafficMap2D({ 
   currentLocation, 
@@ -85,11 +86,11 @@ export default function TrafficMap2D({
   const [isCalculatingRoutes, setIsCalculatingRoutes] = useState(false);
 
   // Active location telemetry stats
-  const lat = currentLocation?.lat || 40.7580;
-  const lon = currentLocation?.lon || -73.9855;
-  const name = currentLocation?.name || "Selected Location";
-  const currentSpeed = currentLocation?.currentSpeed || 42.0;
-  const congestion = currentLocation?.congestionPct || 35;
+  const lat = currentLocation?.lat || 12.9784;
+  const lon = currentLocation?.lon || 77.6408;
+  const name = currentLocation?.name || "Indiranagar, Bengaluru";
+  const currentSpeed = currentLocation?.currentSpeed || 34.6;
+  const congestion = currentLocation?.congestionPct || 40;
 
   // Clear existing polylines and marker pins
   const clearRouteLayers = () => {
@@ -603,24 +604,99 @@ export default function TrafficMap2D({
     }
   };
 
+  // Clear both A & B inputs and route graphics cleanly
+  const handleClearOrigin = () => {
+    setOriginInput('');
+    setOrigin(null);
+    setOriginSuggestions(TRAINED_LOCATIONS);
+    setActiveSearchField('origin');
+    clearRouteLayers();
+    setRoutesData(null);
+    setSelectedRouteId(null);
+  };
+
+  const handleClearDest = () => {
+    setDestInput('');
+    setDestination(null);
+    setDestSuggestions(TRAINED_LOCATIONS);
+    setActiveSearchField('dest');
+    clearRouteLayers();
+    setRoutesData(null);
+    setSelectedRouteId(null);
+  };
+
+  // Optimize route selection: picks lowest travel time & lowest traffic delay
+  const handleOptimizeRoute = () => {
+    if (!routesData?.routes?.length) {
+      if (origin?.lat && destination?.lat) {
+        fetchAndDrawRoutes(origin, destination);
+      }
+      return;
+    }
+    const sorted = [...routesData.routes].sort(
+      (a, b) => (a.duration_min - b.duration_min) || ((a.delay_min || 0) - (b.delay_min || 0))
+    );
+    const best = sorted[0];
+    const updatedData = { ...routesData, routes: sorted };
+    setRoutesData(updatedData);
+    setSelectedRouteId(best.id);
+    drawRoutesOnMap(updatedData, best.id);
+  };
+
+  // Focus handlers always reveal trained locations cleanly
+  const handleOriginFocus = () => {
+    setActiveSearchField('origin');
+    if (!originInput.trim() || origin) {
+      setOriginSuggestions(TRAINED_LOCATIONS);
+    } else {
+      setOriginSuggestions(filterTrainedLocations(originInput));
+    }
+  };
+
+  const handleDestFocus = () => {
+    setActiveSearchField('dest');
+    if (!destInput.trim() || destination) {
+      setDestSuggestions(TRAINED_LOCATIONS);
+    } else {
+      setDestSuggestions(filterTrainedLocations(destInput));
+    }
+  };
+
+  // Quick-pick a trained Bengaluru corridor into the active or next empty slot
+  const handleQuickCorridorSelect = (place) => {
+    if (activeSearchField === 'dest' || (origin?.lat && !destination?.lat && activeSearchField !== 'origin')) {
+      handleSelectDest(place);
+    } else {
+      handleSelectOrigin(place);
+    }
+  };
+
   // Debounced search for Origin input
   const originTimerRef = useRef(null);
   const handleOriginInputChange = (val) => {
     setOriginInput(val);
     setActiveSearchField('origin');
+    if (origin && val.trim() !== origin.name) {
+      setOrigin(null);
+    }
     if (originTimerRef.current) clearTimeout(originTimerRef.current);
 
     if (!val.trim()) {
-      setOriginSuggestions([]);
+      setOriginSuggestions(TRAINED_LOCATIONS);
       return;
+    }
+
+    const localMatches = filterTrainedLocations(val);
+    if (localMatches.length > 0) {
+      setOriginSuggestions(localMatches);
     }
 
     originTimerRef.current = setTimeout(async () => {
       setIsSearchingOrigin(true);
       const results = await searchLocations(val);
-      setOriginSuggestions(results || []);
+      setOriginSuggestions(results && results.length > 0 ? results : localMatches);
       setIsSearchingOrigin(false);
-    }, 250);
+    }, 220);
   };
 
   // Debounced search for Destination input
@@ -628,19 +704,27 @@ export default function TrafficMap2D({
   const handleDestInputChange = (val) => {
     setDestInput(val);
     setActiveSearchField('dest');
+    if (destination && val.trim() !== destination.name) {
+      setDestination(null);
+    }
     if (destTimerRef.current) clearTimeout(destTimerRef.current);
 
     if (!val.trim()) {
-      setDestSuggestions([]);
+      setDestSuggestions(TRAINED_LOCATIONS);
       return;
+    }
+
+    const localMatches = filterTrainedLocations(val);
+    if (localMatches.length > 0) {
+      setDestSuggestions(localMatches);
     }
 
     destTimerRef.current = setTimeout(async () => {
       setIsSearchingDest(true);
       const results = await searchLocations(val);
-      setDestSuggestions(results || []);
+      setDestSuggestions(results && results.length > 0 ? results : localMatches);
       setIsSearchingDest(false);
-    }, 250);
+    }, 220);
   };
 
   // Select Origin
@@ -821,9 +905,20 @@ export default function TrafficMap2D({
               <div className="relative flex-1">
                 <input
                   type="text"
-                  placeholder="Search city/coords..."
+                  placeholder="Search area / city..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => {
+                    if (!searchQuery.trim()) setSearchResults(TRAINED_LOCATIONS);
+                  }}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSearchQuery(val);
+                    if (!val.trim()) setSearchResults(TRAINED_LOCATIONS);
+                    else {
+                      const matches = filterTrainedLocations(val);
+                      if (matches.length > 0) setSearchResults(matches);
+                    }
+                  }}
                   className="w-full bg-[#FAF8F5] hover:bg-white border border-[#E8E2D9] text-[#231E1A] text-xs font-medium rounded-lg pl-7 pr-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#A86032] focus:bg-white transition-all placeholder:text-[#8C827A]"
                 />
                 <Search className="w-3 h-3 text-[#8C827A] absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -831,7 +926,7 @@ export default function TrafficMap2D({
               <button
                 type="submit"
                 disabled={isSearching || !searchQuery.trim()}
-                className="px-2.5 py-1 rounded-lg bg-[#362E28] hover:bg-[#231E1A] text-white text-xs font-semibold disabled:opacity-50 transition-colors"
+                className="px-2.5 py-1 rounded-lg bg-[#362E28] hover:bg-[#231E1A] text-white text-xs font-semibold disabled:opacity-50 transition-colors cursor-pointer"
               >
                 {isSearching ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Find'}
               </button>
@@ -841,18 +936,25 @@ export default function TrafficMap2D({
             {searchResults.length > 0 && (
               <div className="absolute left-0 right-0 top-full mt-1.5 bg-white/95 backdrop-blur-2xl border border-[#E8E2D9] rounded-xl shadow-xl z-50 max-h-56 overflow-y-auto divide-y divide-[#E8E2D9]/50">
                 <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold uppercase tracking-wider text-[#64564B] flex justify-between items-center">
-                  <span>Select Target Coordinates</span>
-                  <button onClick={() => setSearchResults([])}><X className="w-3 h-3 text-[#64564B]" /></button>
+                  <span>{searchQuery.trim() ? 'Select Target Coordinates' : 'Trained Corridors'}</span>
+                  <button type="button" onClick={() => setSearchResults([])}><X className="w-3 h-3 text-[#64564B]" /></button>
                 </div>
                 {searchResults.map((res, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => handleSelectSearchedResult(res)}
-                    className="w-full p-2.5 text-left hover:bg-[#FAF8F5] transition-colors flex flex-col"
+                    className="w-full p-2.5 text-left hover:bg-[#FAF8F5] transition-colors flex items-center justify-between gap-2 cursor-pointer"
                   >
-                    <span className="text-xs font-semibold text-[#231E1A] truncate">{res.name}</span>
-                    <span className="text-[10px] text-[#64564B] truncate">{res.address}</span>
+                    <div className="min-w-0">
+                      <span className="text-xs font-semibold text-[#231E1A] block truncate">{res.name}</span>
+                      <span className="text-[10px] text-[#64564B] block truncate">{res.address}</span>
+                    </div>
+                    {res.code && (
+                      <span className="shrink-0 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#EAF2EC] text-[#2D6A4F]">
+                        {res.code}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -1021,20 +1123,25 @@ export default function TrafficMap2D({
         {/* REDESIGNED 2-LOCATION TRIP & ROUTE PLANNER DOCK PANEL    */}
         {/* ======================================================== */}
         {mapMode === 'planner' && (
-          <div ref={plannerDockRef} className="absolute top-3 left-3 z-[400] w-76 sm:w-88 max-h-[calc(100%-24px)] overflow-y-auto bg-white/95 backdrop-blur-2xl rounded-2xl border border-[#E8E2D9] shadow-xl p-3.5 flex flex-col gap-2.5 animate-in fade-in slide-in-from-left-4 no-scrollbar">
+          <div ref={plannerDockRef} className="absolute top-3 left-3 z-[400] w-[332px] sm:w-[376px] max-h-[calc(100%-24px)] overflow-y-auto bg-white/95 backdrop-blur-2xl rounded-2xl border border-[#E8E2D9] shadow-xl p-3.5 flex flex-col gap-2.5 animate-in fade-in slide-in-from-left-4">
             {/* Header toggle for minimizing panel */}
             <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D9]/70">
               <div className="flex items-center gap-2">
-                <span className="p-1 rounded-lg bg-[#FAF8F5] text-[#A86032] border border-[#E8E2D9]">
+                <span className="p-1.5 rounded-lg bg-[#FAF8F5] text-[#A86032] border border-[#E8E2D9]">
                   <Compass className="w-4 h-4" />
                 </span>
-                <span className="text-xs font-extrabold text-[#231E1A] tracking-tight">
-                  Trip Route Planner
-                </span>
+                <div>
+                  <span className="text-xs font-extrabold text-[#231E1A] tracking-tight block leading-tight">
+                    Trip Route Planner
+                  </span>
+                  <span className="text-[10px] text-[#64564B] block">
+                    Select Origin A & Destination B
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
-                className="text-[#64564B] hover:text-[#231E1A] p-1 rounded-lg hover:bg-[#FAF8F5] transition-colors"
+                className="text-[#64564B] hover:text-[#231E1A] p-1 rounded-lg hover:bg-[#FAF8F5] transition-colors cursor-pointer"
                 title={isPanelCollapsed ? "Expand Panel" : "Collapse Panel"}
               >
                 {isPanelCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
@@ -1043,32 +1150,42 @@ export default function TrafficMap2D({
 
             {!isPanelCollapsed && (
               <>
-                {/* 2-Location Inputs Stack with Connector Line & Swap */}
-                <div className="relative space-y-2 p-2.5 rounded-2xl bg-[#FAF8F5]/80 border border-[#E8E2D9]">
-                  {/* Vertical Route Dotted Connecting Line */}
-                  <div className="absolute left-[26px] top-[26px] bottom-[26px] w-0.5 border-l-2 border-dashed border-[#D5CCC0] pointer-events-none" />
+                {/* 2-Location Inputs Stack with Clean Connector Line & Floating Swap */}
+                <div className="relative space-y-2 p-2.5 rounded-2xl bg-[#FAF8F5]/90 border border-[#E8E2D9]">
+                  {/* Vertical Route Dotted Connecting Line aligned to badge centers */}
+                  <div className="absolute left-[31px] top-[34px] bottom-[34px] w-0.5 border-l-2 border-dashed border-[#D5CCC0] pointer-events-none z-0" />
 
                   {/* Origin (A) Field */}
-                  <div className="relative">
-                    <div className="flex items-center gap-2.5 px-3 py-2 bg-white border border-[#E8E2D9] rounded-xl focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 focus-within:border-[#2D6A4F] shadow-xs transition-all">
+                  <div className="relative z-10">
+                    <div className={`flex items-center gap-2.5 px-2.5 py-2 pr-9 bg-white border rounded-xl transition-all shadow-xs ${
+                      activeSearchField === 'origin'
+                        ? 'border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20'
+                        : 'border-[#E8E2D9] focus-within:border-[#2D6A4F] focus-within:ring-2 focus-within:ring-[#2D6A4F]/20'
+                    }`}>
                       <div className="w-6 h-6 rounded-full bg-[#2D6A4F] text-white text-[11px] font-black flex items-center justify-center shrink-0 shadow-xs">
                         A
                       </div>
-                      <input
-                        type="text"
-                        placeholder="Search starting location..."
-                        value={originInput}
-                        onFocus={() => setActiveSearchField('origin')}
-                        onChange={(e) => handleOriginInputChange(e.target.value)}
-                        onKeyDown={handleOriginKeyDown}
-                        className="w-full bg-transparent text-xs font-semibold text-[#231E1A] placeholder-[#8C827A] focus:outline-none truncate"
-                      />
+                      <div className="flex-1 min-w-0">
+                        <span className="block text-[9px] font-bold uppercase tracking-wider text-[#64564B] leading-none mb-0.5">
+                          Starting Location {origin?.lat ? '• Selected' : ''}
+                        </span>
+                        <input
+                          type="text"
+                          placeholder="Choose or type origin..."
+                          value={originInput}
+                          onFocus={handleOriginFocus}
+                          onChange={(e) => handleOriginInputChange(e.target.value)}
+                          onKeyDown={handleOriginKeyDown}
+                          className="w-full bg-transparent text-xs font-semibold text-[#231E1A] placeholder-[#8C827A] focus:outline-none truncate"
+                        />
+                      </div>
                       {isSearchingOrigin && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#64564B] shrink-0" />}
                       {originInput && !isSearchingOrigin && (
                         <button
                           type="button"
-                          onClick={() => { setOriginInput(''); setOriginSuggestions([]); setOrigin(null); }}
-                          className="text-[#8C827A] hover:text-[#231E1A] shrink-0 p-0.5"
+                          onClick={handleClearOrigin}
+                          className="text-[#8C827A] hover:text-[#231E1A] shrink-0 p-0.5 cursor-pointer"
+                          title="Clear Origin"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -1076,40 +1193,48 @@ export default function TrafficMap2D({
                     </div>
                   </div>
 
-                  {/* Swap Button Divider */}
-                  <div className="relative flex items-center justify-end pr-3 py-0.5">
-                    <button
-                      type="button"
-                      onClick={handleSwapLocations}
-                      className="p-1.5 rounded-full bg-white border border-[#E8E2D9] text-[#A86032] hover:text-[#231E1A] hover:border-[#A86032] shadow-2xs transition-all hover:scale-105 active:scale-95"
-                      title="Swap Origin and Destination"
-                    >
-                      <ArrowUpDown className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  {/* Floating Centered Swap Button */}
+                  <button
+                    type="button"
+                    onClick={handleSwapLocations}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-[#E8E2D9] text-[#A86032] hover:text-[#231E1A] hover:border-[#A86032] shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                    title="Swap Origin and Destination"
+                  >
+                    <ArrowUpDown className="w-3.5 h-3.5" />
+                  </button>
 
                   {/* Destination (B) Field */}
-                  <div className="relative">
-                    <div className="flex items-center gap-2.5 px-3 py-2 bg-white border border-[#E8E2D9] rounded-xl focus-within:ring-2 focus-within:ring-[#9E2A2B]/20 focus-within:border-[#9E2A2B] shadow-xs transition-all">
+                  <div className="relative z-10">
+                    <div className={`flex items-center gap-2.5 px-2.5 py-2 pr-9 bg-white border rounded-xl transition-all shadow-xs ${
+                      activeSearchField === 'dest'
+                        ? 'border-[#9E2A2B] ring-2 ring-[#9E2A2B]/20'
+                        : 'border-[#E8E2D9] focus-within:border-[#9E2A2B] focus-within:ring-2 focus-within:ring-[#9E2A2B]/20'
+                    }`}>
                       <div className="w-6 h-6 rounded-full bg-[#9E2A2B] text-white text-[11px] font-black flex items-center justify-center shrink-0 shadow-xs">
                         B
                       </div>
-                      <input
-                        ref={destInputRef}
-                        type="text"
-                        placeholder="Search destination location..."
-                        value={destInput}
-                        onFocus={() => setActiveSearchField('dest')}
-                        onChange={(e) => handleDestInputChange(e.target.value)}
-                        onKeyDown={handleDestKeyDown}
-                        className="w-full bg-transparent text-xs font-semibold text-[#231E1A] placeholder-[#8C827A] focus:outline-none truncate"
-                      />
+                      <div className="flex-1 min-w-0">
+                        <span className="block text-[9px] font-bold uppercase tracking-wider text-[#64564B] leading-none mb-0.5">
+                          Destination {destination?.lat ? '• Selected' : ''}
+                        </span>
+                        <input
+                          ref={destInputRef}
+                          type="text"
+                          placeholder="Choose or type destination..."
+                          value={destInput}
+                          onFocus={handleDestFocus}
+                          onChange={(e) => handleDestInputChange(e.target.value)}
+                          onKeyDown={handleDestKeyDown}
+                          className="w-full bg-transparent text-xs font-semibold text-[#231E1A] placeholder-[#8C827A] focus:outline-none truncate"
+                        />
+                      </div>
                       {isSearchingDest && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#64564B] shrink-0" />}
                       {destInput && !isSearchingDest && (
                         <button
                           type="button"
-                          onClick={() => { setDestInput(''); setDestSuggestions([]); setDestination(null); }}
-                          className="text-[#8C827A] hover:text-[#231E1A] shrink-0 p-0.5"
+                          onClick={handleClearDest}
+                          className="text-[#8C827A] hover:text-[#231E1A] shrink-0 p-0.5 cursor-pointer"
+                          title="Clear Destination"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -1118,15 +1243,59 @@ export default function TrafficMap2D({
                   </div>
                 </div>
 
+                {/* Visible Trained Corridor Locations Quick-Pick Strip */}
+                <div className="px-2.5 py-2 rounded-xl bg-[#FAF8F5]/80 border border-[#E8E2D9]/80">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#64564B] flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-[#A86032]" />
+                      Trained Corridors
+                    </span>
+                    <span className="text-[10px] font-semibold text-[#A86032]">
+                      Sets {activeSearchField === 'dest' || (origin?.lat && !destination?.lat && activeSearchField !== 'origin') ? 'Dest (B)' : 'Origin (A)'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {TRAINED_LOCATIONS.map((loc) => {
+                      const isOrigin = origin?.name?.toLowerCase().includes(loc.shortLabel.toLowerCase());
+                      const isDest = destination?.name?.toLowerCase().includes(loc.shortLabel.toLowerCase());
+                      return (
+                        <button
+                          key={loc.code}
+                          type="button"
+                          onClick={() => handleQuickCorridorSelect(loc)}
+                          className={`px-2 py-1.5 rounded-lg border text-left transition-all cursor-pointer flex items-center justify-between gap-1 ${
+                            isOrigin
+                              ? 'bg-[#EAF2EC] border-[#2D6A4F]/50 text-[#231E1A]'
+                              : isDest
+                                ? 'bg-[#FBEAEA] border-[#9E2A2B]/40 text-[#231E1A]'
+                                : 'bg-white border-[#E8E2D9] hover:border-[#A86032] text-[#231E1A]'
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <span className="text-[11px] font-bold block truncate leading-tight">{loc.shortLabel}</span>
+                            <span className="text-[9px] font-mono text-[#64564B]">{loc.code}</span>
+                          </div>
+                          {isOrigin && (
+                            <span className="w-4 h-4 rounded-full bg-[#2D6A4F] text-white text-[9px] font-black flex items-center justify-center shrink-0">A</span>
+                          )}
+                          {!isOrigin && isDest && (
+                            <span className="w-4 h-4 rounded-full bg-[#9E2A2B] text-white text-[9px] font-black flex items-center justify-center shrink-0">B</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* DEDICATED AUTOCOMPLETE SUGGESTIONS CONTAINER (NON-COLLIDING) */}
                 {activeSearchField === 'origin' && originSuggestions.length > 0 && (
                   <div className="bg-white rounded-xl border border-[#E8E2D9] shadow-md max-h-52 overflow-y-auto divide-y divide-[#E8E2D9]/60 animate-in fade-in slide-in-from-top-1">
-                    <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold text-[#64564B] uppercase tracking-wider flex justify-between items-center sticky top-0 z-10 border-b border-[#E8E2D9]/60">
+                    <div className="px-2.5 py-2 bg-[#FAF8F5] text-[10px] font-bold text-[#64564B] uppercase tracking-wider flex justify-between items-center sticky top-0 z-10 border-b border-[#E8E2D9]/60">
                       <span className="flex items-center gap-1.5 text-[#2D6A4F]">
                         <span className="w-4 h-4 rounded-full bg-[#2D6A4F] text-white text-[9px] font-black flex items-center justify-center">A</span>
-                        Select Starting Point
+                        {originInput.trim() ? 'Matching Origins' : 'Select Starting Corridor'}
                       </span>
-                      <button onClick={() => setOriginSuggestions([])} className="text-[#8C827A] hover:text-[#231E1A] p-0.5">
+                      <button type="button" onClick={() => setOriginSuggestions([])} className="text-[#8C827A] hover:text-[#231E1A] p-0.5 cursor-pointer">
                         <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -1135,10 +1304,17 @@ export default function TrafficMap2D({
                         key={i}
                         type="button"
                         onClick={() => handleSelectOrigin(place)}
-                        className="w-full p-2.5 text-left hover:bg-[#FAF8F5] transition-colors flex flex-col group cursor-pointer"
+                        className="w-full px-2.5 py-2 text-left hover:bg-[#FAF8F5] transition-colors flex items-center justify-between gap-2 group cursor-pointer"
                       >
-                        <span className="text-xs font-bold text-[#231E1A] group-hover:text-[#A86032] truncate">{place.name}</span>
-                        <span className="text-[10px] text-[#64564B] truncate">{place.address}</span>
+                        <div className="min-w-0">
+                          <span className="text-xs font-bold text-[#231E1A] group-hover:text-[#A86032] block truncate">{place.name}</span>
+                          <span className="text-[10px] text-[#64564B] block truncate">{place.address}</span>
+                        </div>
+                        {place.code && (
+                          <span className="shrink-0 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#EAF2EC] text-[#2D6A4F]">
+                            {place.code}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -1146,12 +1322,12 @@ export default function TrafficMap2D({
 
                 {activeSearchField === 'dest' && destSuggestions.length > 0 && (
                   <div className="bg-white rounded-xl border border-[#E8E2D9] shadow-md max-h-52 overflow-y-auto divide-y divide-[#E8E2D9]/60 animate-in fade-in slide-in-from-top-1">
-                    <div className="p-2 bg-[#FAF8F5] text-[10px] font-bold text-[#64564B] uppercase tracking-wider flex justify-between items-center sticky top-0 z-10 border-b border-[#E8E2D9]/60">
+                    <div className="px-2.5 py-2 bg-[#FAF8F5] text-[10px] font-bold text-[#64564B] uppercase tracking-wider flex justify-between items-center sticky top-0 z-10 border-b border-[#E8E2D9]/60">
                       <span className="flex items-center gap-1.5 text-[#9E2A2B]">
                         <span className="w-4 h-4 rounded-full bg-[#9E2A2B] text-white text-[9px] font-black flex items-center justify-center">B</span>
-                        Select Destination
+                        {destInput.trim() ? 'Matching Destinations' : 'Select Destination Corridor'}
                       </span>
-                      <button onClick={() => setDestSuggestions([])} className="text-[#8C827A] hover:text-[#231E1A] p-0.5">
+                      <button type="button" onClick={() => setDestSuggestions([])} className="text-[#8C827A] hover:text-[#231E1A] p-0.5 cursor-pointer">
                         <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -1160,48 +1336,69 @@ export default function TrafficMap2D({
                         key={i}
                         type="button"
                         onClick={() => handleSelectDest(place)}
-                        className="w-full p-2.5 text-left hover:bg-[#FAF8F5] transition-colors flex flex-col group cursor-pointer"
+                        className="w-full px-2.5 py-2 text-left hover:bg-[#FAF8F5] transition-colors flex items-center justify-between gap-2 group cursor-pointer"
                       >
-                        <span className="text-xs font-bold text-[#231E1A] group-hover:text-[#A86032] truncate">{place.name}</span>
-                        <span className="text-[10px] text-[#64564B] truncate">{place.address}</span>
+                        <div className="min-w-0">
+                          <span className="text-xs font-bold text-[#231E1A] group-hover:text-[#A86032] block truncate">{place.name}</span>
+                          <span className="text-[10px] text-[#64564B] block truncate">{place.address}</span>
+                        </div>
+                        {place.code && (
+                          <span className="shrink-0 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#EAF2EC] text-[#2D6A4F]">
+                            {place.code}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
                 )}
 
-                {/* Calculate Route Action Button in Chocolate Gradient */}
-                <button
-                  onClick={() => fetchAndDrawRoutes(origin, destination)}
-                  disabled={isCalculatingRoutes || !origin?.lat || !destination?.lat}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#A86032] via-[#4A2818] to-[#3B1F13] hover:from-[#4A2818] hover:to-[#231E1A] text-[#FFFFFF] text-xs font-bold shadow-md shadow-[#4A2818]/25 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
-                >
-                  {isCalculatingRoutes ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Calculating Multi-Route Options...
-                    </>
-                  ) : (
-                    <>
-                      <Car className="w-4 h-4" />
-                      Calculate Route & Travel Times
-                    </>
+                {/* Calculate & Optimize Actions Row */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => fetchAndDrawRoutes(origin, destination)}
+                    disabled={isCalculatingRoutes || !origin?.lat || !destination?.lat}
+                    className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#A86032] via-[#4A2818] to-[#3B1F13] hover:from-[#4A2818] hover:to-[#231E1A] text-[#FFFFFF] text-xs font-bold shadow-md shadow-[#4A2818]/25 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                  >
+                    {isCalculatingRoutes ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Calculating...
+                      </>
+                    ) : (
+                      <>
+                        <Car className="w-4 h-4" />
+                        Calculate Route
+                      </>
+                    )}
+                  </button>
+                  {routesData?.routes?.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={handleOptimizeRoute}
+                      className="py-2.5 px-3 rounded-xl bg-[#2D6A4F] hover:bg-[#1E4D38] text-white text-xs font-bold shadow-sm flex items-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer shrink-0"
+                      title="Select & sort by fastest low-delay route"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Optimize
+                    </button>
                   )}
-                </button>
+                </div>
 
                 {/* Empty State / Prompt if no routes yet */}
                 {!routesData && (
-                  <div className="p-4 rounded-2xl bg-[#FAF8F5]/50 backdrop-blur-md border border-dashed border-[#E8E2D9] text-center space-y-1">
+                  <div className="p-3.5 rounded-2xl bg-[#FAF8F5]/60 backdrop-blur-md border border-dashed border-[#E8E2D9] text-center space-y-1">
                     <Route className="w-5 h-5 text-[#8C827A] mx-auto" />
-                    <p className="text-xs font-bold text-[#231E1A]">No Routes Calculated Yet</p>
+                    <p className="text-xs font-bold text-[#231E1A]">Select A & B to Calculate</p>
                     <p className="text-[11px] text-[#64564B] leading-relaxed">
-                      Enter any starting location and destination above, then calculate routes to see real-time flow and alternatives.
+                      Pick a trained Bengaluru corridor above or search any address to compare live routes.
                     </p>
                   </div>
                 )}
 
                 {/* Route Options Comparison List */}
                 {routesData && routesData.routes && routesData.routes.length > 0 && (
-                  <div className="space-y-2 mt-1">
+                  <div className="space-y-2 mt-0.5">
                     <div className="flex items-center justify-between text-[11px] font-bold text-[#64564B] uppercase tracking-wider">
                       <span>Available Routes ({routesData.routes.length})</span>
                       <span className="text-[#8C827A] lowercase font-normal font-mono">
@@ -1209,7 +1406,7 @@ export default function TrafficMap2D({
                       </span>
                     </div>
 
-                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    <div className="space-y-2">
                       {routesData.routes.map((route) => {
                         const isSelected = route.id === (selectedRouteId || routesData.routes[0].id);
                         return (

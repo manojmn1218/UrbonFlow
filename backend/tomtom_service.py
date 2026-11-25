@@ -56,77 +56,150 @@ def generate_curved_waypoints(lat1: float, lon1: float, lat2: float, lon2: float
         coords.append([round(c_lat, 5), round(c_lon, 5)])
     return coords
 
+TRAINED_CORRIDOR_PLACES = [
+    {
+        "name": "Indiranagar, Bengaluru",
+        "address": "100 Feet Rd & CMH Corridor, Bengaluru (Trained Node: IND)",
+        "lat": 12.9784,
+        "lon": 77.6408,
+        "code": "IND",
+        "source": "ST-GNN Trained Node",
+    },
+    {
+        "name": "Koramangala, Bengaluru",
+        "address": "Inner Ring Rd & Sony World, Bengaluru (Trained Node: KOR)",
+        "lat": 12.9352,
+        "lon": 77.6245,
+        "code": "KOR",
+        "source": "ST-GNN Trained Node",
+    },
+    {
+        "name": "Whitefield, Bengaluru",
+        "address": "ITPL Main Rd & Hope Farm, Bengaluru (Trained Node: WHI)",
+        "lat": 12.9698,
+        "lon": 77.7500,
+        "code": "WHI",
+        "source": "ST-GNN Trained Node",
+    },
+    {
+        "name": "Hebbal, Bengaluru",
+        "address": "Hebbal Flyover & Airport Arterial, Bengaluru (Trained Node: HEB)",
+        "lat": 13.0358,
+        "lon": 77.5970,
+        "code": "HEB",
+        "source": "ST-GNN Trained Node",
+    },
+]
+
+
+def _format_clean_place_name(primary: str, secondary: str = "", country: str = "") -> str:
+    """Builds a deduplicated location label without repeated city/state tokens."""
+    raw_parts = []
+    for chunk in (primary, secondary):
+        for token in chunk.split(","):
+            t = token.strip()
+            if t and t.lower() not in [p.lower() for p in raw_parts]:
+                raw_parts.append(t)
+    label = ", ".join(raw_parts[:3]) if raw_parts else primary
+    if country and country.lower() not in label.lower():
+        label = f"{label} ({country})"
+    return label
+
+
 def search_locations(query: str):
     """
     Search real-world locations by text query.
-    1. Primary: Google Location & Places API (if configured in .env).
-    2. Secondary: TomTom Places Search API.
-    3. Fallback: OpenStreetMap Nominatim.
+    1. Matches trained Bengaluru ST-GNN corridor nodes when relevant.
+    2. Primary: Google Location & Places API (if configured in .env).
+    3. Secondary: TomTom Places Search API.
+    4. Fallback: OpenStreetMap Nominatim.
     """
     query = query.strip()
     if not query:
-        return []
+        return TRAINED_CORRIDOR_PLACES
+
+    q_lower = query.lower()
+    trained_matches = [
+        p for p in TRAINED_CORRIDOR_PLACES
+        if q_lower in p["name"].lower()
+        or q_lower in p["code"].lower()
+        or q_lower in p["address"].lower()
+        or q_lower in "bengaluru"
+        or q_lower in "bangalore"
+    ]
+
+    remote_results = []
 
     # 1. Primary Priority: Google Location API (Places Text Search & Geocoding)
     google_results = google_service.search_locations_google(query)
     if google_results:
-        return google_results
+        remote_results = google_results
+    else:
+        api_key = get_api_key()
 
-    api_key = get_api_key()
-    
-    # 2. Secondary: TomTom Search API
-    if api_key:
-        try:
-            url = f"https://api.tomtom.com/search/2/search/{requests.utils.quote(query)}.json"
-            params = {"key": api_key, "limit": 5, "typeahead": "true"}
-            res = requests.get(url, params=params, timeout=5)
-            if res.status_code == 200:
-                data = res.json()
-                results = []
-                for item in data.get("results", []):
-                    pos = item.get("position", {})
-                    addr = item.get("address", {})
-                    name = item.get("poi", {}).get("name") or addr.get("freeformAddress") or query
-                    city = addr.get("municipality") or addr.get("countrySubdivision") or ""
-                    country = addr.get("country") or ""
-                    display_name = f"{name}, {city}".strip(", ")
-                    if country:
-                        display_name += f" ({country})"
-                    results.append({
-                        "name": display_name,
-                        "address": addr.get("freeformAddress", name),
-                        "lat": pos.get("lat"),
-                        "lon": pos.get("lon"),
-                        "source": "TomTom Places API"
-                    })
-                if results:
-                    return results
-        except Exception as e:
-            print(f"TomTom search error: {e}")
+        # 2. Secondary: TomTom Search API
+        if api_key:
+            try:
+                url = f"https://api.tomtom.com/search/2/search/{requests.utils.quote(query)}.json"
+                params = {"key": api_key, "limit": 5, "typeahead": "true"}
+                res = requests.get(url, params=params, timeout=5)
+                if res.status_code == 200:
+                    data = res.json()
+                    for item in data.get("results", []):
+                        pos = item.get("position", {})
+                        addr = item.get("address", {})
+                        name = item.get("poi", {}).get("name") or addr.get("freeformAddress") or query
+                        city = addr.get("municipality") or addr.get("countrySubdivision") or ""
+                        country = addr.get("country") or ""
+                        display_name = _format_clean_place_name(name, city, country)
+                        remote_results.append({
+                            "name": display_name,
+                            "address": addr.get("freeformAddress", name),
+                            "lat": pos.get("lat"),
+                            "lon": pos.get("lon"),
+                            "source": "TomTom Places API"
+                        })
+            except Exception as e:
+                print(f"TomTom search error: {e}")
 
-    # 2. Fallback: OpenStreetMap Nominatim (works without any key)
-    try:
-        url = f"https://nominatim.openstreetmap.org/search?q={requests.utils.quote(query)}&format=json&limit=5"
-        headers = {"User-Agent": "UrbanFlow-Traffic-AI/1.0"}
-        res = requests.get(url, headers=headers, timeout=5)
-        if res.status_code == 200:
-            items = res.json()
-            return [
-                {
-                    "name": item.get("display_name", "").split(",")[0] + ", " + item.get("display_name", "").split(",")[-1].strip(),
-                    "address": item.get("display_name", ""),
-                    "lat": float(item.get("lat")),
-                    "lon": float(item.get("lon")),
-                    "source": "OpenStreetMap Geocoder"
-                }
-                for item in items
-            ]
-    except Exception as e:
-        print(f"Fallback search error: {e}")
+        # 3. Fallback: OpenStreetMap Nominatim (works without any key)
+        if not remote_results:
+            try:
+                url = f"https://nominatim.openstreetmap.org/search?q={requests.utils.quote(query)}&format=json&limit=5"
+                headers = {"User-Agent": "UrbanFlow-Traffic-AI/1.0"}
+                res = requests.get(url, headers=headers, timeout=5)
+                if res.status_code == 200:
+                    items = res.json()
+                    remote_results = [
+                        {
+                            "name": _format_clean_place_name(
+                                item.get("display_name", "").split(",")[0],
+                                item.get("display_name", "").split(",")[-1],
+                            ),
+                            "address": item.get("display_name", ""),
+                            "lat": float(item.get("lat")),
+                            "lon": float(item.get("lon")),
+                            "source": "OpenStreetMap Geocoder"
+                        }
+                        for item in items
+                    ]
+            except Exception as e:
+                print(f"Fallback search error: {e}")
 
-    # 3. Default preset locations fallback
+    # Merge trained corridor matches first, avoiding duplicate names
+    seen_names = {p["name"].lower() for p in trained_matches}
+    combined = list(trained_matches)
+    for item in remote_results:
+        if item.get("name", "").lower() not in seen_names:
+            combined.append(item)
+            seen_names.add(item.get("name", "").lower())
+
+    if combined:
+        return combined[:6]
+
+    # 4. Default fallback
     return [
-        {"name": f"{query.title()} (Central)", "address": query.title(), "lat": 40.7128, "lon": -74.0060, "source": "Simulated Coordinates"}
+        {"name": f"{query.title()} (Central)", "address": query.title(), "lat": 12.9716, "lon": 77.5946, "source": "Simulated Coordinates"}
     ]
 
 def get_traffic_flow(lat: float, lon: float, location_name: str = "Selected Location", horizon: str = "15m"):

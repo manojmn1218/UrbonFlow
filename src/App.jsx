@@ -47,7 +47,7 @@ export default function App() {
   const [activeHorizon, setActiveHorizon] = useState('15m');
   const [aiStudioSubTab, setAiStudioSubTab] = useState('predictions'); // 'predictions' | 'analytics' | 'insights'
   const [isLiveStream, setIsLiveStream] = useState(true);
-  const [activeLocation, setActiveLocation] = useState(() => generateLocationTelemetry({ name: "Metropolitan Transit Grid", lat: 40.7128, lon: -74.0060, zone: "Urban Grid" }));
+  const [activeLocation, setActiveLocation] = useState(() => generateLocationTelemetry({ name: "Indiranagar, Bengaluru", lat: 12.9784, lon: 77.6408, zone: "IND Corridor" }));
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [bgIntensity, setBgIntensity] = useState('standard'); // 'subtle' | 'standard' | 'vivid'
   const contentContainerRef = useRef(null);
