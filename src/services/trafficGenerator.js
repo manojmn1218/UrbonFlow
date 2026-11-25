@@ -278,31 +278,44 @@ export function generateLocationTelemetry(location, rawTraffic = null) {
     },
   };
 
-  // 7. Predictions across 15m, 30m, 60m horizons
+  // 7. Predictions across 15m, 30m, 60m horizons (prefer real PyTorch ST-GNN multi-step output)
+  const mlHorizons = rawTraffic?.all_horizons;
+  const h15Speed = mlHorizons?.["15m"]?.speed ?? rawTraffic?.predicted_speed ?? Math.round(currentSpeed * (congestionPct > 50 ? 0.94 : 1.02) * 10) / 10;
+  const h15Cong = mlHorizons?.["15m"]?.congestion ?? rawTraffic?.predicted_congestion ?? Math.min(98, Math.max(5, congestionPct + (congestionPct > 50 ? 4 : -3)));
+  const h30Speed = mlHorizons?.["30m"]?.speed ?? Math.round(currentSpeed * (congestionPct > 50 ? 0.88 : 1.05) * 10) / 10;
+  const h30Cong = mlHorizons?.["30m"]?.congestion ?? Math.min(98, Math.max(5, congestionPct + (congestionPct > 50 ? 8 : -6)));
+  const h60Speed = mlHorizons?.["60m"]?.speed ?? Math.round(currentSpeed * (congestionPct > 50 ? 1.08 : 0.95) * 10) / 10;
+  const h60Cong = mlHorizons?.["60m"]?.congestion ?? Math.min(98, Math.max(5, congestionPct + (congestionPct > 50 ? -12 : 5)));
+
+  const fmtDiff = (target) => {
+    const diff = Math.round((target - currentSpeed) * 10) / 10;
+    return `${diff > 0 ? '+' : ''}${diff} km/h`;
+  };
+
   const predictions = {
     "15m": {
-      speed: rawTraffic?.predicted_speed || Math.round(currentSpeed * (congestionPct > 50 ? 0.94 : 1.02) * 10) / 10,
-      congestion: rawTraffic?.predicted_congestion || Math.min(98, Math.max(5, congestionPct + (congestionPct > 50 ? 4 : -3))),
-      change: rawTraffic?.speed_change || `${congestionPct > 50 ? '-1.8' : '+1.2'} km/h`,
+      speed: h15Speed,
+      congestion: h15Cong,
+      change: fmtDiff(h15Speed),
       confidence: confidence,
       risk: riskLevel,
       action: prescriptiveAction,
     },
     "30m": {
-      speed: Math.round(currentSpeed * (congestionPct > 50 ? 0.88 : 1.05) * 10) / 10,
-      congestion: Math.min(98, Math.max(5, congestionPct + (congestionPct > 50 ? 8 : -6))),
-      change: `${congestionPct > 50 ? '-3.6' : '+2.4'} km/h`,
+      speed: h30Speed,
+      congestion: h30Cong,
+      change: fmtDiff(h30Speed),
       confidence: Math.round((confidence - 1.2) * 10) / 10,
-      risk: congestionPct > 50 ? "Severe Congestion Alert" : "Steady Recovery",
+      risk: h30Cong >= 60 ? "Elevated Congestion Alert" : "Steady Flow Profile",
       action: "Dynamic arterial signal cycle adjustment (+15s green wave)",
     },
     "60m": {
-      speed: Math.round(currentSpeed * (congestionPct > 50 ? 1.08 : 0.95) * 10) / 10,
-      congestion: Math.min(98, Math.max(5, congestionPct + (congestionPct > 50 ? -12 : 5))),
-      change: `${congestionPct > 50 ? '+4.8' : '-2.1'} km/h`,
+      speed: h60Speed,
+      congestion: h60Cong,
+      change: fmtDiff(h60Speed),
       confidence: Math.round((confidence - 2.8) * 10) / 10,
-      risk: "Clearing Profile",
-      action: "Restore standard timing plans across secondary links",
+      risk: h60Cong >= 60 ? "Sustained Peak Load" : "Clearing Profile",
+      action: "Coordinate downstream corridor timing plans across adjacent nodes",
     },
   };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Network, 
   Target, 
@@ -20,6 +20,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import UnifiedSearchBar from './UnifiedSearchBar';
+import { fetchApi } from '../services/api';
 
 const METRICS_CARDS = [
   { label: 'Mean Absolute Error (MAE)', key: 'mae', icon: Target, iconColor: 'text-blue-600', trendIcon: TrendingDown, trendColor: 'text-emerald-600' },
@@ -31,24 +32,40 @@ const METRICS_CARDS = [
 export default function ModelInsightsSection({ currentLocation, onLocationChange }) {
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [showConfidenceBand, setShowConfidenceBand] = useState(true);
+  const [backendReport, setBackendReport] = useState(null);
 
-  const modelMetrics = currentLocation?.modelMetrics || {
-    mae: { value: "0.0124", unit: "Loss", improvement: "9.2% vs baseline LSTM", definition: "Mean Absolute Error" },
-    rmse: { value: "0.0188", unit: "Loss", improvement: "12.4% lower variance", definition: "Root Mean Square Error" },
-    r2Score: { value: "0.968", unit: "", improvement: "High Fidelity Fit", definition: "Coefficient of determination" },
-    latency: { value: "16.8", unit: "ms", improvement: "Real-time edge compute", definition: "Inference cycle per 10k nodes" },
+  useEffect(() => {
+    let active = true;
+    fetchApi('/model/metrics', null).then((data) => {
+      if (active && data && data.mae) {
+        setBackendReport(data);
+      }
+    });
+    return () => { active = false; };
+  }, []);
+
+  const modelMetrics = (backendReport?.mae ? {
+    mae: backendReport.mae,
+    rmse: backendReport.rmse,
+    r2Score: backendReport.r2Score,
+    latency: backendReport.latency,
+  } : null) || currentLocation?.modelMetrics || {
+    mae: { value: "2.50", unit: "km/h", improvement: "Vol MAE: 55.4 veh/15m", definition: "Mean Absolute Error on test split" },
+    rmse: { value: "3.16", unit: "km/h", improvement: "Vol RMSE: 70.4 veh/15m", definition: "Root Mean Square Error" },
+    r2Score: { value: "0.759", unit: "R²", improvement: "Vol R²: 0.894", definition: "Coefficient of determination" },
+    latency: { value: "1.09", unit: "ms", improvement: "PyTorch CPU inference", definition: "Measured single-graph forward pass" },
   };
 
-  const shortName = currentLocation?.shortName || "Selected Area";
+  const shortName = currentLocation?.shortName || "Bengaluru Grid";
   const hourlyTrend = currentLocation?.hourlyTrend || [];
 
-  const actualVsPredicted = hourlyTrend.map((h, i) => ({
+  const actualVsPredicted = (backendReport?.sample_trajectory?.length ? backendReport.sample_trajectory : hourlyTrend.map((h, i) => ({
     time: h.hour,
     actual: h.speed,
     predicted: Math.round((h.speed + (i % 2 === 0 ? 0.8 : -0.6)) * 10) / 10,
     confidenceLow: Math.max(0, Math.round((h.speed - 2.5) * 10) / 10),
     confidenceHigh: Math.round((h.speed + 2.5) * 10) / 10,
-  }));
+  })));
 
   const stepX = (640 - 50) / (actualVsPredicted.length - 1 || 1);
   const actualPoints = actualVsPredicted.map((d, i) => ({ x: 50 + i * stepX, y: 190 - (d.actual / 80) * 160, ...d }));
@@ -166,9 +183,11 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
             ))}
 
             {actualVsPredicted.map((d, i) => {
+              const stride = actualVsPredicted.length > 12 ? 4 : 1;
+              if (i % stride !== 0 && i !== actualVsPredicted.length - 1) return null;
               const x = 50 + i * stepX;
               return (
-                <text key={i} x={x} y="210" fill="#8C827A" fontSize="10" textAnchor="middle" fontFamily="monospace">
+                <text key={i} x={x} y="210" fill="#8C827A" fontSize="9.5" textAnchor="middle" fontFamily="monospace">
                   {d.time}
                 </text>
               );
@@ -182,15 +201,15 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
               {actualVsPredicted[hoveredPoint].time} — Actual: <strong className="text-[#A86032]">{actualVsPredicted[hoveredPoint].actual} km/h</strong> | Predicted: <strong className="text-[#2D6A4F]">{actualVsPredicted[hoveredPoint].predicted} km/h</strong> (Delta: {Math.abs(Math.round((actualVsPredicted[hoveredPoint].actual - actualVsPredicted[hoveredPoint].predicted) * 10) / 10)} km/h)
             </span>
           ) : (
-            <span>Hover over nodes to inspect prediction delta & variance</span>
+            <span>{backendReport?.dataset ? `Held-out 2025 test trajectory (${backendReport.dataset.split?.test_snapshots || 329} snapshots, averaged across HEB/IND/KOR/WHI)` : 'Hover over nodes to inspect prediction delta & variance'}</span>
           )}
-          <span className="font-mono text-[11px] text-[#8C827A]">R² = {modelMetrics.r2Score?.value || "0.968"}</span>
+          <span className="font-mono text-[11px] text-[#8C827A]">R² = {modelMetrics.r2Score?.value || "0.759"}</span>
         </div>
       </div>
 
-      {/* DENSE LOWER VIEWPORT SECTION: GRAPH TOPOLOGY & HARDWARE BENCHMARKS */}
+      {/* DENSE LOWER VIEWPORT SECTION: GRAPH TOPOLOGY & MODEL BENCHMARKS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-        {/* Card 1: Spatial-Temporal Graph Topology & Sparsity */}
+        {/* Card 1: Spatial-Temporal Graph Topology & Dataset */}
         <div className="bg-[#FFFFFF]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#E8E2D9] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#E8E2D9]/50">
@@ -199,32 +218,32 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
                   <GitFork className="w-4 h-4 text-[#D5CCC0]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#231E1A]">ST-GNN Graph Topology & Sparsity</h3>
-                  <p className="text-[11px] text-[#64564B]">Spatial node adjacency and diffusion receptive field</p>
+                  <h3 className="text-sm font-bold text-[#231E1A]">Trained ST-GNN Architecture & Dataset</h3>
+                  <p className="text-[11px] text-[#64564B]">{backendReport?.model_name || 'PyTorch GRU + Spatial Graph Diffusion (Bengaluru 2023–2025)'}</p>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/60 border border-[#E8E2D9]/60">
-                <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Graph Vertices</span>
-                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">1,024</span>
-                <span className="text-[10px] text-[#2D6A4F] font-medium">Intersections</span>
+                <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Graph Nodes</span>
+                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.num_nodes || 4}</span>
+                <span className="text-[10px] text-[#2D6A4F] font-medium">HEB, IND, KOR, WHI</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/60 border border-[#E8E2D9]/60">
-                <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Edge Sparsity</span>
-                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">4.82%</span>
-                <span className="text-[10px] text-[#A86032] font-medium">Adjacency</span>
+                <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Dataset Rows</span>
+                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.dataset?.total_rows?.toLocaleString() || '8,768'}</span>
+                <span className="text-[10px] text-[#A86032] font-medium">70 / 15 / 15 Split</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/60 border border-[#E8E2D9]/60">
-                <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Chebyshev (K)</span>
-                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">K = 3</span>
-                <span className="text-[10px] text-[#64564B] font-medium">Diffusion Hops</span>
+                <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Seq Window</span>
+                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.seq_len || 6} steps</span>
+                <span className="text-[10px] text-[#64564B] font-medium">{backendReport?.architecture?.num_features || 16} Features</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/60 border border-[#E8E2D9]/60">
-                <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Attention Heads</span>
-                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">8 Heads</span>
-                <span className="text-[10px] text-[#2D6A4F] font-medium">Self-Attention</span>
+                <span className="text-[10px] uppercase font-semibold text-[#64564B] block">Parameters</span>
+                <span className="text-lg font-mono font-extrabold text-[#231E1A] block mt-0.5">{backendReport?.architecture?.parameters ? `${(backendReport.architecture.parameters / 1000).toFixed(1)}k` : '84.7k'}</span>
+                <span className="text-[10px] text-[#2D6A4F] font-medium">PyTorch Weights</span>
               </div>
             </div>
 
@@ -233,37 +252,37 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/40 border border-[#E8E2D9]/50 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#A86032]"></span>
-                  <span className="font-semibold text-[#231E1A]">Spatial Diffusion Convolution (ChebNet)</span>
+                  <span className="font-semibold text-[#231E1A]">Spatial Diffusion Graph Convolution</span>
                 </div>
-                <span className="font-mono text-[11px] text-[#64564B]">64 Channels • Receptive 3-hop</span>
+                <span className="font-mono text-[11px] text-[#64564B]">Gaussian Haversine + Adaptive Adjacency</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/40 border border-[#E8E2D9]/50 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#C47D3B]"></span>
-                  <span className="font-semibold text-[#231E1A]">Gated Recurrent Temporal Convolution (Gated TCN)</span>
+                  <span className="font-semibold text-[#231E1A]">2-Layer Temporal GRU Encoder</span>
                 </div>
-                <span className="font-mono text-[11px] text-[#64564B]">12 Timesteps (60 min historical)</span>
+                <span className="font-mono text-[11px] text-[#64564B]">64 Hidden Channels • Direct Skip</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#FAF8F5]/40 border border-[#E8E2D9]/50 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#2D6A4F]"></span>
-                  <span className="font-semibold text-[#231E1A]">Multi-Head Spatial-Temporal Self-Attention</span>
+                  <span className="font-semibold text-[#231E1A]">Joint Volume + Speed Regression Head</span>
                 </div>
-                <span className="font-mono text-[11px] text-[#64564B]">8 Heads • Dynamic Node Pacing</span>
+                <span className="font-mono text-[11px] text-[#64564B]">Vol R²: {backendReport?.evaluation?.volume?.r2?.toFixed(3) || '0.894'}</span>
               </div>
             </div>
           </div>
 
           <div className="mt-3.5 pt-2.5 border-t border-[#E8E2D9]/50 flex items-center justify-between text-xs text-[#64564B]">
             <span className="flex items-center gap-1.5 text-[#231E1A]">
-              <Radio className="w-3.5 h-3.5 text-[#2D6A4F] animate-pulse" />
-              Continuous Graph Laplacian Updates: Active
+              <Radio className="w-3.5 h-3.5 text-[#2D6A4F]" />
+              Trained at: {backendReport?.trained_at || 'Saved Checkpoint Active'}
             </span>
-            <span className="font-mono text-[11px] text-[#8C827A]">Lambda max: 2.000</span>
+            <span className="font-mono text-[11px] text-[#8C827A]">{backendReport?.dataset?.date_range || '2023–2025'}</span>
           </div>
         </div>
 
-        {/* Card 2: Edge Hardware Quantization & Runtime Inference */}
+        {/* Card 2: Empirical Baseline Comparison & Test Metrics */}
         <div className="bg-[#FFFFFF]/90 backdrop-blur-2xl p-4 sm:p-5 rounded-2xl border border-[#E8E2D9] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#E8E2D9]/50">
@@ -272,12 +291,12 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
                   <Gauge className="w-4 h-4 text-[#D5CCC0]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#231E1A]">Edge Inference & Quantization Benchmarks</h3>
-                  <p className="text-[11px] text-[#64564B]">TensorRT runtime performance & precision profiles</p>
+                  <h3 className="text-sm font-bold text-[#231E1A]">Held-Out Test Split Benchmarks</h3>
+                  <p className="text-[11px] text-[#64564B]">Empirical comparison across 1,316 unseen 2025 node samples</p>
                 </div>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold bg-[#E8E2D9] text-[#4C4138]">
-                INT8 Calibrated
+                Chronological Split
               </span>
             </div>
 
@@ -286,51 +305,51 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-[#E8E2D9]/60 text-[10px] font-semibold uppercase text-[#64564B]">
-                    <th className="pb-1.5 font-bold">Precision</th>
-                    <th className="pb-1.5 font-bold">Latency</th>
-                    <th className="pb-1.5 font-bold">VRAM</th>
-                    <th className="pb-1.5 font-bold">Throughput</th>
-                    <th className="pb-1.5 font-bold text-right">Fidelity</th>
+                    <th className="pb-1.5 font-bold">Model</th>
+                    <th className="pb-1.5 font-bold">Spd MAE</th>
+                    <th className="pb-1.5 font-bold">Vol MAE</th>
+                    <th className="pb-1.5 font-bold">Vol R²</th>
+                    <th className="pb-1.5 font-bold text-right">MAPE</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E8E2D9]/40 font-mono text-[11px]">
                   <tr className="text-[#64564B]">
-                    <td className="py-2 font-sans font-medium text-[#231E1A]">FP32 Baseline</td>
-                    <td className="py-2">78.5 ms</td>
-                    <td className="py-2">184 MB</td>
-                    <td className="py-2">128 QPS</td>
-                    <td className="py-2 text-right font-bold text-[#231E1A]">100%</td>
+                    <td className="py-2 font-sans font-medium text-[#231E1A]">Random Forest</td>
+                    <td className="py-2">{backendReport?.baselines?.random_forest?.speed?.mae?.toFixed(2) || '2.56'} km/h</td>
+                    <td className="py-2">{backendReport?.baselines?.random_forest?.volume?.mae?.toFixed(1) || '58.0'}</td>
+                    <td className="py-2">{backendReport?.baselines?.random_forest?.volume?.r2?.toFixed(3) || '0.880'}</td>
+                    <td className="py-2 text-right font-bold text-[#231E1A]">{backendReport?.baselines?.random_forest?.speed?.mape_pct?.toFixed(2) || '7.71'}%</td>
                   </tr>
                   <tr className="text-[#64564B]">
-                    <td className="py-2 font-sans font-medium text-[#231E1A]">FP16 Half-Precision</td>
-                    <td className="py-2">34.2 ms</td>
-                    <td className="py-2">92 MB</td>
-                    <td className="py-2">292 QPS</td>
-                    <td className="py-2 text-right font-bold text-[#2D6A4F]">99.9%</td>
+                    <td className="py-2 font-sans font-medium text-[#231E1A]">Ridge Linear</td>
+                    <td className="py-2">{backendReport?.baselines?.ridge_linear?.speed?.mae?.toFixed(2) || '2.50'} km/h</td>
+                    <td className="py-2">{backendReport?.baselines?.ridge_linear?.volume?.mae?.toFixed(1) || '57.8'}</td>
+                    <td className="py-2">{backendReport?.baselines?.ridge_linear?.volume?.r2?.toFixed(3) || '0.884'}</td>
+                    <td className="py-2 text-right font-bold text-[#231E1A]">{backendReport?.baselines?.ridge_linear?.speed?.mape_pct?.toFixed(2) || '7.55'}%</td>
                   </tr>
                   <tr className="bg-[#EAF2EC]/60 text-[#2D6A4F] font-bold rounded-lg">
                     <td className="py-2 px-1 font-sans font-bold text-[#231E1A] flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3 text-[#2D6A4F]" />
-                      INT8 TensorRT (Active)
+                      PyTorch ST-GNN
                     </td>
-                    <td className="py-2 font-bold text-[#2D6A4F]">16.8 ms</td>
-                    <td className="py-2 font-bold text-[#2D6A4F]">48.2 MB</td>
-                    <td className="py-2 font-bold text-[#2D6A4F]">595 QPS</td>
-                    <td className="py-2 px-1 text-right font-bold text-[#2D6A4F]">99.8%</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.speed?.mae?.toFixed(2) || '2.50'} km/h</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.volume?.mae?.toFixed(1) || '55.4'}</td>
+                    <td className="py-2 font-bold text-[#2D6A4F]">{backendReport?.evaluation?.volume?.r2?.toFixed(3) || '0.894'}</td>
+                    <td className="py-2 px-1 text-right font-bold text-[#2D6A4F]">{backendReport?.evaluation?.speed?.mape_pct?.toFixed(2) || '7.51'}%</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            {/* Model Drift & PSI Strip */}
+            {/* Model Volume MAPE & Test Info Strip */}
             <div className="mt-3 p-2.5 rounded-xl bg-[#FAF8F5]/50 border border-[#E8E2D9]/60 flex items-center justify-between text-xs">
               <div>
-                <span className="font-semibold text-[#231E1A] block">Population Stability Index (PSI)</span>
-                <span className="text-[10px] text-[#64564B]">Telemetry distribution drift vs 30-day baseline</span>
+                <span className="font-semibold text-[#231E1A] block">15m Volume Forecast Error (MAPE)</span>
+                <span className="text-[10px] text-[#64564B]">Measured across HEB, IND, KOR, WHI test nodes</span>
               </div>
               <div className="text-right">
-                <span className="font-mono font-bold text-[#2D6A4F] text-xs">0.018 (Stable)</span>
-                <span className="text-[10px] text-[#8C827A] block">&lt; 0.10 threshold</span>
+                <span className="font-mono font-bold text-[#2D6A4F] text-xs">{backendReport?.evaluation?.volume?.mape_pct?.toFixed(2) || '4.92'}% MAPE</span>
+                <span className="text-[10px] text-[#8C827A] block">RMSE: {backendReport?.evaluation?.volume?.rmse?.toFixed(1) || '70.4'} veh/15m</span>
               </div>
             </div>
           </div>
@@ -338,9 +357,9 @@ export default function ModelInsightsSection({ currentLocation, onLocationChange
           <div className="mt-3.5 pt-2.5 border-t border-[#E8E2D9]/50 flex items-center justify-between text-xs text-[#64564B]">
             <span className="flex items-center gap-1 text-[#231E1A]">
               <ShieldCheck className="w-3.5 h-3.5 text-[#2D6A4F]" />
-              Zero Divergence Calibration Verified
+              Trained on {backendReport?.dataset?.split?.train_rows?.toLocaleString() || '6,120'} rows ({backendReport?.training_duration_sec || '30.4'}s)
             </span>
-            <span className="font-mono text-[11px] text-[#8C827A]">GPU: RTX / Tensor Core</span>
+            <span className="font-mono text-[11px] text-[#8C827A]">PyTorch CPU Runtime</span>
           </div>
         </div>
       </div>

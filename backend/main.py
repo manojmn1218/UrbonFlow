@@ -9,6 +9,10 @@ try:
     import google_service
 except ImportError:
     from backend import google_service
+try:
+    import ml_service
+except ImportError:
+    from backend import ml_service
 
 app = FastAPI(
     title="UrbanFlow AI - Smart City Traffic Prediction Engine",
@@ -107,17 +111,73 @@ def get_congestion_hotspots():
 
 @app.get("/api/model/metrics")
 def get_model_metrics():
+    payload = ml_service.get_model_metrics_payload()
+    if payload:
+        return {
+            **payload.get("ui_metrics", {}),
+            "model_name": payload.get("model_name"),
+            "trained_at": payload.get("trained_at"),
+            "training_duration_sec": payload.get("training_duration_sec"),
+            "dataset": payload.get("dataset"),
+            "architecture": payload.get("architecture"),
+            "evaluation": payload.get("evaluation"),
+            "baselines": payload.get("baselines"),
+            "training_history": payload.get("training_history"),
+            "sample_trajectory": payload.get("sample_trajectory"),
+        }
     return traffic_data.MODEL_METRICS
 
 
 @app.get("/api/model/actual-vs-predicted")
 def get_actual_vs_predicted():
+    payload = ml_service.get_model_metrics_payload()
+    if payload and payload.get("sample_trajectory"):
+        return payload["sample_trajectory"]
     return traffic_data.ACTUAL_VS_PREDICTED_DATA
 
 
 @app.get("/api/model/horizon-accuracy")
 def get_horizon_accuracy():
+    payload = ml_service.get_model_metrics_payload()
+    if payload:
+        spd = payload["evaluation"]["speed"]
+        return [
+            {
+                "horizon": "15 Minutes (Direct Test)",
+                "mae": f"{spd['mae']:.2f} km/h",
+                "rmse": f"{spd['rmse']:.2f} km/h",
+                "accuracy": f"{max(0.0, 100.0 - spd['mape_pct']):.1f}%",
+                "confidence": "Verified Test Split",
+            },
+            {
+                "horizon": "Volume Forecast (15m)",
+                "mae": f"{payload['evaluation']['volume']['mae']:.1f} veh",
+                "rmse": f"{payload['evaluation']['volume']['rmse']:.1f} veh",
+                "accuracy": f"{max(0.0, 100.0 - payload['evaluation']['volume']['mape_pct']):.1f}%",
+                "confidence": "Verified Test Split",
+            },
+        ]
     return traffic_data.HORIZON_ACCURACY
+
+
+@app.get("/api/model/area-predict")
+def predict_area_direct(
+    area: str = Query("IND", description="Area code: HEB, IND, KOR, WHI"),
+    volume_15m: Optional[float] = Query(None, description="Current 15-min vehicle volume"),
+    speed_kmph: Optional[float] = Query(None, description="Current corridor speed in km/h"),
+    horizon: str = Query("15m", description="Forecast window: 15m, 30m, 60m"),
+    timestamp: Optional[str] = Query(None, description="Optional timestamp YYYY-MM-DD HH:MM:SS"),
+):
+    result = ml_service.predict_traffic(
+        area=area,
+        volume_15m=volume_15m,
+        speed_kmph=speed_kmph,
+        horizon=horizon,
+        timestamp_str=timestamp,
+    )
+    if not result:
+        raise HTTPException(status_code=503, detail="Trained ST-GNN model weights not loaded")
+    return result
 
 
 @app.get("/api/predict")
@@ -139,6 +199,38 @@ def compute_prediction(sensor_id: str, horizon: str):
         raise HTTPException(status_code=404, detail=f"Sensor '{sensor_id}' not found")
 
     horizon_key = horizon if horizon in ["15m", "30m", "60m"] else "15m"
+    area_map = {"downtown": "KOR", "tech_park": "WHI", "airport": "HEB", "harbor": "IND"}
+    mapped_area = area_map.get(sensor.get("zoneId", ""), "IND")
+
+    ml_pred = ml_service.predict_traffic(
+        area=mapped_area,
+        volume_15m=sensor.get("flowRate"),
+        speed_kmph=sensor.get("speed"),
+        horizon=horizon_key,
+    )
+    if ml_pred:
+        pred_cong = ml_pred["predicted_congestion"]
+        risk = "Critical Congestion" if pred_cong >= 75 else ("Heavy Flow" if pred_cong >= 50 else "Optimal Flow")
+        pred_static = sensor["predictions"].get(horizon_key, sensor["predictions"]["15m"])
+        return {
+            "sensor_id": sensor["id"],
+            "sensor_name": sensor["name"],
+            "current_speed": sensor["speed"],
+            "current_congestion": sensor["congestion"],
+            "horizon": horizon_key,
+            "predicted_speed": ml_pred["predicted_speed"],
+            "predicted_congestion": pred_cong,
+            "predicted_volume_15m": ml_pred["predicted_volume_15m"],
+            "speed_change": ml_pred["speed_change"],
+            "confidence": ml_pred["confidence"],
+            "risk_level": risk,
+            "prescriptive_action": pred_static["action"],
+            "influences": sensor["influences"],
+            "model_engine": ml_pred["model_engine"],
+            "matched_area_code": ml_pred["matched_area_code"],
+            "inference_latency_ms": ml_pred["inference_latency_ms"],
+        }
+
     pred = sensor["predictions"].get(horizon_key, sensor["predictions"]["15m"])
 
     return {
